@@ -2,9 +2,12 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import BillingPanel from "@/components/BillingPanel";
-import WaitlistPanel from "@/components/WaitlistPanel";
 import PharmacyHeader from "@/components/pharmacy/PharmacyHeader";
 import MedicineTabsPanel from "@/components/pharmacy/MedicineTabsPanel";
+import WaitlistSidebar, { WaitlistPatient } from "@/components/pharmacy/WaitlistSidebar";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import CollapsibleSidebar from "@/components/pharmacy/CollapsibleSidebar";
+import Sidebar from "@/components/Sidebar";
 
 export type BillItem = {
   id: string;
@@ -19,6 +22,8 @@ export type BillItem = {
 const PharmacyPage = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [billItems, setBillItems] = useState<BillItem[]>([]);
+  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
+  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false);
   const { toast } = useToast();
 
   const addItemToBill = (item: BillItem) => {
@@ -62,6 +67,16 @@ const PharmacyPage = () => {
     }, 0);
   };
 
+  const handleSelectPatient = (patient: WaitlistPatient) => {
+    // Clear existing items and add the patient's prescriptions
+    setBillItems(patient.prescriptions);
+    
+    toast({
+      title: "Patient selected",
+      description: `${patient.name}'s prescription loaded`,
+    });
+  };
+
   const platformFee = 0.10;
   const total = calculateSubtotal() + platformFee;
 
@@ -73,33 +88,50 @@ const PharmacyPage = () => {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header/Invoice Section */}
-      <PharmacyHeader date={date} setDate={setDate} />
+    <div className="h-full flex overflow-hidden">
+      {/* Left Sidebar - Navigation */}
+      <CollapsibleSidebar 
+        collapsed={leftSidebarCollapsed}
+        onToggleCollapse={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
+        side="left"
+      >
+        <Sidebar />
+      </CollapsibleSidebar>
       
-      <div className="flex flex-1 gap-4 overflow-hidden">
-        {/* Left Panel - Bill */}
-        <div className="w-2/5 flex flex-col overflow-hidden">
-          <BillingPanel 
-            billItems={billItems} 
-            updateItemQuantity={updateItemQuantity} 
-            removeItem={removeItem}
-            subtotal={calculateSubtotal()}
-            platformFee={platformFee}
-            total={total}
-            onPrintBill={handlePrintBill}
-          />
-        </div>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header/Invoice Section */}
+        <PharmacyHeader date={date} setDate={setDate} />
         
-        {/* Right Panel - Medicines and Waitlist */}
-        <div className="w-3/5 flex flex-col">
-          <MedicineTabsPanel onAddToBill={addItemToBill} />
+        <ResizablePanelGroup direction="horizontal" className="flex-1 overflow-hidden">
+          {/* Left Panel - Bill */}
+          <ResizablePanel defaultSize={30} minSize={25} className="overflow-hidden">
+            <BillingPanel 
+              billItems={billItems} 
+              updateItemQuantity={updateItemQuantity} 
+              removeItem={removeItem}
+              subtotal={calculateSubtotal()}
+              platformFee={platformFee}
+              total={total}
+              onPrintBill={handlePrintBill}
+            />
+          </ResizablePanel>
           
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <WaitlistPanel />
-          </div>
-        </div>
+          <ResizableHandle withHandle />
+          
+          {/* Right Panel - Medicines */}
+          <ResizablePanel defaultSize={70} minSize={40} className="overflow-hidden">
+            <MedicineTabsPanel onAddToBill={addItemToBill} />
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
+      
+      {/* Right Sidebar - Waitlist */}
+      <WaitlistSidebar 
+        onSelectPatient={handleSelectPatient}
+        collapsed={rightSidebarCollapsed}
+        onToggleCollapse={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
+      />
     </div>
   );
 };
