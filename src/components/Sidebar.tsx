@@ -5,7 +5,7 @@ import {
   Clipboard, 
   Calendar, 
   Users, 
-  Pills, 
+  Pill, 
   FlaskConical, 
   Clock, 
   UserCog 
@@ -19,7 +19,7 @@ const Sidebar = () => {
     { icon: Clipboard, label: "Front Desk", path: "/front-desk" },
     { icon: Calendar, label: "Appointments", path: "/appointments" },
     { icon: Users, label: "Patients", path: "/patients" },
-    { icon: Pills, label: "Pharmacy", path: "/pharmacy" },
+    { icon: Pill, label: "Pharmacy", path: "/pharmacy" },
     { icon: FlaskConical, label: "Lab Tests", path: "/lab-tests" },
     { icon: Clock, label: "Availability", path: "/availability" },
     { icon: UserCog, label: "Human Resource", path: "/human-resource" },
