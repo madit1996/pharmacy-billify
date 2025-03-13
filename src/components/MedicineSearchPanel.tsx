@@ -57,14 +57,14 @@ const MedicineSearchPanel = ({ onAddToBill }: MedicineSearchPanelProps) => {
   ];
 
   return (
-    <div className="p-4 grid grid-cols-2 gap-6">
+    <div className="p-3 grid grid-cols-2 gap-4">
       {medicines.map((medicine) => (
         <div 
           key={medicine.id} 
-          className="bg-white p-4 border rounded-lg shadow-sm hover:shadow transition-shadow"
+          className="bg-white p-3 border rounded-lg shadow-sm hover:shadow transition-shadow"
         >
           <div className="flex">
-            <div className="w-1/3">
+            <div className="w-1/4">
               <img 
                 src={medicine.image} 
                 alt={medicine.name} 
@@ -72,11 +72,11 @@ const MedicineSearchPanel = ({ onAddToBill }: MedicineSearchPanelProps) => {
               />
             </div>
             
-            <div className="w-2/3 pl-4">
-              <h3 className="font-medium text-gray-900">{medicine.name}</h3>
-              <p className="text-xs text-gray-500 mt-1 line-clamp-3">{medicine.dosage}</p>
+            <div className="w-3/4 pl-3">
+              <h3 className="font-medium text-gray-900 text-sm">{medicine.name}</h3>
+              <p className="text-xs text-gray-500 mt-1 line-clamp-2">{medicine.dosage}</p>
               
-              <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+              <div className="mt-1 grid grid-cols-2 gap-1 text-xs">
                 <div>
                   <p className="text-gray-500">Netto</p>
                   <p className="font-medium">{medicine.nettoSize}</p>
@@ -87,9 +87,9 @@ const MedicineSearchPanel = ({ onAddToBill }: MedicineSearchPanelProps) => {
                 </div>
               </div>
               
-              <div className="mt-3 flex items-center justify-between">
+              <div className="mt-2 flex items-center justify-between">
                 <div className="flex items-center">
-                  <span className="text-pharmacy-primary font-medium">$ {medicine.price.toFixed(2)}</span>
+                  <span className="text-pharmacy-primary font-medium text-sm">$ {medicine.price.toFixed(2)}</span>
                   <span className="text-xs text-gray-500 ml-1">/ Bottle</span>
                 </div>
                 
@@ -97,19 +97,19 @@ const MedicineSearchPanel = ({ onAddToBill }: MedicineSearchPanelProps) => {
                   <Button 
                     size="sm"
                     variant="ghost"
-                    className="px-1 h-8 text-gray-500"
+                    className="px-1 h-7 text-gray-500"
                   >
                     -
                   </Button>
                   
-                  <span className="flex items-center justify-center w-8">0</span>
+                  <span className="flex items-center justify-center w-6 text-xs">0</span>
                   
                   <Button 
                     size="sm"
-                    className="px-1 h-8 bg-pharmacy-primary hover:bg-pharmacy-primary/90"
+                    className="px-1 h-7 bg-pharmacy-primary hover:bg-pharmacy-primary/90"
                     onClick={() => onAddToBill(medicine)}
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-3 w-3" />
                   </Button>
                 </div>
               </div>

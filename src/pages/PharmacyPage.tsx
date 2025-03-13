@@ -6,7 +6,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarIcon, Minus, Plus, Printer, Search, Edit2, CreditCard, Landmark, Package, ShoppingCart, Tag } from "lucide-react";
+import { CalendarIcon, Printer, Search } from "lucide-react";
 import { format } from "date-fns";
 import BillingPanel from "@/components/BillingPanel";
 import MedicineSearchPanel from "@/components/MedicineSearchPanel";
@@ -81,12 +81,13 @@ const PharmacyPage = () => {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        <div className="col-span-2 grid grid-cols-2 gap-4">
-          <div className="flex flex-col">
-            <label htmlFor="invoice-type" className="text-xs mb-1">TAX INVOICE</label>
+      {/* Header/Invoice Section */}
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+        <div className="grid grid-cols-4 gap-4">
+          <div className="col-span-1 flex flex-col">
+            <label htmlFor="invoice-type" className="text-xs mb-1 font-medium">TAX INVOICE</label>
             <Select defaultValue="gst">
-              <SelectTrigger id="invoice-type">
+              <SelectTrigger id="invoice-type" className="h-9">
                 <SelectValue placeholder="Select invoice type" />
               </SelectTrigger>
               <SelectContent>
@@ -96,10 +97,10 @@ const PharmacyPage = () => {
             </Select>
           </div>
           
-          <div className="flex flex-col">
-            <label htmlFor="customer" className="text-xs mb-1">Search Customer</label>
+          <div className="col-span-1 flex flex-col">
+            <label htmlFor="customer" className="text-xs mb-1 font-medium">Search Customer</label>
             <Select>
-              <SelectTrigger id="customer">
+              <SelectTrigger id="customer" className="h-9">
                 <SelectValue placeholder="--Select--" />
               </SelectTrigger>
               <SelectContent>
@@ -109,42 +110,55 @@ const PharmacyPage = () => {
             </Select>
           </div>
           
-          <div className="flex flex-col">
-            <label htmlFor="address" className="text-xs mb-1">Mob., Address</label>
-            <Input id="address" placeholder="Enter mobile or address" />
+          <div className="col-span-1 flex flex-col">
+            <label htmlFor="address" className="text-xs mb-1 font-medium">Mob., Address</label>
+            <Input id="address" placeholder="Enter mobile or address" className="h-9" />
           </div>
           
-          <div className="flex flex-col">
-            <label htmlFor="remarks" className="text-xs mb-1">Remark</label>
-            <Input id="remarks" placeholder="Enter remarks" />
+          <div className="col-span-1 flex flex-col">
+            <label htmlFor="invoice-number" className="text-xs mb-1 font-medium">Invoice Number</label>
+            <div className="grid grid-cols-4 gap-1">
+              <Input id="invoice-number" value="31-03-2024" readOnly className="col-span-3 h-9" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="h-9 p-0">
+                    <CalendarIcon className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={(date) => date && setDate(date)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
         </div>
         
-        <div className="flex flex-col">
-          <label htmlFor="invoice-number" className="text-xs mb-1">Invoice Number</label>
-          <div className="grid grid-cols-2 gap-2">
-            <Input id="invoice-number" value="31-03-2024" readOnly />
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="h-10 w-10 p-0">
-                  <CalendarIcon className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={(date) => date && setDate(date)}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+        <div className="mt-4 grid grid-cols-4 gap-4">
+          <div className="col-span-2 flex flex-col">
+            <label htmlFor="remarks" className="text-xs mb-1 font-medium">Remark</label>
+            <Input id="remarks" placeholder="Enter remarks" className="h-9" />
+          </div>
+          
+          <div className="col-span-2 flex items-end justify-end">
+            <div className="relative w-full max-w-sm">
+              <Input 
+                placeholder="Search Medicine/ Salt" 
+                className="pl-9 h-9"
+              />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+            </div>
           </div>
         </div>
       </div>
       
       <div className="flex flex-1 gap-4 overflow-hidden">
-        <div className="w-1/2 flex flex-col overflow-hidden">
+        {/* Left Panel - Bill */}
+        <div className="w-2/5 flex flex-col overflow-hidden">
           <BillingPanel 
             billItems={billItems} 
             updateItemQuantity={updateItemQuantity} 
@@ -156,15 +170,16 @@ const PharmacyPage = () => {
           />
         </div>
         
-        <div className="w-1/2 flex flex-col">
-          <div className="flex-1 bg-white rounded-lg shadow overflow-hidden">
+        {/* Right Panel - Medicines and Waitlist */}
+        <div className="w-3/5 flex flex-col">
+          <div className="flex-1 bg-white rounded-lg shadow-sm overflow-hidden mb-4">
             <Tabs defaultValue="medicines">
               <div className="bg-gray-50 p-4 border-b">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Medicines</h3>
-                  <div className="flex space-x-3">
+                  <h3 className="text-lg font-semibold text-pharmacy-text">Medicines</h3>
+                  <div className="flex space-x-2">
                     <Select defaultValue="sort">
-                      <SelectTrigger className="h-8 w-24">
+                      <SelectTrigger className="h-8 w-24 text-xs">
                         <SelectValue placeholder="Sort By" />
                       </SelectTrigger>
                       <SelectContent>
@@ -174,7 +189,7 @@ const PharmacyPage = () => {
                       </SelectContent>
                     </Select>
                     <Select defaultValue="expiry">
-                      <SelectTrigger className="h-8 w-28">
+                      <SelectTrigger className="h-8 w-28 text-xs">
                         <SelectValue placeholder="Expiry Date" />
                       </SelectTrigger>
                       <SelectContent>
@@ -184,7 +199,7 @@ const PharmacyPage = () => {
                       </SelectContent>
                     </Select>
                     <Select defaultValue="margins">
-                      <SelectTrigger className="h-8 w-24">
+                      <SelectTrigger className="h-8 w-24 text-xs">
                         <SelectValue placeholder="Margins" />
                       </SelectTrigger>
                       <SelectContent>
@@ -194,7 +209,7 @@ const PharmacyPage = () => {
                       </SelectContent>
                     </Select>
                     <Select defaultValue="fifo">
-                      <SelectTrigger className="h-8 w-20">
+                      <SelectTrigger className="h-8 w-20 text-xs">
                         <SelectValue placeholder="FIFO" />
                       </SelectTrigger>
                       <SelectContent>
@@ -204,23 +219,15 @@ const PharmacyPage = () => {
                     </Select>
                   </div>
                 </div>
-                <div className="flex items-center mb-4">
-                  <div className="relative flex-1">
-                    <Input 
-                      placeholder="Search Medicine/ Salt" 
-                      className="pl-9"
-                    />
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
-                  </div>
-                </div>
+                
                 <TabsList className="grid grid-cols-7 bg-pharmacy-gray">
-                  <TabsTrigger value="medicines" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white">All</TabsTrigger>
-                  <TabsTrigger value="tablet" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white">Tablet</TabsTrigger>
-                  <TabsTrigger value="capsule" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white">Capsule</TabsTrigger>
-                  <TabsTrigger value="suppository" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white">Suppository</TabsTrigger>
-                  <TabsTrigger value="eyedrops" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white">Eyedrops</TabsTrigger>
-                  <TabsTrigger value="inhaler" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white">Inhaler</TabsTrigger>
-                  <TabsTrigger value="injectable" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white">Injectable</TabsTrigger>
+                  <TabsTrigger value="medicines" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white text-xs">All</TabsTrigger>
+                  <TabsTrigger value="tablet" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white text-xs">Tablet</TabsTrigger>
+                  <TabsTrigger value="capsule" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white text-xs">Capsule</TabsTrigger>
+                  <TabsTrigger value="suppository" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white text-xs">Suppository</TabsTrigger>
+                  <TabsTrigger value="eyedrops" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white text-xs">Eyedrops</TabsTrigger>
+                  <TabsTrigger value="inhaler" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white text-xs">Inhaler</TabsTrigger>
+                  <TabsTrigger value="injectable" className="data-[state=active]:bg-pharmacy-primary data-[state=active]:text-white text-xs">Injectable</TabsTrigger>
                 </TabsList>
               </div>
               
@@ -254,7 +261,7 @@ const PharmacyPage = () => {
             </Tabs>
           </div>
           
-          <div className="mt-4">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <WaitlistPanel />
           </div>
         </div>
