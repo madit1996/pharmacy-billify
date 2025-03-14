@@ -13,4 +13,7 @@ export interface LabTest {
   resultUrl?: string;
   doctorName: string;
   notes?: string;
+  price?: number;
+  category?: 'pathology' | 'radiology' | 'other';
+  paymentStatus?: 'paid' | 'pending' | 'refunded';
 }
