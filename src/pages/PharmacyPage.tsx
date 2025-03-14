@@ -1,4 +1,7 @@
+
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import BillingPanel from "@/components/BillingPanel";
 import PharmacyHeader from "@/components/pharmacy/PharmacyHeader";
@@ -6,6 +9,7 @@ import MedicineTabsPanel from "@/components/pharmacy/MedicineTabsPanel";
 import WaitlistSidebar, { WaitlistPatient } from "@/components/pharmacy/WaitlistSidebar";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import CollapsibleSidebar from "@/components/pharmacy/CollapsibleSidebar";
+import { Button } from "@/components/ui/button";
 
 export type BillItem = {
   id: string;
@@ -132,55 +136,68 @@ const PharmacyPage = () => {
   };
 
   return (
-    <div className="h-full flex overflow-hidden">
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header/Invoice Section */}
-        <PharmacyHeader 
-          date={date} 
-          setDate={setDate} 
-          selectedCustomer={selectedCustomer}
-          onSearchCustomer={handleSearchCustomer}
-          onAddNewCustomer={handleAddNewCustomer}
-          searchTerm={searchTerm}
-        />
-        
-        <ResizablePanelGroup direction="horizontal" className="flex-1 overflow-hidden">
-          {/* Left Panel - Bill */}
-          <ResizablePanel defaultSize={30} minSize={25} className="overflow-hidden">
-            <BillingPanel 
-              billItems={billItems} 
-              updateItemQuantity={updateItemQuantity} 
-              removeItem={removeItem}
-              subtotal={calculateSubtotal()}
-              platformFee={platformFee}
-              total={total}
-              onPrintBill={handlePrintBill}
-              customerName={selectedCustomer?.name}
-            />
-          </ResizablePanel>
-          
-          <ResizableHandle withHandle />
-          
-          {/* Right Panel - Medicines */}
-          <ResizablePanel defaultSize={70} minSize={40} className="overflow-hidden">
-            <MedicineTabsPanel onAddToBill={addItemToBill} />
-          </ResizablePanel>
-        </ResizablePanelGroup>
+    <div className="h-screen flex flex-col overflow-hidden bg-white">
+      {/* Navigation back to dashboard */}
+      <div className="bg-white border-b p-2 flex items-center">
+        <Link to="/">
+          <Button variant="ghost" className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Dashboard</span>
+          </Button>
+        </Link>
       </div>
       
-      {/* Right Sidebar - Waitlist */}
-      <CollapsibleSidebar 
-        collapsed={rightSidebarCollapsed}
-        onToggleCollapse={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
-        side="right"
-        className="bg-white border-l"
-      >
-        <WaitlistSidebar 
-          onSelectPatient={handleSelectPatient}
+      {/* Main Content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Header/Invoice Section */}
+          <PharmacyHeader 
+            date={date} 
+            setDate={setDate} 
+            selectedCustomer={selectedCustomer}
+            onSearchCustomer={handleSearchCustomer}
+            onAddNewCustomer={handleAddNewCustomer}
+            searchTerm={searchTerm}
+          />
+          
+          <ResizablePanelGroup direction="horizontal" className="flex-1 overflow-hidden">
+            {/* Left Panel - Bill */}
+            <ResizablePanel defaultSize={40} minSize={30} className="overflow-hidden">
+              <BillingPanel 
+                billItems={billItems} 
+                updateItemQuantity={updateItemQuantity} 
+                removeItem={removeItem}
+                subtotal={calculateSubtotal()}
+                platformFee={platformFee}
+                total={total}
+                onPrintBill={handlePrintBill}
+                customerName={selectedCustomer?.name}
+              />
+            </ResizablePanel>
+            
+            <ResizableHandle withHandle />
+            
+            {/* Right Panel - Medicines */}
+            <ResizablePanel defaultSize={60} minSize={40} className="overflow-hidden">
+              <MedicineTabsPanel onAddToBill={addItemToBill} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
+        
+        {/* Right Sidebar - Waitlist */}
+        <CollapsibleSidebar 
           collapsed={rightSidebarCollapsed}
-        />
-      </CollapsibleSidebar>
+          onToggleCollapse={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
+          side="right"
+          className="bg-white border-l"
+        >
+          <WaitlistSidebar 
+            onSelectPatient={handleSelectPatient}
+            collapsed={rightSidebarCollapsed}
+          />
+        </CollapsibleSidebar>
+      </div>
     </div>
   );
 };

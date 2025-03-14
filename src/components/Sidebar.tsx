@@ -26,7 +26,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-full h-full bg-pharmacy-secondary flex-shrink-0 overflow-y-auto">
+    <div className="w-64 h-full bg-pharmacy-secondary flex-shrink-0 overflow-y-auto">
       <div className="flex items-center px-6 py-5 text-white">
         <div className="text-pharmacy-primary text-3xl font-bold">QUEUE</div>
       </div>
