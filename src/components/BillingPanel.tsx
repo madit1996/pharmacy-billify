@@ -13,6 +13,7 @@ interface BillingPanelProps {
   platformFee: number;
   total: number;
   onPrintBill: () => void;
+  customerName?: string; // Added optional customerName property
 }
 
 const BillingPanel = ({
@@ -22,7 +23,8 @@ const BillingPanel = ({
   subtotal,
   platformFee,
   total,
-  onPrintBill
+  onPrintBill,
+  customerName = "Guest" // Default value
 }: BillingPanelProps) => {
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm overflow-hidden">
@@ -35,6 +37,12 @@ const BillingPanel = ({
       </div>
       
       <div className="flex-1 overflow-y-auto p-3">
+        {customerName && (
+          <div className="mb-2 text-sm text-gray-500">
+            Customer: <span className="font-medium text-gray-700">{customerName}</span>
+          </div>
+        )}
+        
         {billItems.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-500 text-sm">
             <p>No items added to the bill yet</p>

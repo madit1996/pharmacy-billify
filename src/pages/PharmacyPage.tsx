@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import BillingPanel from "@/components/BillingPanel";
@@ -134,8 +133,6 @@ const PharmacyPage = () => {
 
   return (
     <div className="h-full flex overflow-hidden">
-      {/* Left Sidebar - This will be handled by the Layout component, so we don't include it here */}
-      
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header/Invoice Section */}
@@ -159,7 +156,7 @@ const PharmacyPage = () => {
               platformFee={platformFee}
               total={total}
               onPrintBill={handlePrintBill}
-              customerName={selectedCustomer?.name || "Guest"}
+              customerName={selectedCustomer?.name}
             />
           </ResizablePanel>
           
