@@ -77,23 +77,33 @@ const LabBillingPanel = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-[calc(100%-20px)]">
                 {filteredCustomers.length > 0 ? (
-                  filteredCustomers.map(customer => (
-                    <DropdownMenuItem 
-                      key={customer.id}
-                      onClick={() => {
-                        onSelectCustomer(customer);
-                        setIsDropdownOpen(false);
-                      }}
-                    >
-                      {customer.name}
+                  <>
+                    {filteredCustomers.map(customer => (
+                      <DropdownMenuItem 
+                        key={customer.id}
+                        onClick={() => {
+                          onSelectCustomer(customer);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        <User className="h-4 w-4 mr-2 text-gray-500" />
+                        {customer.name}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuItem onClick={() => {
+                      onAddNewCustomer();
+                      setIsDropdownOpen(false);
+                    }}>
+                      <UserPlus className="h-4 w-4 mr-2 text-blue-500" />
+                      Add "{searchTerm}" as new patient
                     </DropdownMenuItem>
-                  ))
+                  </>
                 ) : (
                   <DropdownMenuItem onClick={() => {
                     onAddNewCustomer();
                     setIsDropdownOpen(false);
                   }}>
-                    <UserPlus className="h-4 w-4 mr-2" />
+                    <UserPlus className="h-4 w-4 mr-2 text-blue-500" />
                     Add "{searchTerm}" as new patient
                   </DropdownMenuItem>
                 )}
