@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { BillItem } from "@/pages/PharmacyPage";
 
@@ -17,10 +16,9 @@ export type WaitlistPatient = {
 interface WaitlistSidebarProps {
   onSelectPatient: (patient: WaitlistPatient) => void;
   collapsed: boolean;
-  onToggleCollapse: () => void;
 }
 
-const WaitlistSidebar = ({ onSelectPatient, collapsed, onToggleCollapse }: WaitlistSidebarProps) => {
+const WaitlistSidebar = ({ onSelectPatient, collapsed }: WaitlistSidebarProps) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Dummy data with prescriptions
@@ -182,17 +180,9 @@ const WaitlistSidebar = ({ onSelectPatient, collapsed, onToggleCollapse }: Waitl
     : waitlistPatients;
 
   return (
-    <div className={`${collapsed ? 'w-12' : 'w-72'} h-full bg-white border-l transition-all duration-300 flex flex-col shadow-sm`}>
+    <div className="h-full flex flex-col">
       <div className="flex items-center justify-between border-b p-3">
         {!collapsed && <h3 className="font-medium">Waitlist</h3>}
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="ml-auto"
-          onClick={onToggleCollapse}
-        >
-          {collapsed ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </Button>
       </div>
       
       {!collapsed && (
@@ -254,7 +244,7 @@ const WaitlistSidebar = ({ onSelectPatient, collapsed, onToggleCollapse }: Waitl
                   
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
-                      <ChevronRight className="h-4 w-4" />
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
                     </Button>
                   </CollapsibleTrigger>
                 </div>

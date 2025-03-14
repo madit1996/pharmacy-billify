@@ -18,7 +18,10 @@ const CollapsibleSidebar = ({
   children 
 }: CollapsibleSidebarProps) => {
   return (
-    <div className={`${collapsed ? 'w-12' : 'w-60'} h-full flex-shrink-0 transition-width duration-300 ease-in-out ${className}`}>
+    <div 
+      className={`${collapsed ? (side === 'left' ? 'w-12' : 'w-12') : (side === 'left' ? 'w-60' : 'w-72')} 
+                h-full flex-shrink-0 transition-all duration-300 ease-in-out ${className}`}
+    >
       <div className="relative h-full">
         {children}
         

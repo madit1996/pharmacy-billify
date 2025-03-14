@@ -26,7 +26,6 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
-            <Route path="pharmacy" element={<PharmacyPage />} />
             <Route path="patients" element={<PatientsPage />} />
             <Route path="appointments" element={<AppointmentsPage />} />
             <Route path="lab-tests" element={<LabTestsPage />} />
@@ -35,6 +34,8 @@ const App = () => (
             <Route path="front-desk" element={<FrontDeskPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
+          {/* PharmacyPage has its own layout */}
+          <Route path="/pharmacy" element={<PharmacyPage />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

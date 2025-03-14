@@ -7,7 +7,6 @@ import MedicineTabsPanel from "@/components/pharmacy/MedicineTabsPanel";
 import WaitlistSidebar, { WaitlistPatient } from "@/components/pharmacy/WaitlistSidebar";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import CollapsibleSidebar from "@/components/pharmacy/CollapsibleSidebar";
-import Sidebar from "@/components/Sidebar";
 
 export type BillItem = {
   id: string;
@@ -19,12 +18,30 @@ export type BillItem = {
   discount: number;
 };
 
+export type CustomerDetails = {
+  id: string;
+  name: string;
+  mobile: string;
+  address: string;
+  email?: string;
+};
+
 const PharmacyPage = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerDetails | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+
+  // Dummy customer data
+  const customers: CustomerDetails[] = [
+    { id: "C1", name: "Yuda Rahmat", mobile: "+62-812-3456-7890", address: "123 Jakarta Street, Indonesia" },
+    { id: "C2", name: "Aulia Akbar", mobile: "+62-813-5678-9012", address: "456 Bandung Road, Indonesia" },
+    { id: "C3", name: "Haul Anggara", mobile: "+62-815-7890-1234", address: "789 Surabaya Lane, Indonesia" },
+    { id: "C4", name: "Mira Santoso", mobile: "+62-817-2345-6789", address: "101 Bali Avenue, Indonesia" }
+  ];
 
   const addItemToBill = (item: BillItem) => {
     // Check if item already exists in bill
@@ -71,10 +88,38 @@ const PharmacyPage = () => {
     // Clear existing items and add the patient's prescriptions
     setBillItems(patient.prescriptions);
     
+    // Find and set the customer details
+    const customer = customers.find(c => c.name === patient.name) || 
+      { id: patient.id, name: patient.name, mobile: "Unknown", address: "Unknown" };
+    
+    setSelectedCustomer(customer);
+    
     toast({
       title: "Patient selected",
       description: `${patient.name}'s prescription loaded`,
     });
+  };
+
+  const handleAddNewCustomer = () => {
+    // In a real app, this would open a form to add a new customer
+    const newCustomer = {
+      id: `C${customers.length + 1}`,
+      name: searchTerm,
+      mobile: "New customer",
+      address: "Please update address"
+    };
+    
+    setSelectedCustomer(newCustomer);
+    
+    toast({
+      title: "New customer added",
+      description: "Please update customer details",
+    });
+  };
+
+  const handleSearchCustomer = (term: string) => {
+    setSearchTerm(term);
+    // If we had a real search, we would filter customers here
   };
 
   const platformFee = 0.10;
@@ -89,19 +134,19 @@ const PharmacyPage = () => {
 
   return (
     <div className="h-full flex overflow-hidden">
-      {/* Left Sidebar - Navigation */}
-      <CollapsibleSidebar 
-        collapsed={leftSidebarCollapsed}
-        onToggleCollapse={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
-        side="left"
-      >
-        <Sidebar />
-      </CollapsibleSidebar>
+      {/* Left Sidebar - This will be handled by the Layout component, so we don't include it here */}
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header/Invoice Section */}
-        <PharmacyHeader date={date} setDate={setDate} />
+        <PharmacyHeader 
+          date={date} 
+          setDate={setDate} 
+          selectedCustomer={selectedCustomer}
+          onSearchCustomer={handleSearchCustomer}
+          onAddNewCustomer={handleAddNewCustomer}
+          searchTerm={searchTerm}
+        />
         
         <ResizablePanelGroup direction="horizontal" className="flex-1 overflow-hidden">
           {/* Left Panel - Bill */}
@@ -114,6 +159,7 @@ const PharmacyPage = () => {
               platformFee={platformFee}
               total={total}
               onPrintBill={handlePrintBill}
+              customerName={selectedCustomer?.name || "Guest"}
             />
           </ResizablePanel>
           
@@ -127,11 +173,17 @@ const PharmacyPage = () => {
       </div>
       
       {/* Right Sidebar - Waitlist */}
-      <WaitlistSidebar 
-        onSelectPatient={handleSelectPatient}
+      <CollapsibleSidebar 
         collapsed={rightSidebarCollapsed}
         onToggleCollapse={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
-      />
+        side="right"
+        className="bg-white border-l"
+      >
+        <WaitlistSidebar 
+          onSelectPatient={handleSelectPatient}
+          collapsed={rightSidebarCollapsed}
+        />
+      </CollapsibleSidebar>
     </div>
   );
 };
