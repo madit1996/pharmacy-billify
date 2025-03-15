@@ -17,6 +17,7 @@ interface LabBillingPanelProps {
   selectedCustomer: LabCustomer | null;
   onSelectCustomer: (customer: LabCustomer) => void;
   onAddNewCustomer: () => void;
+  onEditCustomer?: () => void;
   searchTerm: string;
   onSearchCustomer: (term: string) => void;
 }
@@ -33,6 +34,7 @@ const LabBillingPanel = ({
   selectedCustomer,
   onSelectCustomer,
   onAddNewCustomer,
+  onEditCustomer,
   searchTerm,
   onSearchCustomer
 }: LabBillingPanelProps) => {
@@ -44,6 +46,7 @@ const LabBillingPanel = ({
           selectedCustomer={selectedCustomer}
           onSelectCustomer={onSelectCustomer}
           onAddNewCustomer={onAddNewCustomer}
+          onEditCustomer={onEditCustomer}
           searchTerm={searchTerm}
           onSearchCustomer={onSearchCustomer}
         />

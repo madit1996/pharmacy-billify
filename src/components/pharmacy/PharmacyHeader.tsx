@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, Search, UserPlus } from "lucide-react";
+import { CalendarIcon, Search, UserPlus, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomerDetails } from "@/pages/PharmacyPage";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -15,6 +15,7 @@ interface PharmacyHeaderProps {
   selectedCustomer: CustomerDetails | null;
   onSearchCustomer: (term: string) => void;
   onAddNewCustomer: () => void;
+  onEditCustomer?: () => void;
   searchTerm: string;
 }
 
@@ -24,6 +25,7 @@ const PharmacyHeader = ({
   selectedCustomer, 
   onSearchCustomer, 
   onAddNewCustomer,
+  onEditCustomer,
   searchTerm
 }: PharmacyHeaderProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -102,7 +104,21 @@ const PharmacyHeader = ({
         </div>
         
         <div className="col-span-1 flex flex-col">
-          <label htmlFor="address" className="text-xs mb-1 font-medium">Mob., Address</label>
+          <div className="flex justify-between">
+            <label htmlFor="address" className="text-xs mb-1 font-medium">Mob., Address</label>
+            {selectedCustomer && onEditCustomer && (
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 px-2 py-0" 
+                onClick={onEditCustomer}
+              >
+                <Edit className="h-3 w-3 mr-1" />
+                <span className="text-xs">Edit</span>
+              </Button>
+            )}
+          </div>
           <Input 
             id="address" 
             placeholder="Enter mobile or address" 

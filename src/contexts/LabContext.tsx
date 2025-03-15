@@ -1,4 +1,3 @@
-
 import { createContext, useState, useContext, ReactNode } from "react";
 import { LabTest } from "@/types/lab-tests";
 import { LabBillItem, LabCustomer, LabTestOption } from "@/types/lab-types";
@@ -23,6 +22,10 @@ interface LabContextType {
   handlePrintBill: () => void;
   labTestOptions: LabTestOption[];
   customers: LabCustomer[];
+  handleEditCustomer: () => void;
+  handleSaveCustomer: (customer: LabCustomer) => void;
+  isEditingCustomer: boolean;
+  setIsEditingCustomer: (isEditing: boolean) => void;
 }
 
 const LabContext = createContext<LabContextType | undefined>(undefined);
@@ -182,6 +185,8 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
   const [billItems, setBillItems] = useState<LabBillItem[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<LabCustomer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isEditingCustomer, setIsEditingCustomer] = useState(false);
+  const [customersState, setCustomersState] = useState<LabCustomer[]>(customers);
   const { toast } = useToast();
 
   const handleSelectTest = (test: LabTest) => {
@@ -256,15 +261,13 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
   const handleSearchCustomer = (term: string) => {
     setSearchTerm(term);
     
-    // If we find an exact match, select that customer
-    const matchedCustomer = customers.find(
+    const matchedCustomer = customersState.find(
       c => c.name.toLowerCase() === term.toLowerCase()
     );
     
     if (matchedCustomer) {
       setSelectedCustomer(matchedCustomer);
     } else if (selectedCustomer && term.length === 0) {
-      // Clear selection if search is cleared
       setSelectedCustomer(null);
     }
   };
@@ -279,8 +282,7 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     
-    // Check if the customer already exists
-    const existingCustomer = customers.find(c => 
+    const existingCustomer = customersState.find(c => 
       c.name.toLowerCase() === searchTerm.toLowerCase()
     );
     
@@ -294,20 +296,44 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
     }
     
     const newCustomer = {
-      id: `C${customers.length + 1}`,
+      id: `C${customersState.length + 1}`,
       name: searchTerm,
       mobile: "New customer",
       address: "Please update address"
     };
     
-    // In a real application, we would add this to the customer list
-    // customers.push(newCustomer);
-    
     setSelectedCustomer(newCustomer);
+    setIsEditingCustomer(true);
     
     toast({
       title: "New patient added",
       description: "Please update patient details",
+    });
+  };
+
+  const handleEditCustomer = () => {
+    if (selectedCustomer) {
+      setIsEditingCustomer(true);
+    }
+  };
+
+  const handleSaveCustomer = (customer: LabCustomer) => {
+    const customerIndex = customersState.findIndex(c => c.id === customer.id);
+    
+    if (customerIndex !== -1) {
+      const updatedCustomers = [...customersState];
+      updatedCustomers[customerIndex] = customer;
+      setCustomersState(updatedCustomers);
+    } else {
+      setCustomersState([...customersState, customer]);
+    }
+    
+    setSelectedCustomer(customer);
+    setIsEditingCustomer(false);
+    
+    toast({
+      title: "Patient saved",
+      description: "Patient details have been updated successfully",
     });
   };
 
@@ -378,7 +404,11 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
         handleSelectCustomer,
         handlePrintBill,
         labTestOptions,
-        customers
+        customers: customersState,
+        handleEditCustomer,
+        handleSaveCustomer,
+        isEditingCustomer,
+        setIsEditingCustomer
       }}
     >
       {children}

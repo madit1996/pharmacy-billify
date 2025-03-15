@@ -14,6 +14,10 @@ import WaitlistSidebar, { WaitlistPatient } from "@/components/pharmacy/Waitlist
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import CollapsibleSidebar from "@/components/pharmacy/CollapsibleSidebar";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import PatientForm from "@/components/pharmacy/PatientForm";
 
 export type BillItem = {
   id: string;
@@ -43,15 +47,16 @@ const PharmacyPage = () => {
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerDetails | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isPatientDialogOpen, setIsPatientDialogOpen] = useState(false);
   const { toast } = useToast();
 
   // Dummy customer data
-  const customers: CustomerDetails[] = [
+  const [customers, setCustomers] = useState<CustomerDetails[]>([
     { id: "C1", name: "Yuda Rahmat", mobile: "+62-812-3456-7890", address: "123 Jakarta Street, Indonesia" },
     { id: "C2", name: "Aulia Akbar", mobile: "+62-813-5678-9012", address: "456 Bandung Road, Indonesia" },
     { id: "C3", name: "Haul Anggara", mobile: "+62-815-7890-1234", address: "789 Surabaya Lane, Indonesia" },
     { id: "C4", name: "Mira Santoso", mobile: "+62-817-2345-6789", address: "101 Bali Avenue, Indonesia" }
-  ];
+  ]);
 
   const addItemToBill = (item: BillItem) => {
     // Check if item already exists in bill
@@ -141,10 +146,8 @@ const PharmacyPage = () => {
       address: "Please update address"
     };
     
-    // In a real application, we would add this to the customer list
-    // customers.push(newCustomer);
-    
     setSelectedCustomer(newCustomer);
+    setIsPatientDialogOpen(true);
     
     toast({
       title: "New customer added",
@@ -165,6 +168,34 @@ const PharmacyPage = () => {
       // Clear selection if search is cleared
       setSelectedCustomer(null);
     }
+  };
+
+  const handleEditCustomer = () => {
+    if (selectedCustomer) {
+      setIsPatientDialogOpen(true);
+    }
+  };
+
+  const handleSavePatient = (updatedPatient: CustomerDetails) => {
+    // Update in the customers list if it exists
+    const customerIndex = customers.findIndex(c => c.id === updatedPatient.id);
+    if (customerIndex !== -1) {
+      const updatedCustomers = [...customers];
+      updatedCustomers[customerIndex] = updatedPatient;
+      setCustomers(updatedCustomers);
+    } else {
+      // Add new customer to the list
+      setCustomers([...customers, updatedPatient]);
+    }
+    
+    // Update selected customer
+    setSelectedCustomer(updatedPatient);
+    setIsPatientDialogOpen(false);
+    
+    toast({
+      title: "Patient saved",
+      description: "Patient details have been updated successfully",
+    });
   };
 
   const platformFee = 0.10;
@@ -214,6 +245,7 @@ const PharmacyPage = () => {
             onSearchCustomer={handleSearchCustomer}
             onAddNewCustomer={handleAddNewCustomer}
             searchTerm={searchTerm}
+            onEditCustomer={handleEditCustomer}
           />
           
           <ResizablePanelGroup direction="horizontal" className="flex-1 overflow-hidden">
@@ -279,6 +311,23 @@ const PharmacyPage = () => {
         
         {activeTab === 'billing' && renderBillingContent()}
       </div>
+
+      {/* Patient Edit Dialog */}
+      <Dialog open={isPatientDialogOpen} onOpenChange={setIsPatientDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{selectedCustomer?.id.startsWith('C') && !customers.some(c => c.id === selectedCustomer.id) ? 'Add New Patient' : 'Edit Patient Details'}</DialogTitle>
+          </DialogHeader>
+          
+          {selectedCustomer && (
+            <PatientForm 
+              patient={selectedCustomer} 
+              onSave={handleSavePatient} 
+              onCancel={() => setIsPatientDialogOpen(false)} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

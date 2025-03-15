@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { User, Search, UserPlus } from "lucide-react";
+import { User, Search, UserPlus, Edit } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
@@ -16,6 +16,7 @@ interface CustomerSearchProps {
   selectedCustomer: LabCustomer | null;
   onSelectCustomer: (customer: LabCustomer) => void;
   onAddNewCustomer: () => void;
+  onEditCustomer?: () => void;
   searchTerm: string;
   onSearchCustomer: (term: string) => void;
 }
@@ -25,6 +26,7 @@ const CustomerSearch = ({
   selectedCustomer,
   onSelectCustomer,
   onAddNewCustomer,
+  onEditCustomer,
   searchTerm,
   onSearchCustomer
 }: CustomerSearchProps) => {
@@ -109,9 +111,23 @@ const CustomerSearch = ({
 
       {selectedCustomer && (
         <div className="grid grid-cols-1 gap-2">
-          <div className="flex items-center text-sm">
-            <User className="h-4 w-4 mr-2 text-gray-500" />
-            <span className="font-medium">{selectedCustomer.name}</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center text-sm">
+              <User className="h-4 w-4 mr-2 text-gray-500" />
+              <span className="font-medium">{selectedCustomer.name}</span>
+            </div>
+            
+            {onEditCustomer && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 px-2 py-0" 
+                onClick={onEditCustomer}
+              >
+                <Edit className="h-3 w-3 mr-1" />
+                <span className="text-xs">Edit</span>
+              </Button>
+            )}
           </div>
           <div className="text-xs text-gray-500">
             Mobile: {selectedCustomer.mobile}
@@ -119,6 +135,11 @@ const CustomerSearch = ({
           <div className="text-xs text-gray-500">
             Address: {selectedCustomer.address}
           </div>
+          {selectedCustomer.email && (
+            <div className="text-xs text-gray-500">
+              Email: {selectedCustomer.email}
+            </div>
+          )}
         </div>
       )}
     </div>
