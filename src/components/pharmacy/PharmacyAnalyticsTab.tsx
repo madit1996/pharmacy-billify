@@ -2,7 +2,19 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, LineChart } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { 
+  BarChart, 
+  Bar, 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend,
+  ResponsiveContainer 
+} from "recharts";
 import { Activity, ShoppingBag, TrendingUp, Users, Package } from "lucide-react";
 
 const PharmacyAnalyticsTab = () => {
@@ -156,16 +168,15 @@ const PharmacyAnalyticsTab = () => {
         </CardHeader>
         <CardContent>
           <div className="h-80">
-            <BarChart 
-              data={salesData[dateRange]} 
-              index="name"
-              categories={["sales"]}
-              colors={["blue"]}
-              yAxisWidth={40}
-              showXAxis
-              showYAxis
-              showLegend={false}
-            />
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={salesData[dateRange]}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="sales" fill="#3b82f6" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
@@ -179,16 +190,17 @@ const PharmacyAnalyticsTab = () => {
           </CardHeader>
           <CardContent>
             <div className="h-80">
-              <LineChart 
-                data={inventoryData[dateRange]} 
-                index="name"
-                categories={["stock", "demand"]}
-                colors={["blue", "red"]}
-                yAxisWidth={40}
-                showXAxis
-                showYAxis
-                showLegend
-              />
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={inventoryData[dateRange]}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="stock" stroke="#3b82f6" />
+                  <Line type="monotone" dataKey="demand" stroke="#ef4444" />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
