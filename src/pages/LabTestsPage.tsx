@@ -1,35 +1,12 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { LabTest } from "@/types/lab-tests";
-import LabMetricsPanel from "@/components/lab/LabMetricsPanel";
-import LabBillingPanel from "@/components/lab/LabBillingPanel";
-import LabSearchPanel from "@/components/lab/LabSearchPanel";
-import PendingTestsList from "@/components/lab/PendingTestsList";
-import CompletedTestsList from "@/components/lab/CompletedTestsList";
-import UploadTestResultForm from "@/components/lab/UploadTestResultForm";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { CreditCard, FileText, User, UserPlus, ChevronRight } from "lucide-react";
-
-export type LabBillItem = {
-  id: string;
-  testName: string;
-  price: number;
-  quantity: number;
-  discount: number;
-  category: 'pathology' | 'radiology' | 'other';
-};
-
-export type LabCustomer = {
-  id: string;
-  name: string;
-  mobile: string;
-  address: string;
-  email?: string;
-};
+import { CreditCard, FileText, User, ChevronRight } from "lucide-react";
+import LabAnalyticsTab from "@/components/lab/LabAnalyticsTab";
+import LabBillingTab from "@/components/lab/LabBillingTab";
+import LabManagementTab from "@/components/lab/LabManagementTab";
+import { LabBillItem, LabCustomer } from "@/types/lab-types";
 
 const LabTestsPage = () => {
   const [pendingTests, setPendingTests] = useState<LabTest[]>([
@@ -365,118 +342,38 @@ const LabTestsPage = () => {
       </div>
       
       {activeTab === 'analytics' && (
-        <div>
-          <LabMetricsPanel 
-            pendingTests={pendingTests}
-            completedTests={completedTests}
-          />
-        </div>
+        <LabAnalyticsTab 
+          pendingTests={pendingTests}
+          completedTests={completedTests}
+        />
       )}
       
       {activeTab === 'billing' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle>Billing</CardTitle>
-              <CardDescription>Manage patient bill</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <LabBillingPanel
-                billItems={billItems}
-                updateItemQuantity={updateItemQuantity}
-                removeItem={removeItem}
-                subtotal={calculateSubtotal()}
-                platformFee={10.00}
-                total={calculateSubtotal() + 10.00}
-                onPrintBill={handlePrintBill}
-                customerName={selectedCustomer?.name}
-                customers={customers}
-                selectedCustomer={selectedCustomer}
-                onSelectCustomer={handleSelectCustomer}
-                onAddNewCustomer={handleAddNewCustomer}
-                searchTerm={searchTerm}
-                onSearchCustomer={handleSearchCustomer}
-              />
-            </CardContent>
-          </Card>
-          
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Available Tests</CardTitle>
-              <CardDescription>Select tests to add to the bill</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <LabSearchPanel 
-                testOptions={labTestOptions}
-                onAddToBill={addItemToBill}
-              />
-            </CardContent>
-          </Card>
-        </div>
+        <LabBillingTab
+          billItems={billItems}
+          updateItemQuantity={updateItemQuantity}
+          removeItem={removeItem}
+          calculateSubtotal={calculateSubtotal}
+          onPrintBill={handlePrintBill}
+          searchTerm={searchTerm}
+          onSearchCustomer={handleSearchCustomer}
+          testOptions={labTestOptions}
+          onAddToBill={addItemToBill}
+          customers={customers}
+          selectedCustomer={selectedCustomer}
+          onSelectCustomer={handleSelectCustomer}
+          onAddNewCustomer={handleAddNewCustomer}
+        />
       )}
       
       {activeTab === 'management' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Tabs defaultValue="pending" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="pending">Pending Tests ({pendingTests.length})</TabsTrigger>
-                <TabsTrigger value="completed">Completed Tests ({completedTests.length})</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="pending">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Pending Tests</CardTitle>
-                    <CardDescription>Tests waiting to be processed</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <PendingTestsList 
-                      tests={pendingTests}
-                      onSelectTest={handleSelectTest}
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="completed">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Completed Tests</CardTitle>
-                    <CardDescription>Tests with uploaded results</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <CompletedTestsList tests={completedTests} />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-          
-          <div>
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>Upload Test Results</CardTitle>
-                <CardDescription>
-                  Select a test from the pending list and upload its results
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {selectedTest ? (
-                  <UploadTestResultForm 
-                    test={selectedTest}
-                    onUpload={handleUploadResult}
-                    onCancel={() => setSelectedTest(null)}
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-48 text-gray-500 text-sm">
-                    <p>Select a test from the pending list to upload results</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        <LabManagementTab
+          pendingTests={pendingTests}
+          completedTests={completedTests}
+          selectedTest={selectedTest}
+          onSelectTest={handleSelectTest}
+          onUploadResult={handleUploadResult}
+        />
       )}
     </div>
   );
