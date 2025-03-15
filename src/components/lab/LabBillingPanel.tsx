@@ -3,7 +3,7 @@ import { Minus, Plus, Printer, Edit2, User, Search, UserPlus } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { LabBillItem, LabCustomer } from "@/pages/LabTestsPage";
+import { LabBillItem, LabCustomer } from "@/types/lab-types";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 

@@ -1,17 +1,9 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LabBillItem } from "@/pages/LabTestsPage";
-
-interface LabTestOption {
-  id: string;
-  testName: string;
-  price: number;
-  category: 'pathology' | 'radiology' | 'other';
-}
+import { LabBillItem, LabTestOption } from "@/types/lab-types";
 
 interface LabSearchPanelProps {
   testOptions: readonly LabTestOption[];
