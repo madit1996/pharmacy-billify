@@ -1,26 +1,20 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LabTest } from "@/types/lab-tests";
 import PendingTestsList from "./PendingTestsList";
 import CompletedTestsList from "./CompletedTestsList";
 import UploadTestResultForm from "./UploadTestResultForm";
+import { useLabContext } from "@/contexts/LabContext";
 
-interface LabManagementTabProps {
-  pendingTests: LabTest[];
-  completedTests: LabTest[];
-  selectedTest: LabTest | null;
-  onSelectTest: (test: LabTest) => void;
-  onUploadResult: (testId: string, resultFile: File) => void;
-}
+const LabManagementTab = () => {
+  const {
+    pendingTests,
+    completedTests,
+    selectedTest,
+    handleSelectTest,
+    handleUploadResult
+  } = useLabContext();
 
-const LabManagementTab = ({
-  pendingTests,
-  completedTests,
-  selectedTest,
-  onSelectTest,
-  onUploadResult
-}: LabManagementTabProps) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2">
@@ -39,7 +33,7 @@ const LabManagementTab = ({
               <CardContent>
                 <PendingTestsList 
                   tests={pendingTests}
-                  onSelectTest={onSelectTest}
+                  onSelectTest={handleSelectTest}
                 />
               </CardContent>
             </Card>
@@ -71,8 +65,8 @@ const LabManagementTab = ({
             {selectedTest ? (
               <UploadTestResultForm 
                 test={selectedTest}
-                onUpload={onUploadResult}
-                onCancel={() => onSelectTest(null)}
+                onUpload={handleUploadResult}
+                onCancel={() => handleSelectTest(null)}
               />
             ) : (
               <div className="flex items-center justify-center h-48 text-gray-500 text-sm">

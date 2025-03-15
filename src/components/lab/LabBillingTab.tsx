@@ -2,39 +2,25 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import LabBillingPanel from "./LabBillingPanel";
 import LabSearchPanel from "./LabSearchPanel";
-import { LabBillItem, LabCustomer, LabTestOption } from "@/types/lab-types";
+import { useLabContext } from "@/contexts/LabContext";
 
-interface LabBillingTabProps {
-  billItems: LabBillItem[];
-  updateItemQuantity: (id: string, change: number) => void;
-  removeItem: (id: string) => void;
-  calculateSubtotal: () => number;
-  onPrintBill: () => void;
-  searchTerm: string;
-  onSearchCustomer: (term: string) => void;
-  testOptions: readonly LabTestOption[];
-  onAddToBill: (item: LabBillItem) => void;
-  customers: LabCustomer[];
-  selectedCustomer: LabCustomer | null;
-  onSelectCustomer: (customer: LabCustomer) => void;
-  onAddNewCustomer: () => void;
-}
-
-const LabBillingTab = ({
-  billItems,
-  updateItemQuantity,
-  removeItem,
-  calculateSubtotal,
-  onPrintBill,
-  searchTerm,
-  onSearchCustomer,
-  testOptions,
-  onAddToBill,
-  customers,
-  selectedCustomer,
-  onSelectCustomer,
-  onAddNewCustomer
-}: LabBillingTabProps) => {
+const LabBillingTab = () => {
+  const { 
+    billItems,
+    updateItemQuantity,
+    removeItem,
+    calculateSubtotal,
+    handlePrintBill,
+    searchTerm,
+    handleSearchCustomer,
+    labTestOptions,
+    addItemToBill,
+    customers,
+    selectedCustomer,
+    handleSelectCustomer,
+    handleAddNewCustomer
+  } = useLabContext();
+  
   const subtotal = calculateSubtotal();
   const platformFee = 10.00;
   const total = subtotal + platformFee;
@@ -54,14 +40,14 @@ const LabBillingTab = ({
             subtotal={subtotal}
             platformFee={platformFee}
             total={total}
-            onPrintBill={onPrintBill}
+            onPrintBill={handlePrintBill}
             customerName={selectedCustomer?.name}
             customers={customers}
             selectedCustomer={selectedCustomer}
-            onSelectCustomer={onSelectCustomer}
-            onAddNewCustomer={onAddNewCustomer}
+            onSelectCustomer={handleSelectCustomer}
+            onAddNewCustomer={handleAddNewCustomer}
             searchTerm={searchTerm}
-            onSearchCustomer={onSearchCustomer}
+            onSearchCustomer={handleSearchCustomer}
           />
         </CardContent>
       </Card>
@@ -73,8 +59,8 @@ const LabBillingTab = ({
         </CardHeader>
         <CardContent className="p-0">
           <LabSearchPanel 
-            testOptions={testOptions}
-            onAddToBill={onAddToBill}
+            testOptions={labTestOptions}
+            onAddToBill={addItemToBill}
           />
         </CardContent>
       </Card>

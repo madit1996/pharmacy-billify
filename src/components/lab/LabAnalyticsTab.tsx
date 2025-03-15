@@ -1,13 +1,10 @@
 
-import { LabTest } from "@/types/lab-tests";
+import { useLabContext } from "@/contexts/LabContext";
 import LabMetricsPanel from "./LabMetricsPanel";
 
-interface LabAnalyticsTabProps {
-  pendingTests: LabTest[];
-  completedTests: LabTest[];
-}
-
-const LabAnalyticsTab = ({ pendingTests, completedTests }: LabAnalyticsTabProps) => {
+const LabAnalyticsTab = () => {
+  const { pendingTests, completedTests } = useLabContext();
+  
   return (
     <div>
       <LabMetricsPanel 
