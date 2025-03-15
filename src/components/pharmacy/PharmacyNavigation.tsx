@@ -2,12 +2,12 @@
 import { CreditCard, FileText, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-interface LabNavigationProps {
+interface PharmacyNavigationProps {
   activeTab: 'analytics' | 'billing';
   setActiveTab: (tab: 'analytics' | 'billing') => void;
 }
 
-const LabNavigation = ({ activeTab, setActiveTab }: LabNavigationProps) => {
+const PharmacyNavigation = ({ activeTab, setActiveTab }: PharmacyNavigationProps) => {
   return (
     <div className="flex gap-3">
       {activeTab !== 'billing' && (
@@ -27,11 +27,11 @@ const LabNavigation = ({ activeTab, setActiveTab }: LabNavigationProps) => {
           className="flex items-center gap-1"
         >
           <FileText className="h-4 w-4 mr-1" />
-          Analytics & Management
+          Analytics
         </Button>
       )}
     </div>
   );
 };
 
-export default LabNavigation;
+export default PharmacyNavigation;

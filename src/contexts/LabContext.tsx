@@ -255,10 +255,43 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
 
   const handleSearchCustomer = (term: string) => {
     setSearchTerm(term);
+    
+    // If we find an exact match, select that customer
+    const matchedCustomer = customers.find(
+      c => c.name.toLowerCase() === term.toLowerCase()
+    );
+    
+    if (matchedCustomer) {
+      setSelectedCustomer(matchedCustomer);
+    } else if (selectedCustomer && term.length === 0) {
+      // Clear selection if search is cleared
+      setSelectedCustomer(null);
+    }
   };
 
   const handleAddNewCustomer = () => {
-    if (!searchTerm) return;
+    if (!searchTerm.trim()) {
+      toast({
+        title: "Invalid input",
+        description: "Please enter a name to add a new customer",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Check if the customer already exists
+    const existingCustomer = customers.find(c => 
+      c.name.toLowerCase() === searchTerm.toLowerCase()
+    );
+    
+    if (existingCustomer) {
+      setSelectedCustomer(existingCustomer);
+      toast({
+        title: "Customer selected",
+        description: `${existingCustomer.name} is already in the system`,
+      });
+      return;
+    }
     
     const newCustomer = {
       id: `C${customers.length + 1}`,
@@ -266,6 +299,9 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
       mobile: "New customer",
       address: "Please update address"
     };
+    
+    // In a real application, we would add this to the customer list
+    // customers.push(newCustomer);
     
     setSelectedCustomer(newCustomer);
     

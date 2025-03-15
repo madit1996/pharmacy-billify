@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Search, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,13 @@ const CustomerSearch = ({
     ? customers.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()))
     : customers;
 
+  // Close dropdown when a customer is selected
+  useEffect(() => {
+    if (selectedCustomer) {
+      setIsDropdownOpen(false);
+    }
+  }, [selectedCustomer]);
+
   return (
     <div>
       <div className="mb-4">
@@ -47,22 +54,22 @@ const CustomerSearch = ({
             onChange={(e) => onSearchCustomer(e.target.value)}
             onFocus={() => setIsDropdownOpen(true)}
           />
-          <DropdownMenu open={isDropdownOpen && searchTerm.length > 0} onOpenChange={setIsDropdownOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="absolute right-0 top-0 h-full"
-              >
-                <Search className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[calc(100%-20px)]">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="absolute right-0 top-0 h-full"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          >
+            <Search className="h-4 w-4" />
+          </Button>
+          {isDropdownOpen && searchTerm.length > 0 && (
+            <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg">
               {filteredCustomers.length > 0 ? (
                 <>
                   {filteredCustomers.map(customer => (
-                    <DropdownMenuItem 
+                    <div 
                       key={customer.id}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
                       onClick={() => {
                         onSelectCustomer(customer);
                         setIsDropdownOpen(false);
@@ -70,27 +77,33 @@ const CustomerSearch = ({
                     >
                       <User className="h-4 w-4 mr-2 text-gray-500" />
                       {customer.name}
-                    </DropdownMenuItem>
+                    </div>
                   ))}
-                  <DropdownMenuItem onClick={() => {
-                    onAddNewCustomer();
-                    setIsDropdownOpen(false);
-                  }}>
-                    <UserPlus className="h-4 w-4 mr-2 text-blue-500" />
+                  <div 
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-t flex items-center text-blue-600"
+                    onClick={() => {
+                      onAddNewCustomer();
+                      setIsDropdownOpen(false);
+                    }}
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
                     Add "{searchTerm}" as new patient
-                  </DropdownMenuItem>
+                  </div>
                 </>
               ) : (
-                <DropdownMenuItem onClick={() => {
-                  onAddNewCustomer();
-                  setIsDropdownOpen(false);
-                }}>
-                  <UserPlus className="h-4 w-4 mr-2 text-blue-500" />
+                <div 
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center text-blue-600"
+                  onClick={() => {
+                    onAddNewCustomer();
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
                   Add "{searchTerm}" as new patient
-                </DropdownMenuItem>
+                </div>
               )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </div>
+          )}
         </div>
       </div>
 

@@ -3,11 +3,10 @@ import { useState } from "react";
 import { LabProvider } from "@/contexts/LabContext";
 import LabAnalyticsTab from "@/components/lab/LabAnalyticsTab";
 import LabBillingTab from "@/components/lab/LabBillingTab";
-import LabManagementTab from "@/components/lab/LabManagementTab";
 import LabNavigation from "@/components/lab/LabNavigation";
 
 const LabTestsPage = () => {
-  const [activeTab, setActiveTab] = useState<'analytics' | 'billing' | 'management'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'billing'>('analytics');
 
   return (
     <LabProvider>
@@ -19,7 +18,6 @@ const LabTestsPage = () => {
         
         {activeTab === 'analytics' && <LabAnalyticsTab />}
         {activeTab === 'billing' && <LabBillingTab />}
-        {activeTab === 'management' && <LabManagementTab />}
       </div>
     </LabProvider>
   );

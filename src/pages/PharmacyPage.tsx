@@ -2,14 +2,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import PharmacyNavigation from "@/components/pharmacy/PharmacyNavigation";
+import PharmacyAnalyticsTab from "@/components/pharmacy/PharmacyAnalyticsTab";
+
+// Import existing pharmacy components
 import BillingPanel from "@/components/BillingPanel";
 import PharmacyHeader from "@/components/pharmacy/PharmacyHeader";
 import MedicineTabsPanel from "@/components/pharmacy/MedicineTabsPanel";
 import WaitlistSidebar, { WaitlistPatient } from "@/components/pharmacy/WaitlistSidebar";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import CollapsibleSidebar from "@/components/pharmacy/CollapsibleSidebar";
-import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 export type BillItem = {
   id: string;
@@ -30,6 +34,9 @@ export type CustomerDetails = {
 };
 
 const PharmacyPage = () => {
+  const [activeTab, setActiveTab] = useState<'analytics' | 'billing'>('billing');
+  
+  // Original state from PharmacyPage
   const [date, setDate] = useState<Date>(new Date());
   const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
@@ -104,13 +111,38 @@ const PharmacyPage = () => {
   };
 
   const handleAddNewCustomer = () => {
-    // In a real app, this would open a form to add a new customer
+    if (!searchTerm.trim()) {
+      toast({
+        title: "Invalid input",
+        description: "Please enter a name to add a new customer",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Check if the customer already exists
+    const existingCustomer = customers.find(c => 
+      c.name.toLowerCase() === searchTerm.toLowerCase()
+    );
+    
+    if (existingCustomer) {
+      setSelectedCustomer(existingCustomer);
+      toast({
+        title: "Customer selected",
+        description: `${existingCustomer.name} is already in the system`,
+      });
+      return;
+    }
+    
     const newCustomer = {
       id: `C${customers.length + 1}`,
       name: searchTerm,
       mobile: "New customer",
       address: "Please update address"
     };
+    
+    // In a real application, we would add this to the customer list
+    // customers.push(newCustomer);
     
     setSelectedCustomer(newCustomer);
     
@@ -122,32 +154,55 @@ const PharmacyPage = () => {
 
   const handleSearchCustomer = (term: string) => {
     setSearchTerm(term);
-    // If we had a real search, we would filter customers here
+    // If we find an exact match, select that customer
+    const matchedCustomer = customers.find(
+      c => c.name.toLowerCase() === term.toLowerCase()
+    );
+    
+    if (matchedCustomer) {
+      setSelectedCustomer(matchedCustomer);
+    } else if (selectedCustomer && term.length === 0) {
+      // Clear selection if search is cleared
+      setSelectedCustomer(null);
+    }
   };
 
   const platformFee = 0.10;
   const total = calculateSubtotal() + platformFee;
 
   const handlePrintBill = () => {
+    if (billItems.length === 0) {
+      toast({
+        title: "No items in bill",
+        description: "Please add items to the bill before printing",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!selectedCustomer) {
+      toast({
+        title: "No customer selected",
+        description: "Please select a customer before printing the bill",
+        variant: "destructive"
+      });
+      return;
+    }
+
     toast({
       title: "Bill printed",
       description: "The bill has been sent to the printer",
     });
+    
+    // Clear the billing state
+    setBillItems([]);
+    setSelectedCustomer(null);
+    setSearchTerm("");
   };
 
-  return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white">
-      {/* Navigation back to dashboard */}
-      <div className="bg-white border-b p-2 flex items-center">
-        <Link to="/">
-          <Button variant="ghost" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Dashboard</span>
-          </Button>
-        </Link>
-      </div>
-      
-      {/* Main Content */}
+  // Render billing tab content
+  const renderBillingContent = () => {
+    return (
       <div className="flex-1 flex overflow-hidden">
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -197,6 +252,32 @@ const PharmacyPage = () => {
             collapsed={rightSidebarCollapsed}
           />
         </CollapsibleSidebar>
+      </div>
+    );
+  };
+
+  return (
+    <div className="h-screen flex flex-col overflow-hidden bg-white">
+      {/* Navigation back to dashboard */}
+      <div className="bg-white border-b p-2 flex items-center justify-between">
+        <Link to="/">
+          <Button variant="ghost" className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Dashboard</span>
+          </Button>
+        </Link>
+        <PharmacyNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+      </div>
+      
+      {/* Tab Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {activeTab === 'analytics' && (
+          <div className="flex-1 overflow-auto p-4">
+            <PharmacyAnalyticsTab />
+          </div>
+        )}
+        
+        {activeTab === 'billing' && renderBillingContent()}
       </div>
     </div>
   );
