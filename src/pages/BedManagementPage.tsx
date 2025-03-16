@@ -389,7 +389,7 @@ const BedManagementPage = () => {
                       <TableRow key={bed.id}>
                         <TableCell>{bed.id}</TableCell>
                         <TableCell>
-                          <Badge variant={bed.status === "available" ? "success" : "destructive"}>
+                          <Badge variant={bed.status === "available" ? "secondary" : "destructive"}>
                             {bed.status === "available" ? "Available" : "Occupied"}
                           </Badge>
                         </TableCell>
