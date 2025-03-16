@@ -17,7 +17,6 @@ import {
   Pie,
   Cell
 } from "recharts";
-import { ChartContainer } from "@/components/ui/chart";
 import { Activity, ShoppingBag, TrendingUp, Users, Package } from "lucide-react";
 
 const PharmacyAnalyticsTab = () => {
@@ -154,31 +153,13 @@ const PharmacyAnalyticsTab = () => {
               <CardTitle>Sales Overview</CardTitle>
               <CardDescription>Monitor daily, monthly, and yearly sales performance</CardDescription>
             </div>
-            <div>
+            <Tabs defaultValue="week" value={dateRange} onValueChange={(value) => setDateRange(value as 'week' | 'month' | 'year')}>
               <TabsList>
-                <TabsTrigger 
-                  value="week" 
-                  onClick={() => setDateRange('week')}
-                  className={dateRange === 'week' ? 'bg-primary text-primary-foreground' : ''}
-                >
-                  Week
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="month" 
-                  onClick={() => setDateRange('month')}
-                  className={dateRange === 'month' ? 'bg-primary text-primary-foreground' : ''}
-                >
-                  Month
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="year" 
-                  onClick={() => setDateRange('year')}
-                  className={dateRange === 'year' ? 'bg-primary text-primary-foreground' : ''}
-                >
-                  Year
-                </TabsTrigger>
+                <TabsTrigger value="week">Week</TabsTrigger>
+                <TabsTrigger value="month">Month</TabsTrigger>
+                <TabsTrigger value="year">Year</TabsTrigger>
               </TabsList>
-            </div>
+            </Tabs>
           </div>
         </CardHeader>
         <CardContent>

@@ -2,7 +2,7 @@
 import { Minus, Plus, Printer, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { BillItem } from "@/pages/PharmacyPage";
+import { BillItem, CustomerDetails } from "@/pages/PharmacyPage";
 import PaymentOptions from "./PaymentOptions";
 
 interface BillingPanelProps {
@@ -13,7 +13,14 @@ interface BillingPanelProps {
   platformFee: number;
   total: number;
   onPrintBill: () => void;
-  customerName?: string; // Added optional customerName property
+  customerName?: string;
+  customers?: CustomerDetails[];
+  selectedCustomer: CustomerDetails | null;
+  onSelectCustomer?: (customer: CustomerDetails) => void;
+  onAddNewCustomer: () => void;
+  onEditCustomer?: () => void;
+  searchTerm: string;
+  onSearchCustomer: (term: string) => void;
 }
 
 const BillingPanel = ({
@@ -24,7 +31,13 @@ const BillingPanel = ({
   platformFee,
   total,
   onPrintBill,
-  customerName = "Guest" // Default value
+  customerName = "Guest",
+  customers,
+  selectedCustomer,
+  onAddNewCustomer,
+  onEditCustomer,
+  searchTerm,
+  onSearchCustomer
 }: BillingPanelProps) => {
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm overflow-hidden">

@@ -22,9 +22,9 @@ const PharmacyNavigation = ({ activeTab, setActiveTab }: PharmacyNavigationProps
       )}
       {activeTab !== 'analytics' && (
         <Button 
-          variant="default"
+          variant="outline"
           onClick={() => setActiveTab('analytics')}
-          className="flex items-center gap-1 bg-black hover:bg-black/80 text-white"
+          className="flex items-center gap-1 bg-black text-white hover:bg-black/90 border-black"
         >
           <BarChart2 className="h-4 w-4 mr-1" />
           Analytics

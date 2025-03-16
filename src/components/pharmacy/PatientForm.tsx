@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DialogFooter } from "@/components/ui/dialog";
 import { CustomerDetails } from "@/pages/PharmacyPage";
+import { useToast } from "@/hooks/use-toast";
 
 interface PatientFormProps {
   patient: CustomerDetails;
@@ -13,11 +14,12 @@ interface PatientFormProps {
 }
 
 const PatientForm = ({ patient, onSave, onCancel }: PatientFormProps) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState<CustomerDetails>({
     id: patient.id,
     name: patient.name,
-    mobile: patient.mobile,
-    address: patient.address,
+    mobile: patient.mobile || "",
+    address: patient.address || "",
     email: patient.email || ""
   });
 
@@ -31,6 +33,35 @@ const PatientForm = ({ patient, onSave, onCancel }: PatientFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.name.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Patient name is required",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!formData.mobile.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Mobile number is required",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!formData.address.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Address is required",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     onSave(formData);
   };
 
@@ -87,7 +118,7 @@ const PatientForm = ({ patient, onSave, onCancel }: PatientFormProps) => {
             id="email"
             name="email"
             type="email"
-            value={formData.email}
+            value={formData.email || ""}
             onChange={handleChange}
             className="col-span-3"
             placeholder="Optional"
