@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +26,7 @@ import {
   Users, 
   User,
   FileText,
-  Flask,
+  FlaskConical,
   BedDouble,
   Calendar,
   Stethoscope,
@@ -112,7 +111,7 @@ const Dashboard = () => {
       revenue: "$25,000",
       percentage: "+9.8%",
       trend: "up",
-      icon: <Flask className="h-5 w-5 text-amber-500" />
+      icon: <FlaskConical className="h-5 w-5 text-amber-500" />
     }
   ];
   
@@ -302,7 +301,7 @@ const Dashboard = () => {
               
               <div className="flex items-start">
                 <div className="bg-green-100 p-2 rounded-full mr-3">
-                  <Flask className="h-4 w-4 text-green-600" />
+                  <FlaskConical className="h-4 w-4 text-green-600" />
                 </div>
                 <div>
                   <p className="text-sm font-medium">Lab results uploaded for Siti Rahayu</p>
