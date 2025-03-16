@@ -62,6 +62,7 @@ const PatientForm = ({ patient, onSave, onCancel }: PatientFormProps) => {
       return;
     }
     
+    // Save the patient data
     onSave(formData);
   };
 
