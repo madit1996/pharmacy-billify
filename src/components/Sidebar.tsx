@@ -8,7 +8,8 @@ import {
   Pill, 
   FlaskConical, 
   Clock, 
-  UserCog 
+  UserCog,
+  BedDouble
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -21,6 +22,7 @@ const Sidebar = () => {
     { icon: Users, label: "Patients", path: "/patients" },
     { icon: Pill, label: "Pharmacy", path: "/pharmacy" },
     { icon: FlaskConical, label: "Lab Tests", path: "/lab-tests" },
+    { icon: BedDouble, label: "Bed Management", path: "/bed-management" },
     { icon: Clock, label: "Availability", path: "/availability" },
     { icon: UserCog, label: "Human Resource", path: "/human-resource" },
   ];
