@@ -16,8 +16,8 @@ const PatientForm = ({ patient, onSave, onCancel }: PatientFormProps) => {
   const [formData, setFormData] = useState<LabCustomer>({
     id: patient.id,
     name: patient.name,
-    mobile: patient.mobile,
-    address: patient.address,
+    mobile: patient.mobile || "",
+    address: patient.address || "",
     email: patient.email || ""
   });
 
@@ -31,6 +31,13 @@ const PatientForm = ({ patient, onSave, onCancel }: PatientFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.name.trim() || !formData.mobile.trim() || !formData.address.trim()) {
+      // You could add better validation here if needed
+      return;
+    }
+    
     onSave(formData);
   };
 

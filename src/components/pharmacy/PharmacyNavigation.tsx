@@ -1,5 +1,5 @@
 
-import { CreditCard, FileText, ChevronRight } from "lucide-react";
+import { CreditCard, FileText, ChevronRight, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface PharmacyNavigationProps {
@@ -22,11 +22,11 @@ const PharmacyNavigation = ({ activeTab, setActiveTab }: PharmacyNavigationProps
       )}
       {activeTab !== 'analytics' && (
         <Button 
-          variant="outline"
+          variant="default"
           onClick={() => setActiveTab('analytics')}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 bg-black hover:bg-black/80 text-white"
         >
-          <FileText className="h-4 w-4 mr-1" />
+          <BarChart2 className="h-4 w-4 mr-1" />
           Analytics
         </Button>
       )}

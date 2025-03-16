@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -14,9 +13,7 @@ import WaitlistSidebar, { WaitlistPatient } from "@/components/pharmacy/Waitlist
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import CollapsibleSidebar from "@/components/pharmacy/CollapsibleSidebar";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PatientForm from "@/components/pharmacy/PatientForm";
 
 export type BillItem = {
@@ -40,7 +37,6 @@ export type CustomerDetails = {
 const PharmacyPage = () => {
   const [activeTab, setActiveTab] = useState<'analytics' | 'billing'>('billing');
   
-  // Original state from PharmacyPage
   const [date, setDate] = useState<Date>(new Date());
   const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
@@ -50,7 +46,6 @@ const PharmacyPage = () => {
   const [isPatientDialogOpen, setIsPatientDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  // Dummy customer data
   const [customers, setCustomers] = useState<CustomerDetails[]>([
     { id: "C1", name: "Yuda Rahmat", mobile: "+62-812-3456-7890", address: "123 Jakarta Street, Indonesia" },
     { id: "C2", name: "Aulia Akbar", mobile: "+62-813-5678-9012", address: "456 Bandung Road, Indonesia" },
@@ -59,16 +54,13 @@ const PharmacyPage = () => {
   ]);
 
   const addItemToBill = (item: BillItem) => {
-    // Check if item already exists in bill
     const existingItemIndex = billItems.findIndex((i) => i.id === item.id);
     
     if (existingItemIndex !== -1) {
-      // Update quantity of existing item
       const updatedItems = [...billItems];
       updatedItems[existingItemIndex].quantity += 1;
       setBillItems(updatedItems);
     } else {
-      // Add new item to bill
       setBillItems([...billItems, item]);
     }
     
@@ -100,10 +92,8 @@ const PharmacyPage = () => {
   };
 
   const handleSelectPatient = (patient: WaitlistPatient) => {
-    // Clear existing items and add the patient's prescriptions
     setBillItems(patient.prescriptions);
     
-    // Find and set the customer details
     const customer = customers.find(c => c.name === patient.name) || 
       { id: patient.id, name: patient.name, mobile: "Unknown", address: "Unknown" };
     
@@ -125,7 +115,6 @@ const PharmacyPage = () => {
       return;
     }
     
-    // Check if the customer already exists
     const existingCustomer = customers.find(c => 
       c.name.toLowerCase() === searchTerm.toLowerCase()
     );
@@ -142,22 +131,16 @@ const PharmacyPage = () => {
     const newCustomer = {
       id: `C${customers.length + 1}`,
       name: searchTerm,
-      mobile: "New customer",
-      address: "Please update address"
+      mobile: "",
+      address: ""
     };
     
     setSelectedCustomer(newCustomer);
     setIsPatientDialogOpen(true);
-    
-    toast({
-      title: "New customer added",
-      description: "Please update customer details",
-    });
   };
 
   const handleSearchCustomer = (term: string) => {
     setSearchTerm(term);
-    // If we find an exact match, select that customer
     const matchedCustomer = customers.find(
       c => c.name.toLowerCase() === term.toLowerCase()
     );
@@ -165,7 +148,6 @@ const PharmacyPage = () => {
     if (matchedCustomer) {
       setSelectedCustomer(matchedCustomer);
     } else if (selectedCustomer && term.length === 0) {
-      // Clear selection if search is cleared
       setSelectedCustomer(null);
     }
   };
@@ -177,18 +159,16 @@ const PharmacyPage = () => {
   };
 
   const handleSavePatient = (updatedPatient: CustomerDetails) => {
-    // Update in the customers list if it exists
     const customerIndex = customers.findIndex(c => c.id === updatedPatient.id);
+    
     if (customerIndex !== -1) {
       const updatedCustomers = [...customers];
       updatedCustomers[customerIndex] = updatedPatient;
       setCustomers(updatedCustomers);
     } else {
-      // Add new customer to the list
       setCustomers([...customers, updatedPatient]);
     }
     
-    // Update selected customer
     setSelectedCustomer(updatedPatient);
     setIsPatientDialogOpen(false);
     
@@ -225,19 +205,15 @@ const PharmacyPage = () => {
       description: "The bill has been sent to the printer",
     });
     
-    // Clear the billing state
     setBillItems([]);
     setSelectedCustomer(null);
     setSearchTerm("");
   };
 
-  // Render billing tab content
   const renderBillingContent = () => {
     return (
       <div className="flex-1 flex overflow-hidden">
-        {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Header/Invoice Section */}
           <PharmacyHeader 
             date={date} 
             setDate={setDate} 
@@ -249,7 +225,6 @@ const PharmacyPage = () => {
           />
           
           <ResizablePanelGroup direction="horizontal" className="flex-1 overflow-hidden">
-            {/* Left Panel - Bill */}
             <ResizablePanel defaultSize={40} minSize={30} className="overflow-hidden">
               <BillingPanel 
                 billItems={billItems} 
@@ -260,19 +235,24 @@ const PharmacyPage = () => {
                 total={total}
                 onPrintBill={handlePrintBill}
                 customerName={selectedCustomer?.name}
+                customers={customers}
+                selectedCustomer={selectedCustomer}
+                onSelectCustomer={(customer) => setSelectedCustomer(customer)}
+                onAddNewCustomer={handleAddNewCustomer}
+                onEditCustomer={handleEditCustomer}
+                searchTerm={searchTerm}
+                onSearchCustomer={handleSearchCustomer}
               />
             </ResizablePanel>
             
             <ResizableHandle withHandle />
             
-            {/* Right Panel - Medicines */}
             <ResizablePanel defaultSize={60} minSize={40} className="overflow-hidden">
               <MedicineTabsPanel onAddToBill={addItemToBill} />
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
         
-        {/* Right Sidebar - Waitlist */}
         <CollapsibleSidebar 
           collapsed={rightSidebarCollapsed}
           onToggleCollapse={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
@@ -290,7 +270,6 @@ const PharmacyPage = () => {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-white">
-      {/* Navigation back to dashboard */}
       <div className="bg-white border-b p-2 flex items-center justify-between">
         <Link to="/">
           <Button variant="ghost" className="gap-2">
@@ -301,7 +280,6 @@ const PharmacyPage = () => {
         <PharmacyNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
       
-      {/* Tab Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {activeTab === 'analytics' && (
           <div className="flex-1 overflow-auto p-4">
@@ -312,11 +290,14 @@ const PharmacyPage = () => {
         {activeTab === 'billing' && renderBillingContent()}
       </div>
 
-      {/* Patient Edit Dialog */}
       <Dialog open={isPatientDialogOpen} onOpenChange={setIsPatientDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{selectedCustomer?.id.startsWith('C') && !customers.some(c => c.id === selectedCustomer.id) ? 'Add New Patient' : 'Edit Patient Details'}</DialogTitle>
+            <DialogTitle>
+              {selectedCustomer && customers.some(c => c.id === selectedCustomer.id) 
+                ? 'Edit Patient Details' 
+                : 'Add New Patient'}
+            </DialogTitle>
           </DialogHeader>
           
           {selectedCustomer && (

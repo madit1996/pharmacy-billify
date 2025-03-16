@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { 
   BarChart, 
   Bar, 
@@ -13,8 +12,12 @@ import {
   CartesianGrid, 
   Tooltip, 
   Legend,
-  ResponsiveContainer 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
 } from "recharts";
+import { ChartContainer } from "@/components/ui/chart";
 import { Activity, ShoppingBag, TrendingUp, Users, Package } from "lucide-react";
 
 const PharmacyAnalyticsTab = () => {
@@ -63,6 +66,15 @@ const PharmacyAnalyticsTab = () => {
     }))
   };
   
+  // Popular categories data
+  const categoryData = [
+    { name: "Antibiotics", value: 35 },
+    { name: "Pain Relief", value: 25 },
+    { name: "Vitamins", value: 20 },
+    { name: "Cold & Flu", value: 15 },
+    { name: "Diabetes", value: 5 }
+  ];
+  
   // Pharmacy metrics
   const metrics = [
     {
@@ -103,6 +115,9 @@ const PharmacyAnalyticsTab = () => {
     { name: "Aspirin 325mg", sales: 152, revenue: 760 },
     { name: "Ibuprofen 400mg", sales: 147, revenue: 735 },
   ];
+  
+  // Colors for pie chart
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
   
   return (
     <div className="space-y-6">
@@ -174,14 +189,14 @@ const PharmacyAnalyticsTab = () => {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="sales" fill="#3b82f6" />
+                <Bar dataKey="sales" fill="#8B5CF6" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
       
-      {/* Inventory and Top Products */}
+      {/* Inventory and Category Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -197,8 +212,8 @@ const PharmacyAnalyticsTab = () => {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="stock" stroke="#3b82f6" />
-                  <Line type="monotone" dataKey="demand" stroke="#ef4444" />
+                  <Line type="monotone" dataKey="stock" stroke="#8B5CF6" />
+                  <Line type="monotone" dataKey="demand" stroke="#D946EF" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -207,29 +222,79 @@ const PharmacyAnalyticsTab = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>Top Selling Products</CardTitle>
-            <CardDescription>Best performing products by sales volume</CardDescription>
+            <CardTitle>Sales by Category</CardTitle>
+            <CardDescription>Distribution of sales across categories</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {topProducts.map((product, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="bg-gray-100 text-gray-700 h-8 w-8 rounded-full flex items-center justify-center mr-3">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <p className="font-medium">{product.name}</p>
-                      <p className="text-sm text-gray-500">{product.sales} units</p>
-                    </div>
+            <div className="h-80 flex">
+              <div className="w-1/2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({name}) => name}
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-1/2">
+                <div className="h-full flex flex-col justify-center">
+                  <h3 className="font-medium mb-4">Categories</h3>
+                  <div className="space-y-4">
+                    {categoryData.map((item, index) => (
+                      <div key={index} className="flex items-center">
+                        <div
+                          className="h-3 w-3 rounded-full mr-2"
+                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        />
+                        <span className="text-sm flex-1">{item.name}</span>
+                        <span className="text-sm font-medium">{item.value}%</span>
+                      </div>
+                    ))}
                   </div>
-                  <p className="font-medium">${product.revenue}</p>
                 </div>
-              ))}
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
+      
+      {/* Top Products */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Top Selling Products</CardTitle>
+          <CardDescription>Best performing products by sales volume</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            {topProducts.map((product, index) => (
+              <Card key={index} className="bg-gray-50">
+                <CardContent className="p-4">
+                  <div className="flex flex-col items-center text-center">
+                    <div className="bg-white h-10 w-10 rounded-full flex items-center justify-center mb-3 border">
+                      <span className="text-lg font-bold">{index + 1}</span>
+                    </div>
+                    <h3 className="font-medium text-sm mb-2">{product.name}</h3>
+                    <div className="text-xs text-gray-500 mb-1">{product.sales} units</div>
+                    <div className="font-medium">${product.revenue}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
