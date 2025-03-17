@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DialogFooter } from "@/components/ui/dialog";
 import { LabCustomer } from "@/types/lab-types";
+import { useToast } from "@/hooks/use-toast";
 
 interface PatientFormProps {
   patient: LabCustomer;
@@ -13,6 +14,7 @@ interface PatientFormProps {
 }
 
 const PatientForm = ({ patient, onSave, onCancel }: PatientFormProps) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState<LabCustomer>({
     id: patient.id,
     name: patient.name,
@@ -33,11 +35,34 @@ const PatientForm = ({ patient, onSave, onCancel }: PatientFormProps) => {
     e.preventDefault();
     
     // Validate required fields
-    if (!formData.name.trim() || !formData.mobile.trim() || !formData.address.trim()) {
-      // You could add better validation here if needed
+    if (!formData.name.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Patient name is required",
+        variant: "destructive"
+      });
       return;
     }
     
+    if (!formData.mobile.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Mobile number is required",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!formData.address.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Address is required",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Save the patient data
     onSave(formData);
   };
 

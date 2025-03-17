@@ -50,11 +50,28 @@ const BillingPanel = ({
       </div>
       
       <div className="flex-1 overflow-y-auto p-3">
-        {customerName && (
+        {selectedCustomer ? (
+          <div className="mb-2 text-sm text-gray-500 flex justify-between items-center">
+            <span>
+              Customer: <span className="font-medium text-gray-700">{selectedCustomer.name}</span>
+            </span>
+            {onEditCustomer && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 px-2 py-0" 
+                onClick={onEditCustomer}
+              >
+                <Edit2 className="h-3 w-3 mr-1" />
+                <span className="text-xs">Edit</span>
+              </Button>
+            )}
+          </div>
+        ) : customerName && customerName !== "Guest" ? (
           <div className="mb-2 text-sm text-gray-500">
             Customer: <span className="font-medium text-gray-700">{customerName}</span>
           </div>
-        )}
+        ) : null}
         
         {billItems.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-500 text-sm">

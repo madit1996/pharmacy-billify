@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -115,6 +116,7 @@ const PharmacyPage = () => {
       return;
     }
     
+    // Check if customer already exists
     const existingCustomer = customers.find(c => 
       c.name.toLowerCase() === searchTerm.toLowerCase()
     );
@@ -128,6 +130,7 @@ const PharmacyPage = () => {
       return;
     }
     
+    // Create a new customer with a unique ID
     const newCustomer = {
       id: `C${customers.length + 1}`,
       name: searchTerm,
@@ -135,17 +138,19 @@ const PharmacyPage = () => {
       address: ""
     };
     
+    // Set this customer as selected and open the form dialog
     setSelectedCustomer(newCustomer);
     setIsPatientDialogOpen(true);
   };
 
   const handleSearchCustomer = (term: string) => {
     setSearchTerm(term);
+    // Try to find a matching customer
     const matchedCustomer = customers.find(
-      c => c.name.toLowerCase() === term.toLowerCase()
+      c => c.name.toLowerCase().includes(term.toLowerCase())
     );
     
-    if (matchedCustomer) {
+    if (matchedCustomer && term.toLowerCase() === matchedCustomer.name.toLowerCase()) {
       setSelectedCustomer(matchedCustomer);
     } else if (selectedCustomer && term.length === 0) {
       setSelectedCustomer(null);
@@ -162,20 +167,25 @@ const PharmacyPage = () => {
     const customerIndex = customers.findIndex(c => c.id === updatedPatient.id);
     
     if (customerIndex !== -1) {
+      // Update existing customer
       const updatedCustomers = [...customers];
       updatedCustomers[customerIndex] = updatedPatient;
       setCustomers(updatedCustomers);
+      toast({
+        title: "Patient updated",
+        description: "Patient details have been updated successfully",
+      });
     } else {
+      // Add new customer
       setCustomers([...customers, updatedPatient]);
+      toast({
+        title: "Patient added",
+        description: "New patient has been added successfully",
+      });
     }
     
     setSelectedCustomer(updatedPatient);
     setIsPatientDialogOpen(false);
-    
-    toast({
-      title: "Patient saved",
-      description: "Patient details have been updated successfully",
-    });
   };
 
   const platformFee = 0.10;
@@ -294,7 +304,7 @@ const PharmacyPage = () => {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>
-              {selectedCustomer && customers.some(c => c.id === selectedCustomer.id) 
+              {selectedCustomer && customers.some(c => c.id === selectedCustomer.id && c.mobile && c.address) 
                 ? 'Edit Patient Details' 
                 : 'Add New Patient'}
             </DialogTitle>
