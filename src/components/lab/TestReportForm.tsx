@@ -7,6 +7,37 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LabTest } from "@/types/lab-tests";
 import { useToast } from "@/hooks/use-toast";
 
+// Define proper types for test fields and templates
+interface TestFieldOption {
+  value: string;
+  label: string;
+}
+
+interface TestField {
+  name: string;
+  label: string;
+  type: string;
+  required: boolean;
+  unit?: string;
+  placeholder?: string;
+  step?: string;
+  reference?: string;
+  options?: TestFieldOption[];
+}
+
+interface TestSection {
+  name: string;
+  label: string;
+  fields: TestField[];
+}
+
+interface TestTemplate {
+  name: string;
+  displayName: string;
+  fields: TestField[];
+  sections?: TestSection[];
+}
+
 interface TestReportFormProps {
   test: LabTest;
   onSubmit: (testId: string, reportData: Record<string, any>) => void;
@@ -165,25 +196,8 @@ const TestReportForm = ({ test, onSubmit, onCancel }: TestReportFormProps) => {
   );
 };
 
-// Helper function to get the template for a specific test type
-function getTestTemplate(testName: string) {
-  const normalizedTestName = testName.toLowerCase();
-  
-  if (normalizedTestName.includes("blood") && normalizedTestName.includes("count")) {
-    return testTemplates.completeBloodCount;
-  } else if (normalizedTestName.includes("lipid")) {
-    return testTemplates.lipidProfile;
-  } else if (normalizedTestName.includes("thyroid")) {
-    return testTemplates.thyroidFunction;
-  } else if (normalizedTestName.includes("liver")) {
-    return testTemplates.liverFunction;
-  } else {
-    return testTemplates.generic;
-  }
-}
-
 // Test template definitions - these would normally be more extensive and stored elsewhere
-const testTemplates = {
+const testTemplates: Record<string, TestTemplate> = {
   completeBloodCount: {
     name: "cbc",
     displayName: "Complete Blood Count",
@@ -246,10 +260,27 @@ const testTemplates = {
     name: "generic",
     displayName: "Laboratory Test",
     fields: [
-      { name: "result", label: "Test Result", type: "text", required: true },
-      { name: "comments", label: "Comments", type: "text", required: false }
+      { name: "result", label: "Test Result", type: "text", required: true, placeholder: "Enter test result" },
+      { name: "comments", label: "Comments", type: "text", required: false, placeholder: "Add any additional comments" }
     ]
   }
 };
+
+// Helper function to get the template for a specific test type
+function getTestTemplate(testName: string): TestTemplate {
+  const normalizedTestName = testName.toLowerCase();
+  
+  if (normalizedTestName.includes("blood") && normalizedTestName.includes("count")) {
+    return testTemplates.completeBloodCount;
+  } else if (normalizedTestName.includes("lipid")) {
+    return testTemplates.lipidProfile;
+  } else if (normalizedTestName.includes("thyroid")) {
+    return testTemplates.thyroidFunction;
+  } else if (normalizedTestName.includes("liver")) {
+    return testTemplates.liverFunction;
+  } else {
+    return testTemplates.generic;
+  }
+}
 
 export default TestReportForm;
