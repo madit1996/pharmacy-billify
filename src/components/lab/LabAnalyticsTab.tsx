@@ -13,7 +13,8 @@ const LabAnalyticsTab = () => {
     completedTests,
     selectedTest,
     handleSelectTest,
-    handleUploadResult
+    handleUploadResult,
+    handleCreateReport
   } = useLabContext();
   
   return (
@@ -73,9 +74,11 @@ const LabAnalyticsTab = () => {
         <div>
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Upload Test Results</CardTitle>
+              <CardTitle>Test Results</CardTitle>
               <CardDescription>
-                Select a test from the pending list and upload its results
+                {selectedTest 
+                  ? "Create or upload test results" 
+                  : "Select a test from the pending list"}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -83,6 +86,7 @@ const LabAnalyticsTab = () => {
                 <UploadTestResultForm 
                   test={selectedTest}
                   onUpload={handleUploadResult}
+                  onCreateReport={handleCreateReport}
                   onCancel={() => handleSelectTest(null)}
                 />
               ) : (

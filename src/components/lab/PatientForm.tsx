@@ -61,9 +61,25 @@ const PatientForm = ({ patient, onSave, onCancel }: PatientFormProps) => {
       });
       return;
     }
+
+    // Validate email format if provided
+    if (formData.email && !isValidEmail(formData.email)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return;
+    }
     
     // Save the patient data
     onSave(formData);
+  };
+
+  // Helper function to validate email
+  const isValidEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
   };
 
   return (

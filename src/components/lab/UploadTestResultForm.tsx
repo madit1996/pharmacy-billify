@@ -3,101 +3,100 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { format } from "date-fns";
-import { Upload, X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LabTest } from "@/types/lab-tests";
+import ReportCreationOptions from "./ReportCreationOptions";
+import TestReportForm from "./TestReportForm";
 
 interface UploadTestResultFormProps {
   test: LabTest;
-  onUpload: (testId: string, file: File) => void;
+  onUpload: (testId: string, resultFile: File) => void;
+  onCreateReport?: (testId: string, reportData: Record<string, any>) => void;
   onCancel: () => void;
 }
 
-const UploadTestResultForm = ({ test, onUpload, onCancel }: UploadTestResultFormProps) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [notes, setNotes] = useState<string>("");
-
+const UploadTestResultForm = ({ 
+  test, 
+  onUpload, 
+  onCreateReport, 
+  onCancel 
+}: UploadTestResultFormProps) => {
+  const [file, setFile] = useState<File | null>(null);
+  const [step, setStep] = useState<'options' | 'upload' | 'create'>('options');
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      setFile(files[0]);
     }
   };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedFile) {
-      onUpload(test.id, selectedFile);
+  
+  const handleUpload = () => {
+    if (file) {
+      onUpload(test.id, file);
     }
   };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-1">
-        <Label>Test ID</Label>
-        <div className="p-2 bg-gray-50 rounded-md text-sm">{test.id}</div>
-      </div>
-      
-      <div className="space-y-1">
-        <Label>Patient</Label>
-        <div className="p-2 bg-gray-50 rounded-md text-sm">{test.patientName}</div>
-      </div>
-      
-      <div className="space-y-1">
-        <Label>Test</Label>
-        <div className="p-2 bg-gray-50 rounded-md text-sm">{test.testName}</div>
-      </div>
-      
-      <div className="space-y-1">
-        <Label>Ordered Date</Label>
-        <div className="p-2 bg-gray-50 rounded-md text-sm">
-          {format(test.orderedDate, 'MMM d, yyyy')}
+  
+  const handleCreateReport = (testId: string, reportData: Record<string, any>) => {
+    if (onCreateReport) {
+      onCreateReport(testId, reportData);
+    }
+  };
+  
+  // For options selection screen
+  if (step === 'options') {
+    return (
+      <ReportCreationOptions
+        test={test}
+        onSelectUpload={() => setStep('upload')}
+        onSelectCreate={() => setStep('create')}
+      />
+    );
+  }
+  
+  // For file upload screen
+  if (step === 'upload') {
+    return (
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-medium">Upload Test Result</h3>
+          <p className="text-sm text-muted-foreground">
+            Upload the test result for {test.patientName}'s {test.testName}
+          </p>
+        </div>
+        
+        <div className="grid w-full max-w-sm items-center gap-1.5">
+          <Label htmlFor="result-file">Result File</Label>
+          <Input
+            id="result-file"
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={handleFileChange}
+          />
+        </div>
+        
+        <div className="flex justify-end space-x-2">
+          <Button variant="outline" onClick={() => setStep('options')}>
+            Back
+          </Button>
+          <Button
+            onClick={handleUpload}
+            disabled={!file}
+          >
+            Upload Result
+          </Button>
         </div>
       </div>
-      
-      <div className="space-y-1">
-        <Label htmlFor="result-file">Test Result File</Label>
-        <Input 
-          id="result-file" 
-          type="file" 
-          onChange={handleFileChange}
-          accept=".pdf,.jpg,.png,.docx"
-        />
-        {selectedFile && (
-          <div className="mt-2 p-2 bg-blue-50 text-blue-700 rounded-md flex items-center justify-between">
-            <span className="text-sm truncate">{selectedFile.name}</span>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedFile(null)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
-      
-      <div className="space-y-1">
-        <Label htmlFor="notes">Notes (Optional)</Label>
-        <Textarea 
-          id="notes" 
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Add any additional notes or comments"
-        />
-      </div>
-      
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={!selectedFile}>
-          <Upload className="mr-2 h-4 w-4" />
-          Upload Result
-        </Button>
-      </div>
-    </form>
+    );
+  }
+  
+  // For report creation screen
+  return (
+    <TestReportForm 
+      test={test} 
+      onSubmit={handleCreateReport} 
+      onCancel={() => setStep('options')}
+    />
   );
 };
 

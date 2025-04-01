@@ -12,6 +12,7 @@ interface LabContextType {
   searchTerm: string;
   handleSelectTest: (test: LabTest) => void;
   handleUploadResult: (testId: string, resultFile: File) => void;
+  handleCreateReport: (testId: string, reportData: Record<string, any>) => void;
   addItemToBill: (item: LabBillItem) => void;
   updateItemQuantity: (id: string, change: number) => void;
   removeItem: (id: string) => void;
@@ -220,6 +221,34 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const handleCreateReport = (testId: string, reportData: Record<string, any>) => {
+    const testToUpdate = pendingTests.find(test => test.id === testId);
+    
+    if (!testToUpdate) return;
+    
+    const fakeResultUrl = `https://example.com/reports/${testId}.pdf`;
+    
+    const updatedTest: LabTest = {
+      ...testToUpdate,
+      status: "completed",
+      completedDate: new Date(),
+      resultUrl: fakeResultUrl,
+      notes: JSON.stringify(reportData)
+    };
+    
+    const updatedPendingTests = pendingTests.filter(test => test.id !== testId);
+    setPendingTests(updatedPendingTests);
+    
+    setCompletedTests([...completedTests, updatedTest]);
+    
+    setSelectedTest(null);
+    
+    toast({
+      title: "Test report created",
+      description: `Report for ${testToUpdate.testName} has been created successfully.`,
+    });
+  };
+
   const addItemToBill = (item: LabBillItem) => {
     const existingItemIndex = billItems.findIndex((i) => i.id === item.id);
     
@@ -395,6 +424,7 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
         searchTerm,
         handleSelectTest,
         handleUploadResult,
+        handleCreateReport,
         addItemToBill,
         updateItemQuantity,
         removeItem,
