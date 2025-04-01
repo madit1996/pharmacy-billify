@@ -11,7 +11,7 @@ interface TestSectionProps {
 const TestSection = ({ section, reportData, onFieldChange }: TestSectionProps) => {
   return (
     <div className="mt-6">
-      <h3 className="font-medium border-b pb-2 mb-3">{section.label}</h3>
+      <h3 className="font-medium border-b pb-2 mb-3">{section.displayName}</h3>
       <div className="space-y-4">
         {section.fields.map((field) => (
           <TestField 

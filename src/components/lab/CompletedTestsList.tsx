@@ -1,16 +1,32 @@
 
+import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { FileText } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LabTest } from "@/types/lab-tests";
+import TestResultViewer from "./TestResultViewer";
 
 interface CompletedTestsListProps {
   tests: LabTest[];
 }
 
 const CompletedTestsList = ({ tests }: CompletedTestsListProps) => {
+  const [selectedTest, setSelectedTest] = useState<LabTest | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  const handleViewResult = (test: LabTest) => {
+    setSelectedTest(test);
+    setPreviewOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setPreviewOpen(false);
+    // Clear the selected test with a slight delay to avoid UI flicker
+    setTimeout(() => setSelectedTest(null), 300);
+  };
+
   return (
     <div className="overflow-auto max-h-[500px]">
       {tests.length === 0 ? (
@@ -43,9 +59,9 @@ const CompletedTestsList = ({ tests }: CompletedTestsListProps) => {
                       variant="ghost"
                       size="sm"
                       className="text-blue-600"
-                      onClick={() => window.open(test.resultUrl, '_blank')}
+                      onClick={() => handleViewResult(test)}
                     >
-                      <FileText className="mr-2 h-4 w-4" />
+                      <Eye className="mr-2 h-4 w-4" />
                       View
                     </Button>
                   )}
@@ -54,6 +70,14 @@ const CompletedTestsList = ({ tests }: CompletedTestsListProps) => {
             ))}
           </TableBody>
         </Table>
+      )}
+
+      {selectedTest && (
+        <TestResultViewer
+          test={selectedTest}
+          open={previewOpen}
+          onClose={handleClosePreview}
+        />
       )}
     </div>
   );
