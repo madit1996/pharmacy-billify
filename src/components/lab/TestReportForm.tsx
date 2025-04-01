@@ -7,6 +7,7 @@ import { getTestTemplate } from "@/types/test-templates";
 import TestPatientInfo from "./TestPatientInfo";
 import TestField from "./TestField";
 import TestSection from "./TestSection";
+import TestReportPreview from "./TestReportPreview";
 
 interface TestReportFormProps {
   test: LabTest;
@@ -16,6 +17,7 @@ interface TestReportFormProps {
 
 const TestReportForm = ({ test, onSubmit, onCancel }: TestReportFormProps) => {
   const [reportData, setReportData] = useState<Record<string, any>>({});
+  const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
   
   // Get the appropriate template based on the test name
@@ -53,9 +55,26 @@ const TestReportForm = ({ test, onSubmit, onCancel }: TestReportFormProps) => {
       });
       return;
     }
-    
+
+    // Show preview instead of submitting right away
+    setShowPreview(true);
+  };
+  
+  const handleSubmitFinal = () => {
     onSubmit(test.id, reportData);
   };
+
+  // If showing preview, render the preview component
+  if (showPreview) {
+    return (
+      <TestReportPreview
+        test={test}
+        reportData={reportData}
+        onEdit={() => setShowPreview(false)}
+        onClose={handleSubmitFinal}
+      />
+    );
+  }
   
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -95,7 +114,7 @@ const TestReportForm = ({ test, onSubmit, onCancel }: TestReportFormProps) => {
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">Save Report</Button>
+        <Button type="submit">Preview Report</Button>
       </div>
     </form>
   );

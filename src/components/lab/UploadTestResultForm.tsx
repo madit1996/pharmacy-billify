@@ -67,7 +67,7 @@ const UploadTestResultForm = ({
       />
       
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-4xl w-full max-h-screen overflow-y-auto">
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {step === 'upload' ? 'Upload Test Result' : 'Create Test Report'}

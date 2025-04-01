@@ -1,28 +1,25 @@
 
-// Define types for test fields and templates
-export interface TestFieldOption {
-  value: string;
-  label: string;
-}
-
+// Define test field structure
 export interface TestField {
   name: string;
   label: string;
   type: string;
   required: boolean;
-  unit?: string;
   placeholder?: string;
+  unit?: string;
+  options?: string[];
   step?: string;
   reference?: string;
-  options?: TestFieldOption[];
 }
 
+// Define test section structure
 export interface TestSection {
   name: string;
-  label: string;
+  displayName: string;
   fields: TestField[];
 }
 
+// Define test template structure
 export interface TestTemplate {
   name: string;
   displayName: string;
@@ -30,89 +27,324 @@ export interface TestTemplate {
   sections?: TestSection[];
 }
 
-// Test template definitions
-export const testTemplates: Record<string, TestTemplate> = {
-  completeBloodCount: {
+// Test templates
+const testTemplates: Record<string, TestTemplate> = {
+  "Complete Blood Count": {
     name: "cbc",
     displayName: "Complete Blood Count",
     fields: [
-      { name: "wbc", label: "White Blood Cell Count", type: "number", unit: "x10^9/L", required: true, reference: "4.0-11.0" },
-      { name: "rbc", label: "Red Blood Cell Count", type: "number", unit: "x10^12/L", required: true, reference: "4.5-6.0 (men), 4.0-5.5 (women)" },
-      { name: "hemoglobin", label: "Hemoglobin", type: "number", unit: "g/dL", required: true, reference: "13.5-17.5 (men), 12.0-16.0 (women)" },
-      { name: "hematocrit", label: "Hematocrit", type: "number", unit: "%", required: true, reference: "40-52 (men), 36-48 (women)" },
-      { name: "platelets", label: "Platelet Count", type: "number", unit: "x10^9/L", required: true, reference: "150-450" }
+      { 
+        name: "wbc", 
+        label: "WBC", 
+        type: "number", 
+        required: true, 
+        unit: "× 10⁹/L",
+        reference: "4.5-11.0"
+      },
+      { 
+        name: "rbc", 
+        label: "RBC", 
+        type: "number", 
+        required: true, 
+        unit: "× 10¹²/L",
+        reference: "4.5-5.5 (M), 4.0-5.0 (F)"
+      },
+      { 
+        name: "hgb", 
+        label: "Hemoglobin", 
+        type: "number", 
+        required: true, 
+        unit: "g/dL",
+        reference: "13.5-17.5 (M), 12.0-16.0 (F)"
+      },
+      { 
+        name: "hct", 
+        label: "Hematocrit", 
+        type: "number", 
+        required: true, 
+        unit: "%",
+        reference: "41-50 (M), 36-44 (F)"
+      }
     ],
     sections: [
       {
         name: "differential",
-        label: "Differential Count",
+        displayName: "Differential Count",
         fields: [
-          { name: "neutrophils", label: "Neutrophils", type: "number", unit: "%", required: true, reference: "40-75" },
-          { name: "lymphocytes", label: "Lymphocytes", type: "number", unit: "%", required: true, reference: "20-45" },
-          { name: "monocytes", label: "Monocytes", type: "number", unit: "%", required: true, reference: "2-10" },
-          { name: "eosinophils", label: "Eosinophils", type: "number", unit: "%", required: true, reference: "1-6" },
-          { name: "basophils", label: "Basophils", type: "number", unit: "%", required: true, reference: "0-1" }
+          { 
+            name: "neutrophils", 
+            label: "Neutrophils", 
+            type: "number", 
+            required: true, 
+            unit: "%",
+            reference: "40-70"
+          },
+          { 
+            name: "lymphocytes", 
+            label: "Lymphocytes", 
+            type: "number", 
+            required: true, 
+            unit: "%",
+            reference: "20-40"
+          },
+          { 
+            name: "monocytes", 
+            label: "Monocytes", 
+            type: "number", 
+            required: true, 
+            unit: "%",
+            reference: "2-8"
+          },
+          { 
+            name: "eosinophils", 
+            label: "Eosinophils", 
+            type: "number", 
+            required: true, 
+            unit: "%",
+            reference: "1-4"
+          }
+        ]
+      },
+      {
+        name: "indices",
+        displayName: "RBC Indices",
+        fields: [
+          { 
+            name: "mcv", 
+            label: "MCV", 
+            type: "number", 
+            required: true, 
+            unit: "fL",
+            reference: "80-96"
+          },
+          { 
+            name: "mch", 
+            label: "MCH", 
+            type: "number", 
+            required: true, 
+            unit: "pg",
+            reference: "27-33"
+          },
+          { 
+            name: "mchc", 
+            label: "MCHC", 
+            type: "number", 
+            required: true, 
+            unit: "g/dL",
+            reference: "33-36"
+          }
         ]
       }
     ]
   },
-  lipidProfile: {
+  "Lipid Profile": {
     name: "lipid",
     displayName: "Lipid Profile",
     fields: [
-      { name: "total_cholesterol", label: "Total Cholesterol", type: "number", unit: "mg/dL", required: true, reference: "<200" },
-      { name: "triglycerides", label: "Triglycerides", type: "number", unit: "mg/dL", required: true, reference: "<150" },
-      { name: "hdl", label: "HDL Cholesterol", type: "number", unit: "mg/dL", required: true, reference: ">40 (men), >50 (women)" },
-      { name: "ldl", label: "LDL Cholesterol", type: "number", unit: "mg/dL", required: true, reference: "<100" },
-      { name: "risk_ratio", label: "Total Cholesterol/HDL Ratio", type: "number", required: false, reference: "<5.0" }
+      { 
+        name: "totalCholesterol", 
+        label: "Total Cholesterol", 
+        type: "number", 
+        required: true, 
+        unit: "mg/dL",
+        reference: "<200"
+      },
+      { 
+        name: "hdl", 
+        label: "HDL Cholesterol", 
+        type: "number", 
+        required: true, 
+        unit: "mg/dL",
+        reference: ">40 (M), >50 (F)"
+      },
+      { 
+        name: "ldl", 
+        label: "LDL Cholesterol", 
+        type: "number", 
+        required: true, 
+        unit: "mg/dL",
+        reference: "<130"
+      },
+      { 
+        name: "triglycerides", 
+        label: "Triglycerides", 
+        type: "number", 
+        required: true, 
+        unit: "mg/dL",
+        reference: "<150"
+      }
     ]
   },
-  thyroidFunction: {
+  "Thyroid Function Test": {
     name: "thyroid",
     displayName: "Thyroid Function Test",
     fields: [
-      { name: "tsh", label: "Thyroid Stimulating Hormone (TSH)", type: "number", unit: "mIU/L", required: true, reference: "0.4-4.0" },
-      { name: "t4", label: "Thyroxine (T4)", type: "number", unit: "µg/dL", required: true, reference: "4.5-11.2" },
-      { name: "t3", label: "Triiodothyronine (T3)", type: "number", unit: "ng/dL", required: true, reference: "80-200" },
-      { name: "ft4", label: "Free T4", type: "number", unit: "ng/dL", required: false, reference: "0.8-1.8" }
+      { 
+        name: "tsh", 
+        label: "TSH", 
+        type: "number", 
+        required: true, 
+        unit: "mIU/L",
+        reference: "0.4-4.0"
+      },
+      { 
+        name: "t4", 
+        label: "T4", 
+        type: "number", 
+        required: true, 
+        unit: "μg/dL",
+        reference: "4.5-11.7"
+      },
+      { 
+        name: "t3", 
+        label: "T3", 
+        type: "number", 
+        required: true, 
+        unit: "ng/dL",
+        reference: "80-200"
+      }
     ]
   },
-  liverFunction: {
+  "Liver Function Test": {
     name: "liver",
     displayName: "Liver Function Test",
     fields: [
-      { name: "alt", label: "Alanine Transaminase (ALT)", type: "number", unit: "U/L", required: true, reference: "7-56" },
-      { name: "ast", label: "Aspartate Transaminase (AST)", type: "number", unit: "U/L", required: true, reference: "5-40" },
-      { name: "alp", label: "Alkaline Phosphatase (ALP)", type: "number", unit: "U/L", required: true, reference: "44-147" },
-      { name: "ggt", label: "Gamma-Glutamyl Transferase (GGT)", type: "number", unit: "U/L", required: true, reference: "<50 (men), <32 (women)" },
-      { name: "bilirubin_total", label: "Total Bilirubin", type: "number", unit: "mg/dL", required: true, reference: "0.1-1.2" },
-      { name: "bilirubin_direct", label: "Direct Bilirubin", type: "number", unit: "mg/dL", required: false, reference: "<0.3" },
-      { name: "albumin", label: "Albumin", type: "number", unit: "g/dL", required: true, reference: "3.5-5.0" }
+      { 
+        name: "alt", 
+        label: "ALT", 
+        type: "number", 
+        required: true, 
+        unit: "U/L",
+        reference: "7-56"
+      },
+      { 
+        name: "ast", 
+        label: "AST", 
+        type: "number", 
+        required: true, 
+        unit: "U/L",
+        reference: "8-48"
+      },
+      { 
+        name: "albumin", 
+        label: "Albumin", 
+        type: "number", 
+        required: true, 
+        unit: "g/dL",
+        reference: "3.5-5.5"
+      },
+      { 
+        name: "totalBilirubin", 
+        label: "Total Bilirubin", 
+        type: "number", 
+        required: true, 
+        unit: "mg/dL",
+        reference: "0.1-1.2"
+      }
     ]
   },
-  generic: {
-    name: "generic",
-    displayName: "Laboratory Test",
+  "Blood Glucose": {
+    name: "glucose",
+    displayName: "Blood Glucose Test",
     fields: [
-      { name: "result", label: "Test Result", type: "text", required: true, placeholder: "Enter test result" },
-      { name: "comments", label: "Comments", type: "text", required: false, placeholder: "Add any additional comments" }
+      { 
+        name: "fastingGlucose", 
+        label: "Fasting Glucose", 
+        type: "number", 
+        required: true, 
+        unit: "mg/dL",
+        reference: "70-99"
+      },
+      { 
+        name: "hba1c", 
+        label: "HbA1c", 
+        type: "number", 
+        required: false, 
+        unit: "%",
+        reference: "<5.7"
+      },
+      {
+        name: "notes",
+        label: "Notes",
+        type: "textarea",
+        required: false,
+        placeholder: "Enter any additional information here"
+      }
+    ]
+  },
+  "X-Ray Chest": {
+    name: "xray_chest",
+    displayName: "Chest X-Ray",
+    fields: [
+      {
+        name: "findings",
+        label: "Findings",
+        type: "textarea",
+        required: true
+      },
+      {
+        name: "impression",
+        label: "Impression",
+        type: "textarea",
+        required: true
+      },
+      {
+        name: "comparison",
+        label: "Comparison",
+        type: "select",
+        required: false,
+        options: ["No prior studies", "Improved since prior", "Unchanged from prior", "Worsened since prior"]
+      }
+    ]
+  },
+  "MRI Brain": {
+    name: "mri_brain",
+    displayName: "MRI Brain",
+    fields: [
+      {
+        name: "findings",
+        label: "Findings",
+        type: "textarea",
+        required: true
+      },
+      {
+        name: "impression",
+        label: "Impression",
+        type: "textarea",
+        required: true
+      },
+      {
+        name: "contrast",
+        label: "Contrast",
+        type: "select",
+        required: true,
+        options: ["With contrast", "Without contrast"]
+      }
+    ]
+  },
+  // Default template for other tests
+  "default": {
+    name: "default",
+    displayName: "Test Results",
+    fields: [
+      {
+        name: "findings",
+        label: "Findings",
+        type: "textarea",
+        required: true
+      },
+      {
+        name: "conclusion",
+        label: "Conclusion",
+        type: "textarea",
+        required: true
+      }
     ]
   }
 };
 
-// Helper function to get the template for a specific test type
-export function getTestTemplate(testName: string): TestTemplate {
-  const normalizedTestName = testName.toLowerCase();
-  
-  if (normalizedTestName.includes("blood") && normalizedTestName.includes("count")) {
-    return testTemplates.completeBloodCount;
-  } else if (normalizedTestName.includes("lipid")) {
-    return testTemplates.lipidProfile;
-  } else if (normalizedTestName.includes("thyroid")) {
-    return testTemplates.thyroidFunction;
-  } else if (normalizedTestName.includes("liver")) {
-    return testTemplates.liverFunction;
-  } else {
-    return testTemplates.generic;
-  }
-}
+export const getTestTemplate = (testName: string): TestTemplate => {
+  return testTemplates[testName] || testTemplates.default;
+};
+
+export default testTemplates;
