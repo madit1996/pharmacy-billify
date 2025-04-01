@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { LabTest } from "@/types/lab-tests";
 import ReportCreationOptions from "./ReportCreationOptions";
 import TestReportForm from "./TestReportForm";
@@ -23,6 +23,7 @@ const UploadTestResultForm = ({
 }: UploadTestResultFormProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [step, setStep] = useState<'options' | 'upload' | 'create'>('options');
+  const [dialogOpen, setDialogOpen] = useState(false);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -34,69 +35,81 @@ const UploadTestResultForm = ({
   const handleUpload = () => {
     if (file) {
       onUpload(test.id, file);
+      setDialogOpen(false);
     }
   };
   
   const handleCreateReport = (testId: string, reportData: Record<string, any>) => {
     if (onCreateReport) {
       onCreateReport(testId, reportData);
+      setDialogOpen(false);
     }
+  };
+
+  const handleOpenDialog = (selectedStep: 'upload' | 'create') => {
+    setStep(selectedStep);
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    // Reset to options after closing dialog
+    setTimeout(() => setStep('options'), 300);
   };
   
   // For options selection screen
-  if (step === 'options') {
-    return (
+  return (
+    <>
       <ReportCreationOptions
         test={test}
-        onSelectUpload={() => setStep('upload')}
-        onSelectCreate={() => setStep('create')}
+        onSelectUpload={() => handleOpenDialog('upload')}
+        onSelectCreate={() => handleOpenDialog('create')}
       />
-    );
-  }
-  
-  // For file upload screen
-  if (step === 'upload') {
-    return (
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-medium">Upload Test Result</h3>
-          <p className="text-sm text-muted-foreground">
-            Upload the test result for {test.patientName}'s {test.testName}
-          </p>
-        </div>
-        
-        <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="result-file">Result File</Label>
-          <Input
-            id="result-file"
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={handleFileChange}
-          />
-        </div>
-        
-        <div className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={() => setStep('options')}>
-            Back
-          </Button>
-          <Button
-            onClick={handleUpload}
-            disabled={!file}
-          >
-            Upload Result
-          </Button>
-        </div>
-      </div>
-    );
-  }
-  
-  // For report creation screen
-  return (
-    <TestReportForm 
-      test={test} 
-      onSubmit={handleCreateReport} 
-      onCancel={() => setStep('options')}
-    />
+      
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-4xl w-full max-h-screen overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {step === 'upload' ? 'Upload Test Result' : 'Create Test Report'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {step === 'upload' && (
+            <div className="space-y-4">
+              <div className="grid w-full max-w-sm items-center gap-1.5">
+                <Label htmlFor="result-file">Upload Result File</Label>
+                <Input
+                  id="result-file"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={handleFileChange}
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={handleCloseDialog}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleUpload}
+                  disabled={!file}
+                >
+                  Upload Result
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {step === 'create' && (
+            <TestReportForm 
+              test={test} 
+              onSubmit={handleCreateReport} 
+              onCancel={handleCloseDialog}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

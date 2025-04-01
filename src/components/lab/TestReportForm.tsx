@@ -58,36 +58,44 @@ const TestReportForm = ({ test, onSubmit, onCancel }: TestReportFormProps) => {
   };
   
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="space-y-4">
-        <TestPatientInfo test={test} />
-        
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <TestPatientInfo test={test} />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Main fields */}
-        {template.fields.map((field) => (
-          <TestField
-            key={field.name}
-            field={field}
-            value={reportData[field.name] || ""}
-            onChange={(value) => handleChange(field.name, value)}
-          />
-        ))}
-        
-        {/* Sections */}
-        {template.sections && template.sections.map((section) => (
-          <TestSection
-            key={section.name}
-            section={section}
-            reportData={reportData}
-            onFieldChange={handleChange}
-          />
-        ))}
-        
-        <div className="pt-4 flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button type="submit">Save Report</Button>
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Primary Test Fields</h3>
+          {template.fields.map((field) => (
+            <TestField
+              key={field.name}
+              field={field}
+              value={reportData[field.name] || ""}
+              onChange={(value) => handleChange(field.name, value)}
+            />
+          ))}
         </div>
+        
+        {/* Sections - if present */}
+        {template.sections && (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Additional Measurements</h3>
+            {template.sections.map((section) => (
+              <TestSection
+                key={section.name}
+                section={section}
+                reportData={reportData}
+                onFieldChange={handleChange}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+      
+      <div className="pt-4 flex justify-end gap-2">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit">Save Report</Button>
       </div>
     </form>
   );
