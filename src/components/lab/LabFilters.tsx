@@ -1,6 +1,5 @@
 
-import { useState } from "react";
-import { Search, Calendar, Filter } from "lucide-react";
+import { Search, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -97,12 +96,15 @@ const LabFilters = ({
           </Popover>
 
           {/* Category filter */}
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <Select 
+            value={selectedCategory || "all"} 
+            onValueChange={(value) => setSelectedCategory(value === "all" ? undefined : value)}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="All categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All categories</SelectItem>
+              <SelectItem value="all">All categories</SelectItem>
               <SelectItem value="pathology">Pathology</SelectItem>
               <SelectItem value="radiology">Radiology</SelectItem>
               <SelectItem value="other">Other</SelectItem>

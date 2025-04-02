@@ -16,8 +16,9 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { LabProvider } from "@/contexts/LabContext";
 
-const BillingHistoryPage = () => {
+const BillingHistoryContent = () => {
   const { completedTests } = useLabContext();
   const [activeTab, setActiveTab] = useState<"pharmacy" | "lab">("lab");
   const [searchTerm, setSearchTerm] = useState("");
@@ -238,6 +239,14 @@ const BillingHistoryPage = () => {
         </Card>
       </div>
     </div>
+  );
+};
+
+const BillingHistoryPage = () => {
+  return (
+    <LabProvider>
+      <BillingHistoryContent />
+    </LabProvider>
   );
 };
 
