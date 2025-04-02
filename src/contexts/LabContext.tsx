@@ -390,6 +390,8 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    const billId = `BILL-${Date.now()}`;
+    
     const newPendingTests = billItems.map((item, index) => ({
       id: `LT${Date.now()}-${index}`,
       patientName: selectedCustomer.name,
@@ -398,7 +400,9 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
       status: 'pending' as const,
       orderedDate: new Date(),
       doctorName: "Self-Order",
-      category: item.category
+      category: item.category,
+      billId: billId,
+      price: item.price
     }));
 
     setPendingTests([...pendingTests, ...newPendingTests]);
@@ -409,7 +413,7 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
     
     toast({
       title: "Bill generated",
-      description: "The tests have been added to pending tests",
+      description: `Bill #${billId} created with ${newPendingTests.length} test(s)`,
     });
   };
 

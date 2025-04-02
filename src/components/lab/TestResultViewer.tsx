@@ -19,6 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 interface TestResultViewerProps {
   test: LabTest;
@@ -67,10 +68,17 @@ const TestResultViewer = ({ test, open, onClose }: TestResultViewerProps) => {
           </DialogHeader>
           
           <div className="space-y-6">
-            {/* Report header */}
+            {/* Report header with bill information if available */}
             <div className="flex justify-between items-start">
               <div>
-                <h2 className="text-2xl font-bold">{test.testName} Report</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-bold">{test.testName} Report</h2>
+                  {test.billId && (
+                    <Badge variant="outline" className="ml-1">
+                      Bill #{test.billId}
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-gray-500">
                   Report completed on {test.completedDate?.toLocaleDateString()}
                 </p>
