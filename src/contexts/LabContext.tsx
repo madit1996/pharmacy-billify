@@ -1,7 +1,13 @@
+
 import { createContext, useState, useContext, ReactNode } from "react";
 import { LabTest } from "@/types/lab-tests";
 import { LabBillItem, LabCustomer, LabTestOption } from "@/types/lab-types";
 import { useToast } from "@/hooks/use-toast";
+
+interface MultiPatientBill {
+  patientCount: number;
+  testCount: number;
+}
 
 interface LabContextType {
   pendingTests: LabTest[];
@@ -27,6 +33,7 @@ interface LabContextType {
   handleSaveCustomer: (customer: LabCustomer) => void;
   isEditingCustomer: boolean;
   setIsEditingCustomer: (isEditing: boolean) => void;
+  multiPatientBill?: MultiPatientBill;
 }
 
 const LabContext = createContext<LabContextType | undefined>(undefined);
