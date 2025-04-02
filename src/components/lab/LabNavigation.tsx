@@ -1,25 +1,16 @@
 
-import { CreditCard, FileText, ChevronRight } from "lucide-react";
+import { CreditCard, FileText, ChevronRight, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 interface LabNavigationProps {
-  activeTab: 'analytics' | 'billing';
-  setActiveTab: (tab: 'analytics' | 'billing') => void;
+  activeTab: 'analytics' | 'billing' | 'tests';
+  setActiveTab: (tab: 'analytics' | 'billing' | 'tests') => void;
 }
 
 const LabNavigation = ({ activeTab, setActiveTab }: LabNavigationProps) => {
   return (
     <div className="flex gap-3">
-      {activeTab !== 'billing' && (
-        <Button 
-          onClick={() => setActiveTab('billing')}
-          className="flex items-center gap-1"
-        >
-          <CreditCard className="h-4 w-4 mr-1" />
-          Billing
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      )}
       {activeTab !== 'analytics' && (
         <Button 
           variant="outline"
@@ -30,6 +21,36 @@ const LabNavigation = ({ activeTab, setActiveTab }: LabNavigationProps) => {
           Analytics & Management
         </Button>
       )}
+      
+      {activeTab !== 'billing' && (
+        <Button 
+          variant="outline"
+          onClick={() => setActiveTab('billing')}
+          className="flex items-center gap-1"
+        >
+          <CreditCard className="h-4 w-4 mr-1" />
+          Billing
+        </Button>
+      )}
+      
+      {activeTab !== 'tests' && (
+        <Button 
+          variant="outline"
+          onClick={() => setActiveTab('tests')}
+          className="flex items-center gap-1"
+        >
+          <FlaskConical className="h-4 w-4 mr-1" />
+          Test Reports
+        </Button>
+      )}
+      
+      <Link to="/billing-history">
+        <Button className="flex items-center gap-1">
+          <CreditCard className="h-4 w-4 mr-1" />
+          Billing History
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </Link>
     </div>
   );
 };
