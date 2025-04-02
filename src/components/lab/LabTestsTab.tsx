@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useLabContext } from "@/contexts/LabContext";
-import { Search, Calendar, Filter, Download } from "lucide-react";
+import { Search, Calendar, Filter, Download, Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 
 const LabTestsTab = () => {
-  const { pendingTests, completedTests } = useLabContext();
+  const { pendingTests, completedTests, handleSelectTest } = useLabContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -203,7 +203,10 @@ const LabTestsTab = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="pending">
-              <PendingTestsList tests={filteredPendingTests} />
+              <PendingTestsList 
+                tests={filteredPendingTests} 
+                onSelectTest={handleSelectTest} 
+              />
             </TabsContent>
             <TabsContent value="completed">
               <CompletedTestsList tests={filteredCompletedTests} />
