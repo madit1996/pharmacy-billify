@@ -30,7 +30,12 @@ const TestPatientInfo = ({ test }: TestPatientInfoProps) => {
             )}
           </div>
           <p className="text-sm text-gray-500">Requested by: {test.doctorName}</p>
-          <p className="text-sm text-gray-500 mt-2">Category: {test.category}</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Category: {test.category || 'General'}
+            {test.referralId && (
+              <span className="ml-2 text-blue-600">Referral #{test.referralId}</span>
+            )}
+          </p>
         </div>
       </div>
     </div>

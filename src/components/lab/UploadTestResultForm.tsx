@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { LabTest } from "@/types/lab-tests";
 import ReportCreationOptions from "./ReportCreationOptions";
 import TestReportForm from "./TestReportForm";
+import TestPatientInfo from "./TestPatientInfo";
 
 interface UploadTestResultFormProps {
   test: LabTest;
@@ -60,6 +61,10 @@ const UploadTestResultForm = ({
   // For options selection screen
   return (
     <>
+      <div className="mb-5">
+        <TestPatientInfo test={test} />
+      </div>
+      
       <ReportCreationOptions
         test={test}
         onSelectUpload={() => handleOpenDialog('upload')}

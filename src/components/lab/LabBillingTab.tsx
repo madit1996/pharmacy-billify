@@ -5,6 +5,8 @@ import LabSearchPanel from "./LabSearchPanel";
 import { useLabContext } from "@/contexts/LabContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PatientForm from "./PatientForm";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoCircle } from "lucide-react";
 
 const LabBillingTab = () => {
   const { 
@@ -24,7 +26,8 @@ const LabBillingTab = () => {
     handleEditCustomer,
     handleSaveCustomer,
     isEditingCustomer,
-    setIsEditingCustomer
+    setIsEditingCustomer,
+    multiPatientBill
   } = useLabContext();
   
   const subtotal = calculateSubtotal();
@@ -40,6 +43,15 @@ const LabBillingTab = () => {
             <CardDescription>Manage patient bill</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
+            {multiPatientBill && multiPatientBill.patientCount > 0 && (
+              <Alert className="mb-4 mx-4 mt-4 bg-blue-50">
+                <InfoCircle className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  Multi-patient bill with {multiPatientBill.patientCount} patient(s) and {multiPatientBill.testCount} test(s)
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <LabBillingPanel
               billItems={billItems}
               updateItemQuantity={updateItemQuantity}

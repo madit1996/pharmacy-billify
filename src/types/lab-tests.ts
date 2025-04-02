@@ -16,5 +16,6 @@ export interface LabTest {
   price?: number;
   category?: 'pathology' | 'radiology' | 'other';
   paymentStatus?: 'paid' | 'pending' | 'refunded';
-  billId?: string; // Added to group tests from the same bill
+  billId?: string; // Bill ID to group tests from the same bill
+  referralId?: string; // Added to track referrals
 }

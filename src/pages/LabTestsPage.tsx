@@ -6,7 +6,7 @@ import LabBillingTab from "@/components/lab/LabBillingTab";
 import LabNavigation from "@/components/lab/LabNavigation";
 
 const LabTestsPage = () => {
-  const [activeTab, setActiveTab] = useState<'analytics' | 'billing'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'billing' | 'tests'>('analytics');
 
   return (
     <LabProvider>
