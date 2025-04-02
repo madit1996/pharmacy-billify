@@ -4,7 +4,6 @@ import { LabProvider } from "@/contexts/LabContext";
 import LabAnalyticsTab from "@/components/lab/LabAnalyticsTab";
 import LabBillingTab from "@/components/lab/LabBillingTab";
 import LabNavigation from "@/components/lab/LabNavigation";
-import { TestsList } from "@/components/lab/TestsList";
 
 const LabTestsPage = () => {
   const [activeTab, setActiveTab] = useState<'analytics' | 'billing'>('analytics');
