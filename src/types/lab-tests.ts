@@ -1,6 +1,6 @@
 
 // Lab test data types
-export type LabTestStatus = 'sampling' | 'processing' | 'reporting' | 'completed' | 'cancelled' | 'pending';
+export type LabTestStatus = 'pending' | 'sampling' | 'processing' | 'reporting' | 'completed' | 'cancelled';
 
 export interface LabTest {
   id: string;
