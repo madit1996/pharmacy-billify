@@ -49,70 +49,183 @@ export const initialPendingTests: LabTest[] = [
     patientName: "John Doe", 
     patientId: "P001", 
     testName: "Complete Blood Count", 
-    status: "pending" as LabTestStatus, 
+    status: "sampling", 
     orderedDate: new Date(2023, 7, 15),
     doctorName: "Dr. Sarah Smith",
-    category: "pathology"
+    category: "pathology",
+    sampleDetails: "Blood sample - 5ml",
+    sampleId: "S001-CBC",
+    estimatedCompletionTime: new Date(Date.now() + 1000 * 60 * 60 * 2), // 2 hours from now
+    workflowHistory: [
+      {
+        fromStatus: "pending" as LabTestStatus,
+        toStatus: "sampling" as LabTestStatus,
+        timestamp: new Date(2023, 7, 15),
+        notes: "Sample collection scheduled"
+      }
+    ]
   },
   { 
     id: "LT002", 
     patientName: "Jane Smith", 
     patientId: "P002", 
     testName: "Lipid Profile", 
-    status: "pending" as LabTestStatus, 
+    status: "processing", 
     orderedDate: new Date(2023, 7, 16),
     doctorName: "Dr. Robert Johnson",
-    category: "pathology"
+    category: "pathology",
+    sampleDetails: "Blood sample - 10ml (fasting)",
+    sampleId: "S002-LP",
+    estimatedCompletionTime: new Date(Date.now() + 1000 * 60 * 60 * 3), // 3 hours from now
+    workflowHistory: [
+      {
+        fromStatus: "pending" as LabTestStatus,
+        toStatus: "sampling" as LabTestStatus,
+        timestamp: new Date(2023, 7, 16, 9, 0),
+        notes: "Sample collected"
+      },
+      {
+        fromStatus: "sampling" as LabTestStatus,
+        toStatus: "processing" as LabTestStatus,
+        timestamp: new Date(2023, 7, 16, 10, 0),
+        notes: "Sample sent to lab for processing"
+      }
+    ]
   },
   { 
     id: "LT003", 
     patientName: "Alex Brown", 
     patientId: "P003", 
     testName: "Thyroid Function Test", 
-    status: "pending" as LabTestStatus, 
+    status: "reporting", 
     orderedDate: new Date(2023, 7, 16),
     doctorName: "Dr. Emily Williams",
-    category: "pathology"
+    category: "pathology",
+    sampleDetails: "Blood sample - 5ml",
+    sampleId: "S003-TFT",
+    estimatedCompletionTime: new Date(Date.now() + 1000 * 60 * 60 * 1), // 1 hour from now
+    workflowHistory: [
+      {
+        fromStatus: "pending" as LabTestStatus,
+        toStatus: "sampling" as LabTestStatus,
+        timestamp: new Date(2023, 7, 16, 8, 30),
+        notes: "Sample collected"
+      },
+      {
+        fromStatus: "sampling" as LabTestStatus,
+        toStatus: "processing" as LabTestStatus,
+        timestamp: new Date(2023, 7, 16, 9, 15),
+        notes: "Sample processing"
+      },
+      {
+        fromStatus: "processing" as LabTestStatus,
+        toStatus: "reporting" as LabTestStatus,
+        timestamp: new Date(2023, 7, 16, 14, 0),
+        notes: "Processing complete, report preparation"
+      }
+    ]
   },
   { 
     id: "LT004", 
     patientName: "Maria Garcia", 
     patientId: "P004", 
     testName: "Blood Glucose", 
-    status: "pending" as LabTestStatus, 
+    status: "sampling", 
     orderedDate: new Date(2023, 7, 17),
     doctorName: "Dr. Michael Davis",
-    category: "pathology"
+    category: "pathology",
+    sampleDetails: "Blood sample - 3ml",
+    sampleId: "S004-BG",
+    estimatedCompletionTime: new Date(Date.now() + 1000 * 60 * 60 * 2), // 2 hours from now
+    workflowHistory: [
+      {
+        fromStatus: "pending" as LabTestStatus,
+        toStatus: "sampling" as LabTestStatus,
+        timestamp: new Date(2023, 7, 17, 10, 0),
+        notes: "Sample collection in progress"
+      }
+    ]
   },
   { 
     id: "LT005", 
     patientName: "Robert Wilson", 
     patientId: "P005", 
     testName: "Liver Function Test", 
-    status: "pending" as LabTestStatus, 
+    status: "processing", 
     orderedDate: new Date(2023, 7, 17),
     doctorName: "Dr. Sarah Smith",
-    category: "pathology"
+    category: "pathology",
+    sampleDetails: "Blood sample - 7ml",
+    sampleId: "S005-LFT",
+    estimatedCompletionTime: new Date(Date.now() + 1000 * 60 * 60 * 4), // 4 hours from now
+    workflowHistory: [
+      {
+        fromStatus: "pending" as LabTestStatus,
+        toStatus: "sampling" as LabTestStatus,
+        timestamp: new Date(2023, 7, 17, 9, 0),
+        notes: "Sample collected"
+      },
+      {
+        fromStatus: "sampling" as LabTestStatus,
+        toStatus: "processing" as LabTestStatus,
+        timestamp: new Date(2023, 7, 17, 11, 0),
+        notes: "Processing in lab"
+      }
+    ]
   },
   { 
     id: "LT006", 
     patientName: "William Moore", 
     patientId: "P006", 
     testName: "X-Ray Chest", 
-    status: "pending" as LabTestStatus, 
+    status: "reporting", 
     orderedDate: new Date(2023, 7, 18),
     doctorName: "Dr. James Wilson",
-    category: "radiology"
+    category: "radiology",
+    sampleDetails: "PA view X-ray",
+    sampleId: "S006-XR",
+    estimatedCompletionTime: new Date(Date.now() + 1000 * 60 * 30), // 30 minutes from now
+    workflowHistory: [
+      {
+        fromStatus: "pending" as LabTestStatus,
+        toStatus: "sampling" as LabTestStatus,
+        timestamp: new Date(2023, 7, 18, 10, 0),
+        notes: "Patient prepped for imaging"
+      },
+      {
+        fromStatus: "sampling" as LabTestStatus,
+        toStatus: "processing" as LabTestStatus,
+        timestamp: new Date(2023, 7, 18, 10, 15),
+        notes: "Imaging completed"
+      },
+      {
+        fromStatus: "processing" as LabTestStatus,
+        toStatus: "reporting" as LabTestStatus,
+        timestamp: new Date(2023, 7, 18, 11, 0),
+        notes: "Images processed, report in preparation"
+      }
+    ]
   },
   { 
     id: "LT007", 
     patientName: "Susan Taylor", 
     patientId: "P007", 
     testName: "MRI Brain", 
-    status: "pending" as LabTestStatus, 
+    status: "sampling", 
     orderedDate: new Date(2023, 7, 18),
     doctorName: "Dr. Patricia Johnson",
-    category: "radiology"
+    category: "radiology",
+    sampleDetails: "Full brain scan with contrast",
+    sampleId: "S007-MRI",
+    estimatedCompletionTime: new Date(Date.now() + 1000 * 60 * 60 * 5), // 5 hours from now
+    workflowHistory: [
+      {
+        fromStatus: "pending" as LabTestStatus,
+        toStatus: "sampling" as LabTestStatus,
+        timestamp: new Date(2023, 7, 18, 13, 0),
+        notes: "Patient prepped for MRI"
+      }
+    ]
   }
 ];
 

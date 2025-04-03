@@ -9,8 +9,8 @@ export type LabBillItem = {
   representativeId?: string;
   status?: 'pending' | 'sampling' | 'processing' | 'completed' | 'cancelled';
   estimatedTime?: string;
-  sampleDetails?: string; // Added this property
-  sampleId?: string;     // Added this property
+  sampleDetails?: string; 
+  sampleId?: string;
 };
 
 export type LabCustomer = {

@@ -8,6 +8,7 @@ import LabNavigation from "@/components/lab/LabNavigation";
 import LabAnalyticsTab from "@/components/lab/LabAnalyticsTab";
 import LabTestsTab from "@/components/lab/LabTestsTab";
 import LabBillingTab from "@/components/lab/LabBillingTab";
+import LabTestTrackingTab from "@/components/lab/LabTestTrackingTab";
 import { LabProvider } from "@/contexts/LabContext";
 import LabWorkflowPanel from "@/components/lab/LabWorkflowPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,6 +20,9 @@ const LabTestsPage = () => {
   const handleTabChange = (tab: 'analytics' | 'tests' | 'billing' | 'tracking') => {
     setActiveTab(tab);
   };
+
+  // Determine if the workflow panel should be visible
+  const showWorkflowPanel = activeTab !== 'billing';
 
   return (
     <LabProvider>
@@ -38,18 +42,19 @@ const LabTestsPage = () => {
         
         <div className="flex-1 overflow-hidden flex">
           {/* Main content */}
-          <div className="flex-1 overflow-auto p-6 bg-gray-50">
+          <div className={`flex-1 overflow-auto p-6 bg-gray-50 ${showWorkflowPanel ? '' : 'w-full'}`}>
             {activeTab === 'analytics' && <LabAnalyticsTab />}
             {activeTab === 'tests' && <LabTestsTab />}
             {activeTab === 'billing' && <LabBillingTab />}
-            {/* We can add the tracking tab content when needed */}
-            {activeTab === 'tracking' && <div>Test tracking content will be added here</div>}
+            {activeTab === 'tracking' && <LabTestTrackingTab />}
           </div>
           
-          {/* Workflow tracking panel - always visible */}
-          <div className="w-96 border-l bg-white overflow-auto">
-            <LabWorkflowPanel />
-          </div>
+          {/* Workflow tracking panel - only visible for non-billing tabs */}
+          {showWorkflowPanel && (
+            <div className="w-96 border-l bg-white overflow-auto">
+              <LabWorkflowPanel />
+            </div>
+          )}
         </div>
       </div>
     </LabProvider>
