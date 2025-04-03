@@ -19,8 +19,8 @@ const BillItem = ({ item, updateItemQuantity, removeItem }: BillItemProps) => {
             <TestTubeIcon className="h-5 w-5 text-purple-700" />
           </div>
           <div>
-            <h4 className="font-medium text-gray-900">{item.name}</h4>
-            <p className="text-xs text-gray-500 mt-1">{item.testType}</p>
+            <h4 className="font-medium text-gray-900">{item.testName}</h4>
+            <p className="text-xs text-gray-500 mt-1">{item.category}</p>
           </div>
         </div>
 
