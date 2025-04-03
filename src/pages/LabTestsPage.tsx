@@ -8,11 +8,12 @@ import LabNavigation from "@/components/lab/LabNavigation";
 import LabAnalyticsTab from "@/components/lab/LabAnalyticsTab";
 import LabTestsTab from "@/components/lab/LabTestsTab";
 import LabBillingTab from "@/components/lab/LabBillingTab";
-import LabTestTrackingTab from "@/components/lab/LabTestTrackingTab";
 import { LabProvider } from "@/contexts/LabContext";
+import LabWorkflowPanel from "@/components/lab/LabWorkflowPanel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LabTestsPage = () => {
-  const [activeTab, setActiveTab] = useState<'analytics' | 'tests' | 'billing' | 'tracking'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'tests' | 'billing'>('analytics');
 
   return (
     <LabProvider>
@@ -36,7 +37,11 @@ const LabTestsPage = () => {
             {activeTab === 'analytics' && <LabAnalyticsTab />}
             {activeTab === 'tests' && <LabTestsTab />}
             {activeTab === 'billing' && <LabBillingTab />}
-            {activeTab === 'tracking' && <LabTestTrackingTab />}
+          </div>
+          
+          {/* Workflow tracking panel - always visible */}
+          <div className="w-96 border-l bg-white overflow-auto">
+            <LabWorkflowPanel />
           </div>
         </div>
       </div>

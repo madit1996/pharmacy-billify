@@ -25,6 +25,8 @@ interface LabBillingPanelProps {
   searchTerm: string;
   onSearchCustomer: (term: string) => void;
   assignTestToRepresentative?: (testId: string, representativeId: string) => void;
+  onUpdateStatus?: (id: string, status: string, estimatedTime?: string) => void;
+  onUpdateSampleDetails?: (id: string, details: string) => void;
 }
 
 const representatives: LabTestRepresentative[] = [
@@ -49,7 +51,9 @@ const LabBillingPanel = ({
   onEditCustomer,
   searchTerm,
   onSearchCustomer,
-  assignTestToRepresentative
+  assignTestToRepresentative,
+  onUpdateStatus,
+  onUpdateSampleDetails
 }: LabBillingPanelProps) => {
   const [selectedRepresentative, setSelectedRepresentative] = useState<string>("all");
   
@@ -58,6 +62,15 @@ const LabBillingPanel = ({
       assignTestToRepresentative(testId, repId);
     }
   };
+
+  // Group bill items by patient
+  const groupedBillItems = billItems.reduce((acc, item) => {
+    if (!acc[item.category]) {
+      acc[item.category] = [];
+    }
+    acc[item.category].push(item);
+    return acc;
+  }, {} as Record<string, LabBillItem[]>);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -113,19 +126,28 @@ const LabBillingPanel = ({
             <p className="text-xs mt-2">Search or select lab tests to add them to the bill</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {billItems.map((item) => (
-              <BillItem 
-                key={item.id}
-                item={item}
-                updateItemQuantity={updateItemQuantity}
-                removeItem={removeItem}
-                onAssign={assignTestToRepresentative ? 
-                  (testId) => handleAssignRepresentative(testId, selectedRepresentative) : 
-                  undefined
-                }
-                representatives={representatives}
-              />
+          <div>
+            {Object.entries(groupedBillItems).map(([category, items]) => (
+              <div key={category} className="mb-4">
+                <h3 className="text-sm font-medium uppercase text-gray-500 mb-2">{category}</h3>
+                <div className="space-y-3">
+                  {items.map((item) => (
+                    <BillItem 
+                      key={item.id}
+                      item={item}
+                      updateItemQuantity={updateItemQuantity}
+                      removeItem={removeItem}
+                      onAssign={assignTestToRepresentative ? 
+                        (testId) => handleAssignRepresentative(testId, selectedRepresentative) : 
+                        undefined
+                      }
+                      representatives={representatives}
+                      onUpdateStatus={onUpdateStatus}
+                      onUpdateSampleDetails={onUpdateSampleDetails}
+                    />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}

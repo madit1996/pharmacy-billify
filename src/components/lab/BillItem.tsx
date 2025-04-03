@@ -1,10 +1,13 @@
 
-import { Minus, Plus, Trash2, UserCircle } from "lucide-react";
+import { Minus, Plus, Trash2, UserCircle, FileText, TestTube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LabBillItem, LabTestRepresentative } from "@/types/lab-types";
 import { TestTubeIcon } from "./LabIcons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
 
 interface BillItemProps {
   item: LabBillItem;
@@ -12,15 +15,29 @@ interface BillItemProps {
   removeItem: (id: string) => void;
   onAssign?: (id: string) => void;
   representatives?: LabTestRepresentative[];
+  onUpdateStatus?: (id: string, status: string, estimatedTime?: string) => void;
+  onUpdateSampleDetails?: (id: string, details: string) => void;
 }
 
-const BillItem = ({ 
-  item, 
-  updateItemQuantity, 
-  removeItem, 
+const BillItem = ({
+  item,
+  updateItemQuantity,
+  removeItem,
   onAssign,
-  representatives 
+  representatives,
+  onUpdateStatus,
+  onUpdateSampleDetails
 }: BillItemProps) => {
+  const [sampleDetails, setSampleDetails] = useState(item.sampleDetails || "");
+  const [showSampleInput, setShowSampleInput] = useState(false);
+  
+  const handleSaveDetails = () => {
+    if (onUpdateSampleDetails) {
+      onUpdateSampleDetails(item.id, sampleDetails);
+      setShowSampleInput(false);
+    }
+  };
+  
   return (
     <div className="bg-white border border-gray-100 rounded-lg shadow-sm p-4 hover:shadow-md transition-all">
       <div className="flex items-center justify-between">
@@ -110,9 +127,46 @@ const BillItem = ({
               </Badge>
             </div>
             
-            <span className="text-xs text-gray-500">
-              {item.estimatedTime ? `Est. completion: ${item.estimatedTime}` : ''}
-            </span>
+            <div className="flex gap-2">
+              {onUpdateSampleDetails && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-6 text-xs"
+                  onClick={() => setShowSampleInput(!showSampleInput)}
+                >
+                  <TestTube className="h-3 w-3 mr-1" />
+                  Sample Info
+                </Button>
+              )}
+            </div>
+          </div>
+          
+          {/* Sample details input */}
+          {showSampleInput && (
+            <div className="mt-2 space-y-2">
+              <Label htmlFor="sample-details" className="text-xs">Sample Details</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="sample-details"
+                  value={sampleDetails}
+                  onChange={(e) => setSampleDetails(e.target.value)}
+                  className="h-7 text-xs"
+                  placeholder="e.g., 10ml blood sample, fasting"
+                />
+                <Button 
+                  size="sm" 
+                  className="h-7 text-xs"
+                  onClick={handleSaveDetails}
+                >
+                  Save
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          <div className="text-xs text-gray-500 mt-2">
+            {item.estimatedTime ? `Est. completion: ${item.estimatedTime}` : ''}
           </div>
         </div>
       )}

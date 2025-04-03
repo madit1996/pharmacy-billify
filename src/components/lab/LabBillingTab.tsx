@@ -5,8 +5,6 @@ import LabSearchPanel from "./LabSearchPanel";
 import { useLabContext } from "@/contexts/LabContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PatientForm from "./PatientForm";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import CollapsibleSidebar from "@/components/pharmacy/CollapsibleSidebar";
 import LabWaitlistSidebar from "./LabWaitlistSidebar";
@@ -33,7 +31,9 @@ const LabBillingTab = () => {
     setIsEditingCustomer,
     assignTestToRepresentative,
     waitlistPatients,
-    handleSelectWaitlistPatient
+    handleSelectWaitlistPatient,
+    updateTestStatus,
+    updateSampleDetails
   } = useLabContext();
   
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false);
@@ -71,6 +71,7 @@ const LabBillingTab = () => {
                     searchTerm={searchTerm}
                     onSearchCustomer={handleSearchCustomer}
                     assignTestToRepresentative={assignTestToRepresentative}
+                    onUpdateSampleDetails={updateSampleDetails}
                   />
                 </CardContent>
               </Card>

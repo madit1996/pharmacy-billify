@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, ReactNode } from "react";
-import { LabTest } from "@/types/lab-tests";
+import { LabTest, LabTestStatus, WorkflowHistoryItem } from "@/types/lab-tests";
 import { LabBillItem, LabCustomer, LabTestOption, LabTestRepresentative, LabWaitlistPatient } from "@/types/lab-types";
 import { useToast } from "@/hooks/use-toast";
 
@@ -37,6 +37,8 @@ interface LabContextType {
   waitlistPatients: LabWaitlistPatient[];
   handleSelectWaitlistPatient: (patient: LabWaitlistPatient) => void;
   updateTestStatus: (testId: string, status: string, estimatedTime?: string) => void;
+  updateTestWorkflow: (testId: string, newStatus: string, notes?: string) => void;
+  updateSampleDetails: (testId: string, sampleDetails: string, sampleId?: string) => void;
 }
 
 const LabContext = createContext<LabContextType | undefined>(undefined);
@@ -483,6 +485,112 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const updateTestWorkflow = (testId: string, newStatus: string, notes?: string) => {
+    const pendingTestIndex = pendingTests.findIndex(test => test.id === testId);
+    
+    if (pendingTestIndex !== -1) {
+      const updatedPendingTests = [...pendingTests];
+      const test = updatedPendingTests[pendingTestIndex];
+      
+      const historyItem: WorkflowHistoryItem = {
+        fromStatus: test.status,
+        toStatus: newStatus as LabTestStatus,
+        timestamp: new Date(),
+        notes: notes
+      };
+      
+      const updatedTest = {
+        ...test,
+        status: newStatus as LabTestStatus,
+        workflowHistory: [
+          ...(test.workflowHistory || []),
+          historyItem
+        ]
+      };
+      
+      if (newStatus === 'completed' && !updatedTest.completedDate) {
+        updatedTest.completedDate = new Date();
+        
+        setCompletedTests([...completedTests, updatedTest]);
+        updatedPendingTests.splice(pendingTestIndex, 1);
+        setPendingTests(updatedPendingTests);
+      } else if (newStatus !== 'completed') {
+        updatedPendingTests[pendingTestIndex] = updatedTest;
+        setPendingTests(updatedPendingTests);
+      }
+      
+      toast({
+        title: "Test status updated",
+        description: `Test ${test.testName} status updated to ${newStatus}`,
+      });
+      
+      return;
+    }
+    
+    const completedTestIndex = completedTests.findIndex(test => test.id === testId);
+    
+    if (completedTestIndex !== -1) {
+      const updatedCompletedTests = [...completedTests];
+      const test = updatedCompletedTests[completedTestIndex];
+      
+      const historyItem: WorkflowHistoryItem = {
+        fromStatus: test.status,
+        toStatus: newStatus as LabTestStatus,
+        timestamp: new Date(),
+        notes: notes
+      };
+      
+      if (newStatus !== 'completed') {
+        const updatedTest = {
+          ...test,
+          status: newStatus as LabTestStatus,
+          completedDate: undefined,
+          workflowHistory: [
+            ...(test.workflowHistory || []),
+            historyItem
+          ]
+        };
+        
+        setPendingTests([...pendingTests, updatedTest]);
+        updatedCompletedTests.splice(completedTestIndex, 1);
+        setCompletedTests(updatedCompletedTests);
+      } else {
+        updatedCompletedTests[completedTestIndex] = {
+          ...test,
+          workflowHistory: [
+            ...(test.workflowHistory || []),
+            historyItem
+          ]
+        };
+        setCompletedTests(updatedCompletedTests);
+      }
+      
+      toast({
+        title: "Test status updated",
+        description: `Test ${test.testName} status updated to ${newStatus}`,
+      });
+    }
+  };
+
+  const updateSampleDetails = (testId: string, sampleDetails: string, sampleId?: string) => {
+    const pendingTestIndex = pendingTests.findIndex(test => test.id === testId);
+    
+    if (pendingTestIndex !== -1) {
+      const updatedPendingTests = [...pendingTests];
+      updatedPendingTests[pendingTestIndex] = {
+        ...updatedPendingTests[pendingTestIndex],
+        sampleDetails,
+        sampleId
+      };
+      setPendingTests(updatedPendingTests);
+      
+      toast({
+        title: "Sample details updated",
+        description: `Sample information updated for ${updatedPendingTests[pendingTestIndex].testName}`,
+      });
+    }
+  };
+
   const handlePrintBill = () => {
     if (billItems.length === 0) {
       toast({
@@ -509,12 +617,19 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
       patientName: selectedCustomer.name,
       patientId: selectedCustomer.id,
       testName: item.testName,
-      status: 'pending' as const,
+      status: 'sampling' as const,
       orderedDate: new Date(),
       doctorName: item.representativeId ? `Rep ID: ${item.representativeId}` : "Self-Order",
       category: item.category,
       billId: billId,
-      price: item.price
+      price: item.price,
+      representativeId: item.representativeId,
+      workflowHistory: [{
+        fromStatus: 'sampling',
+        toStatus: 'sampling',
+        timestamp: new Date(),
+        notes: 'Initial status'
+      }]
     }));
 
     setPendingTests([...pendingTests, ...newPendingTests]);
@@ -562,10 +677,8 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
         handleSaveCustomer,
         isEditingCustomer,
         setIsEditingCustomer,
-        assignTestToRepresentative,
-        waitlistPatients,
-        handleSelectWaitlistPatient,
-        updateTestStatus,
+        updateTestWorkflow,
+        updateSampleDetails,
       }}
     >
       {children}
