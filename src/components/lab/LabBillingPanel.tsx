@@ -1,9 +1,12 @@
 
-import { LabBillItem, LabCustomer } from "@/types/lab-types";
+import { LabBillItem, LabCustomer, LabTestRepresentative } from "@/types/lab-types";
 import CustomerSearch from "./CustomerSearch";
 import BillItem from "./BillItem";
 import BillSummary from "./BillSummary";
 import { BeakerIcon } from "./LabIcons";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
+import { Label } from "@/components/ui/label";
 
 interface LabBillingPanelProps {
   billItems: LabBillItem[];
@@ -21,7 +24,15 @@ interface LabBillingPanelProps {
   onEditCustomer?: () => void;
   searchTerm: string;
   onSearchCustomer: (term: string) => void;
+  assignTestToRepresentative?: (testId: string, representativeId: string) => void;
 }
+
+const representatives: LabTestRepresentative[] = [
+  { id: "R1", name: "Dr. Sarah Smith", role: "Lab Technician" },
+  { id: "R2", name: "Dr. Robert Johnson", role: "Pathologist" },
+  { id: "R3", name: "Dr. Emily Williams", role: "Radiologist" },
+  { id: "R4", name: "John Miller", role: "Lab Assistant" }
+];
 
 const LabBillingPanel = ({
   billItems,
@@ -37,11 +48,20 @@ const LabBillingPanel = ({
   onAddNewCustomer,
   onEditCustomer,
   searchTerm,
-  onSearchCustomer
+  onSearchCustomer,
+  assignTestToRepresentative
 }: LabBillingPanelProps) => {
+  const [selectedRepresentative, setSelectedRepresentative] = useState<string>("all");
+  
+  const handleAssignRepresentative = (testId: string, repId: string) => {
+    if (assignTestToRepresentative && repId !== "all") {
+      assignTestToRepresentative(testId, repId);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full bg-gradient-to-r from-slate-50 to-white rounded-lg overflow-hidden shadow-sm">
-      <div className="p-4 border-b bg-gradient-to-r from-purple-500 to-blue-500">
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="p-4 bg-gradient-to-r from-purple-500 to-blue-500">
         <CustomerSearch 
           customers={customers}
           selectedCustomer={selectedCustomer}
@@ -52,6 +72,32 @@ const LabBillingPanel = ({
           onSearchCustomer={onSearchCustomer}
         />
       </div>
+
+      {assignTestToRepresentative && (
+        <div className="px-4 py-3 bg-gradient-to-r from-slate-100 to-gray-100">
+          <div className="flex items-center space-x-3">
+            <Label htmlFor="rep-select" className="text-sm font-medium whitespace-nowrap">
+              Assign to:
+            </Label>
+            <Select 
+              value={selectedRepresentative} 
+              onValueChange={setSelectedRepresentative}
+            >
+              <SelectTrigger id="rep-select" className="h-8 text-sm flex-1">
+                <SelectValue placeholder="Select representative" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Representatives</SelectItem>
+                {representatives.map(rep => (
+                  <SelectItem key={rep.id} value={rep.id}>
+                    {rep.name} ({rep.role})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
 
       <div className="px-4 py-2 bg-gradient-to-r from-slate-800 to-gray-700 text-white flex items-center justify-between text-xs">
         <div className="text-left">Test</div>
@@ -74,6 +120,11 @@ const LabBillingPanel = ({
                 item={item}
                 updateItemQuantity={updateItemQuantity}
                 removeItem={removeItem}
+                onAssign={assignTestToRepresentative ? 
+                  (testId) => handleAssignRepresentative(testId, selectedRepresentative) : 
+                  undefined
+                }
+                representatives={representatives}
               />
             ))}
           </div>

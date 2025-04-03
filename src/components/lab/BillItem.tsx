@@ -1,16 +1,26 @@
 
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LabBillItem } from "@/types/lab-types";
+import { LabBillItem, LabTestRepresentative } from "@/types/lab-types";
 import { TestTubeIcon } from "./LabIcons";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 
 interface BillItemProps {
   item: LabBillItem;
   updateItemQuantity: (id: string, change: number) => void;
   removeItem: (id: string) => void;
+  onAssign?: (id: string) => void;
+  representatives?: LabTestRepresentative[];
 }
 
-const BillItem = ({ item, updateItemQuantity, removeItem }: BillItemProps) => {
+const BillItem = ({ 
+  item, 
+  updateItemQuantity, 
+  removeItem, 
+  onAssign,
+  representatives 
+}: BillItemProps) => {
   return (
     <div className="bg-white border border-gray-100 rounded-lg shadow-sm p-4 hover:shadow-md transition-all">
       <div className="flex items-center justify-between">
@@ -24,14 +34,34 @@ const BillItem = ({ item, updateItemQuantity, removeItem }: BillItemProps) => {
           </div>
         </div>
 
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={() => removeItem(item.id)}
-          className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center space-x-2">
+          {item.representativeId && representatives && (
+            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+              {representatives.find(r => r.id === item.representativeId)?.name || 'Assigned'}
+            </Badge>
+          )}
+          
+          {onAssign && !item.representativeId && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs text-purple-600 border-purple-200 hover:bg-purple-50"
+              onClick={() => onAssign(item.id)}
+            >
+              <UserCircle className="h-3 w-3 mr-1" />
+              Assign
+            </Button>
+          )}
+
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => removeItem(item.id)}
+            className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       
       <div className="flex items-center justify-between mt-4">
@@ -61,6 +91,29 @@ const BillItem = ({ item, updateItemQuantity, removeItem }: BillItemProps) => {
           ${(item.price * item.quantity).toFixed(2)}
         </span>
       </div>
+
+      {/* Display test status if it's being tracked */}
+      {item.status && (
+        <div className="mt-3 pt-3 border-t border-dashed border-gray-200">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <span className="text-xs text-gray-500 mr-2">Status:</span>
+              <Badge variant={
+                item.status === 'pending' ? 'outline' : 
+                item.status === 'sampling' ? 'secondary' :
+                item.status === 'processing' ? 'default' :
+                item.status === 'completed' ? 'success' : 'destructive'
+              }>
+                {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+              </Badge>
+            </div>
+            
+            <span className="text-xs text-gray-500">
+              {item.estimatedTime ? `Est. completion: ${item.estimatedTime}` : ''}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

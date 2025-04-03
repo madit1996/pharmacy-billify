@@ -7,6 +7,9 @@ export type LabBillItem = {
   quantity: number;
   discount: number;
   category: 'pathology' | 'radiology' | 'other';
+  representativeId?: string;
+  status?: 'pending' | 'sampling' | 'processing' | 'completed' | 'cancelled';
+  estimatedTime?: string;
 };
 
 export type LabCustomer = {
@@ -23,4 +26,41 @@ export interface LabTestOption {
   testName: string;
   price: number;
   category: 'pathology' | 'radiology' | 'other';
+}
+
+// Lab test representative
+export interface LabTestRepresentative {
+  id: string;
+  name: string;
+  role: string;
+  specialty?: string;
+}
+
+// Lab waitlist patient
+export interface LabWaitlistPatient {
+  id: string;
+  name: string;
+  items: number;
+  isHighlighted: boolean;
+  tests: LabBillItem[];
+}
+
+// Lab workflow status tracking
+export interface LabWorkflowStep {
+  id: string;
+  name: string;
+  description: string;
+  estimatedDuration: number; // in minutes
+  requiresSpecialist: boolean;
+  specialistRole?: string;
+}
+
+export interface LabTestWorkflow {
+  testId: string;
+  currentStep: number;
+  totalSteps: number;
+  startedAt: Date;
+  estimatedCompletionTime: Date;
+  assignedTo?: string;
+  notes?: string[];
 }

@@ -1,38 +1,38 @@
 
-import { CreditCard, FileText, FlaskConical } from "lucide-react";
+import { CreditCard, BarChart2, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 
 interface LabNavigationProps {
-  activeTab: 'analytics' | 'billing' | 'tests';
-  setActiveTab: (tab: 'analytics' | 'billing' | 'tests') => void;
+  activeTab: 'analytics' | 'tests' | 'billing' | 'tracking';
+  setActiveTab: (tab: 'analytics' | 'tests' | 'billing' | 'tracking') => void;
 }
 
 const LabNavigation = ({ activeTab, setActiveTab }: LabNavigationProps) => {
   return (
     <div className="flex gap-3">
-      {/* Analytics Tab */}
-      {activeTab !== 'analytics' ? (
+      {activeTab !== 'analytics' && (
         <Button 
           variant="outline"
           onClick={() => setActiveTab('analytics')}
-          className="flex items-center gap-1 border-blue-500 text-blue-600 hover:bg-blue-50"
+          className="flex items-center gap-1 border-purple-500 text-purple-600 hover:bg-purple-50"
         >
-          <FileText className="h-4 w-4 mr-1" />
-          Analytics
-        </Button>
-      ) : (
-        <Button 
-          className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white"
-          disabled
-        >
-          <FileText className="h-4 w-4 mr-1" />
+          <BarChart2 className="h-4 w-4 mr-1" />
           Analytics
         </Button>
       )}
       
-      {/* Billing Tab */}
-      {activeTab !== 'billing' ? (
+      {activeTab !== 'tests' && (
+        <Button 
+          variant="outline"
+          onClick={() => setActiveTab('tests')}
+          className="flex items-center gap-1 border-blue-500 text-blue-600 hover:bg-blue-50"
+        >
+          <Activity className="h-4 w-4 mr-1" />
+          Tests
+        </Button>
+      )}
+      
+      {activeTab !== 'billing' && (
         <Button 
           variant="outline"
           onClick={() => setActiveTab('billing')}
@@ -41,7 +41,40 @@ const LabNavigation = ({ activeTab, setActiveTab }: LabNavigationProps) => {
           <CreditCard className="h-4 w-4 mr-1" />
           Billing
         </Button>
-      ) : (
+      )}
+
+      {activeTab !== 'tracking' && (
+        <Button 
+          variant="outline"
+          onClick={() => setActiveTab('tracking')}
+          className="flex items-center gap-1 border-amber-500 text-amber-600 hover:bg-amber-50"
+        >
+          <Activity className="h-4 w-4 mr-1" />
+          Tracking
+        </Button>
+      )}
+      
+      {activeTab === 'analytics' && (
+        <Button 
+          className="flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white"
+          disabled
+        >
+          <BarChart2 className="h-4 w-4 mr-1" />
+          Analytics
+        </Button>
+      )}
+      
+      {activeTab === 'tests' && (
+        <Button 
+          className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white"
+          disabled
+        >
+          <Activity className="h-4 w-4 mr-1" />
+          Tests
+        </Button>
+      )}
+      
+      {activeTab === 'billing' && (
         <Button 
           className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white"
           disabled
@@ -50,37 +83,16 @@ const LabNavigation = ({ activeTab, setActiveTab }: LabNavigationProps) => {
           Billing
         </Button>
       )}
-      
-      {/* Tests Tab */}
-      {activeTab !== 'tests' ? (
+
+      {activeTab === 'tracking' && (
         <Button 
-          variant="outline"
-          onClick={() => setActiveTab('tests')}
-          className="flex items-center gap-1 border-purple-500 text-purple-600 hover:bg-purple-50"
-        >
-          <FlaskConical className="h-4 w-4 mr-1" />
-          Test Reports
-        </Button>
-      ) : (
-        <Button 
-          className="flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white"
+          className="flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white"
           disabled
         >
-          <FlaskConical className="h-4 w-4 mr-1" />
-          Test Reports
+          <Activity className="h-4 w-4 mr-1" />
+          Tracking
         </Button>
       )}
-      
-      {/* Billing History Link */}
-      <Link to="/billing-history">
-        <Button 
-          variant="outline" 
-          className="flex items-center gap-1 border-amber-500 text-amber-600 hover:bg-amber-50"
-        >
-          <CreditCard className="h-4 w-4 mr-1" />
-          Billing History
-        </Button>
-      </Link>
     </div>
   );
 };

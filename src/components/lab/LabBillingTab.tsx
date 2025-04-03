@@ -7,6 +7,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import PatientForm from "./PatientForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import CollapsibleSidebar from "@/components/pharmacy/CollapsibleSidebar";
+import LabWaitlistSidebar from "./LabWaitlistSidebar";
+import { useState } from "react";
 
 const LabBillingTab = () => {
   const { 
@@ -27,7 +31,12 @@ const LabBillingTab = () => {
     handleSaveCustomer,
     isEditingCustomer,
     setIsEditingCustomer,
+    assignTestToRepresentative,
+    waitlistPatients,
+    handleSelectWaitlistPatient
   } = useLabContext();
+  
+  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false);
   
   const subtotal = calculateSubtotal();
   const platformFee = 10.00;
@@ -35,45 +44,69 @@ const LabBillingTab = () => {
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Billing</CardTitle>
-            <CardDescription>Manage patient bill</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <LabBillingPanel
-              billItems={billItems}
-              updateItemQuantity={updateItemQuantity}
-              removeItem={removeItem}
-              subtotal={subtotal}
-              platformFee={platformFee}
-              total={total}
-              onPrintBill={handlePrintBill}
-              customerName={selectedCustomer?.name}
-              customers={customers}
-              selectedCustomer={selectedCustomer}
-              onSelectCustomer={handleSelectCustomer}
-              onAddNewCustomer={handleAddNewCustomer}
-              searchTerm={searchTerm}
-              onSearchCustomer={handleSearchCustomer}
-              onEditCustomer={handleEditCustomer}
-            />
-          </CardContent>
-        </Card>
+      <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <ResizablePanelGroup direction="horizontal" className="flex-1 overflow-hidden">
+            <ResizablePanel defaultSize={40} minSize={30} className="overflow-hidden">
+              <Card className="h-full border-0 rounded-none shadow-none">
+                <CardHeader className="pb-2">
+                  <CardTitle>Billing</CardTitle>
+                  <CardDescription>Manage patient bill</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0 h-[calc(100%-5rem)]">
+                  <LabBillingPanel
+                    billItems={billItems}
+                    updateItemQuantity={updateItemQuantity}
+                    removeItem={removeItem}
+                    subtotal={subtotal}
+                    platformFee={platformFee}
+                    total={total}
+                    onPrintBill={handlePrintBill}
+                    customerName={selectedCustomer?.name}
+                    customers={customers}
+                    selectedCustomer={selectedCustomer}
+                    onSelectCustomer={handleSelectCustomer}
+                    onAddNewCustomer={handleAddNewCustomer}
+                    onEditCustomer={handleEditCustomer}
+                    searchTerm={searchTerm}
+                    onSearchCustomer={handleSearchCustomer}
+                    assignTestToRepresentative={assignTestToRepresentative}
+                  />
+                </CardContent>
+              </Card>
+            </ResizablePanel>
+            
+            <ResizableHandle withHandle />
+            
+            <ResizablePanel defaultSize={60} minSize={40} className="overflow-hidden">
+              <Card className="h-full border-0 rounded-none shadow-none">
+                <CardHeader className="pb-2">
+                  <CardTitle>Available Tests</CardTitle>
+                  <CardDescription>Select tests to add to the bill</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <LabSearchPanel 
+                    testOptions={labTestOptions}
+                    onAddToBill={addItemToBill}
+                  />
+                </CardContent>
+              </Card>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
         
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Available Tests</CardTitle>
-            <CardDescription>Select tests to add to the bill</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <LabSearchPanel 
-              testOptions={labTestOptions}
-              onAddToBill={addItemToBill}
-            />
-          </CardContent>
-        </Card>
+        <CollapsibleSidebar 
+          collapsed={rightSidebarCollapsed}
+          onToggleCollapse={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
+          side="right"
+          className="bg-white border-l"
+        >
+          <LabWaitlistSidebar 
+            waitlistPatients={waitlistPatients}
+            onSelectPatient={handleSelectWaitlistPatient}
+            collapsed={rightSidebarCollapsed}
+          />
+        </CollapsibleSidebar>
       </div>
 
       {/* Patient Edit Dialog */}

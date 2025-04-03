@@ -1,7 +1,6 @@
-
 import { createContext, useState, useContext, ReactNode } from "react";
 import { LabTest } from "@/types/lab-tests";
-import { LabBillItem, LabCustomer, LabTestOption } from "@/types/lab-types";
+import { LabBillItem, LabCustomer, LabTestOption, LabTestRepresentative, LabWaitlistPatient } from "@/types/lab-types";
 import { useToast } from "@/hooks/use-toast";
 
 interface MultiPatientBill {
@@ -34,6 +33,10 @@ interface LabContextType {
   isEditingCustomer: boolean;
   setIsEditingCustomer: (isEditing: boolean) => void;
   multiPatientBill?: MultiPatientBill;
+  assignTestToRepresentative: (testId: string, representativeId: string) => void;
+  waitlistPatients: LabWaitlistPatient[];
+  handleSelectWaitlistPatient: (patient: LabWaitlistPatient) => void;
+  updateTestStatus: (testId: string, status: string, estimatedTime?: string) => void;
 }
 
 const LabContext = createContext<LabContextType | undefined>(undefined);
@@ -186,6 +189,39 @@ export const customers: LabCustomer[] = [
   { id: "C4", name: "Emily Davis", mobile: "+1-555-789-0123", address: "101 Maple Dr, Anywhere" }
 ];
 
+const initialWaitlistPatients: LabWaitlistPatient[] = [
+  {
+    id: "WP001",
+    name: "David Lee",
+    items: 3,
+    isHighlighted: true,
+    tests: [
+      { id: "LT101", testName: "Complete Blood Count (CBC)", price: 25.00, quantity: 1, discount: 0, category: 'pathology' },
+      { id: "LT103", testName: "Thyroid Function Test", price: 45.00, quantity: 1, discount: 0, category: 'pathology' },
+      { id: "LT105", testName: "Kidney Function Test", price: 42.00, quantity: 1, discount: 0, category: 'pathology' }
+    ]
+  },
+  {
+    id: "WP002",
+    name: "Sarah Johnson",
+    items: 2,
+    isHighlighted: false,
+    tests: [
+      { id: "LT104", testName: "Liver Function Test", price: 40.00, quantity: 1, discount: 0, category: 'pathology' },
+      { id: "LT107", testName: "X-Ray Chest", price: 60.00, quantity: 1, discount: 0, category: 'radiology' }
+    ]
+  },
+  {
+    id: "WP003",
+    name: "Michael Brown",
+    items: 1,
+    isHighlighted: false,
+    tests: [
+      { id: "LT110", testName: "MRI Brain", price: 350.00, quantity: 1, discount: 0, category: 'radiology' }
+    ]
+  }
+];
+
 export const LabProvider = ({ children }: { children: ReactNode }) => {
   const [pendingTests, setPendingTests] = useState<LabTest[]>(initialPendingTests);
   const [completedTests, setCompletedTests] = useState<LabTest[]>(initialCompletedTests);
@@ -195,6 +231,7 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isEditingCustomer, setIsEditingCustomer] = useState(false);
   const [customersState, setCustomersState] = useState<LabCustomer[]>(customers);
+  const [waitlistPatients, setWaitlistPatients] = useState<LabWaitlistPatient[]>(initialWaitlistPatients);
   const { toast } = useToast();
 
   const handleSelectTest = (test: LabTest) => {
@@ -378,6 +415,74 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
     setSearchTerm(customer.name);
   };
 
+  const assignTestToRepresentative = (testId: string, representativeId: string) => {
+    const updatedBillItems = billItems.map(item => {
+      if (item.id === testId) {
+        return { ...item, representativeId };
+      }
+      return item;
+    });
+    
+    setBillItems(updatedBillItems);
+    
+    toast({
+      title: "Test assigned",
+      description: `Test has been assigned to representative ID: ${representativeId}`,
+    });
+  };
+
+  const handleSelectWaitlistPatient = (patient: LabWaitlistPatient) => {
+    setBillItems(patient.tests);
+    
+    const matchingCustomer = customersState.find(c => c.name === patient.name);
+    
+    if (matchingCustomer) {
+      setSelectedCustomer(matchingCustomer);
+      setSearchTerm(matchingCustomer.name);
+    } else {
+      const newCustomer = {
+        id: patient.id,
+        name: patient.name,
+        mobile: "Unknown",
+        address: "Unknown"
+      };
+      setSelectedCustomer(newCustomer);
+      setSearchTerm(newCustomer.name);
+    }
+    
+    toast({
+      title: "Patient loaded",
+      description: `${patient.name}'s recommended tests loaded`,
+    });
+    
+    const updatedWaitlist = waitlistPatients.map(p => ({
+      ...p,
+      isHighlighted: p.id === patient.id
+    }));
+    
+    setWaitlistPatients(updatedWaitlist);
+  };
+
+  const updateTestStatus = (testId: string, status: string, estimatedTime?: string) => {
+    const updatedBillItems = billItems.map(item => {
+      if (item.id === testId) {
+        return { 
+          ...item, 
+          status: status as 'pending' | 'sampling' | 'processing' | 'completed' | 'cancelled',
+          estimatedTime
+        };
+      }
+      return item;
+    });
+    
+    setBillItems(updatedBillItems);
+    
+    toast({
+      title: "Test status updated",
+      description: `Test status updated to ${status}`,
+    });
+  };
+
   const handlePrintBill = () => {
     if (billItems.length === 0) {
       toast({
@@ -406,7 +511,7 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
       testName: item.testName,
       status: 'pending' as const,
       orderedDate: new Date(),
-      doctorName: "Self-Order",
+      doctorName: item.representativeId ? `Rep ID: ${item.representativeId}` : "Self-Order",
       category: item.category,
       billId: billId,
       price: item.price
@@ -417,6 +522,13 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
     setBillItems([]);
     setSelectedCustomer(null);
     setSearchTerm("");
+    
+    if (selectedCustomer) {
+      const updatedWaitlist = waitlistPatients.filter(
+        p => p.name.toLowerCase() !== selectedCustomer.name.toLowerCase()
+      );
+      setWaitlistPatients(updatedWaitlist);
+    }
     
     toast({
       title: "Bill generated",
@@ -449,7 +561,11 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
         handleEditCustomer,
         handleSaveCustomer,
         isEditingCustomer,
-        setIsEditingCustomer
+        setIsEditingCustomer,
+        assignTestToRepresentative,
+        waitlistPatients,
+        handleSelectWaitlistPatient,
+        updateTestStatus,
       }}
     >
       {children}
