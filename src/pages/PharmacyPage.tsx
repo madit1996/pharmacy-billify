@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -36,7 +35,7 @@ export type CustomerDetails = {
 };
 
 const PharmacyPage = () => {
-  const [activeTab, setActiveTab] = useState<'analytics' | 'billing'>('billing');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'billing'>('analytics');
   
   const [date, setDate] = useState<Date>(new Date());
   const [billItems, setBillItems] = useState<BillItem[]>([]);
