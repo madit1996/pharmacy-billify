@@ -102,7 +102,9 @@ const BillItem = ({
                 item.status === 'pending' ? 'outline' : 
                 item.status === 'sampling' ? 'secondary' :
                 item.status === 'processing' ? 'default' :
-                item.status === 'completed' ? 'success' : 'destructive'
+                item.status === 'completed' ? 'outline' : 'destructive'
+              } className={
+                item.status === 'completed' ? 'bg-green-100 text-green-800 border-green-200' : ''
               }>
                 {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
               </Badge>
