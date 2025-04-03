@@ -49,7 +49,7 @@ export const initialPendingTests: LabTest[] = [
     patientName: "John Doe", 
     patientId: "P001", 
     testName: "Complete Blood Count", 
-    status: "pending", 
+    status: "pending" as LabTestStatus, 
     orderedDate: new Date(2023, 7, 15),
     doctorName: "Dr. Sarah Smith",
     category: "pathology"
@@ -59,7 +59,7 @@ export const initialPendingTests: LabTest[] = [
     patientName: "Jane Smith", 
     patientId: "P002", 
     testName: "Lipid Profile", 
-    status: "pending", 
+    status: "pending" as LabTestStatus, 
     orderedDate: new Date(2023, 7, 16),
     doctorName: "Dr. Robert Johnson",
     category: "pathology"
@@ -69,7 +69,7 @@ export const initialPendingTests: LabTest[] = [
     patientName: "Alex Brown", 
     patientId: "P003", 
     testName: "Thyroid Function Test", 
-    status: "pending", 
+    status: "pending" as LabTestStatus, 
     orderedDate: new Date(2023, 7, 16),
     doctorName: "Dr. Emily Williams",
     category: "pathology"
@@ -79,7 +79,7 @@ export const initialPendingTests: LabTest[] = [
     patientName: "Maria Garcia", 
     patientId: "P004", 
     testName: "Blood Glucose", 
-    status: "pending", 
+    status: "pending" as LabTestStatus, 
     orderedDate: new Date(2023, 7, 17),
     doctorName: "Dr. Michael Davis",
     category: "pathology"
@@ -89,7 +89,7 @@ export const initialPendingTests: LabTest[] = [
     patientName: "Robert Wilson", 
     patientId: "P005", 
     testName: "Liver Function Test", 
-    status: "pending", 
+    status: "pending" as LabTestStatus, 
     orderedDate: new Date(2023, 7, 17),
     doctorName: "Dr. Sarah Smith",
     category: "pathology"
@@ -99,7 +99,7 @@ export const initialPendingTests: LabTest[] = [
     patientName: "William Moore", 
     patientId: "P006", 
     testName: "X-Ray Chest", 
-    status: "pending", 
+    status: "pending" as LabTestStatus, 
     orderedDate: new Date(2023, 7, 18),
     doctorName: "Dr. James Wilson",
     category: "radiology"
@@ -109,7 +109,7 @@ export const initialPendingTests: LabTest[] = [
     patientName: "Susan Taylor", 
     patientId: "P007", 
     testName: "MRI Brain", 
-    status: "pending", 
+    status: "pending" as LabTestStatus, 
     orderedDate: new Date(2023, 7, 18),
     doctorName: "Dr. Patricia Johnson",
     category: "radiology"
@@ -612,21 +612,23 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
 
     const billId = `BILL-${Date.now()}`;
     
-    const newPendingTests = billItems.map((item, index) => ({
+    const newPendingTests: LabTest[] = billItems.map((item, index) => ({
       id: `LT${Date.now()}-${index}`,
       patientName: selectedCustomer.name,
       patientId: selectedCustomer.id,
       testName: item.testName,
-      status: 'sampling' as const,
+      status: 'sampling' as LabTestStatus,
       orderedDate: new Date(),
       doctorName: item.representativeId ? `Rep ID: ${item.representativeId}` : "Self-Order",
       category: item.category,
       billId: billId,
       price: item.price,
       representativeId: item.representativeId,
+      sampleDetails: item.sampleDetails,
+      sampleId: item.sampleId,
       workflowHistory: [{
-        fromStatus: 'sampling',
-        toStatus: 'sampling',
+        fromStatus: 'sampling' as LabTestStatus,
+        toStatus: 'sampling' as LabTestStatus,
         timestamp: new Date(),
         notes: 'Initial status'
       }]
@@ -677,6 +679,10 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
         handleSaveCustomer,
         isEditingCustomer,
         setIsEditingCustomer,
+        assignTestToRepresentative,
+        waitlistPatients,
+        handleSelectWaitlistPatient,
+        updateTestStatus,
         updateTestWorkflow,
         updateSampleDetails,
       }}

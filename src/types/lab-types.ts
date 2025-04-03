@@ -1,4 +1,3 @@
-
 // Lab billing types
 export type LabBillItem = {
   id: string;
@@ -10,6 +9,8 @@ export type LabBillItem = {
   representativeId?: string;
   status?: 'pending' | 'sampling' | 'processing' | 'completed' | 'cancelled';
   estimatedTime?: string;
+  sampleDetails?: string; // Added this property
+  sampleId?: string;     // Added this property
 };
 
 export type LabCustomer = {

@@ -13,7 +13,12 @@ import LabWorkflowPanel from "@/components/lab/LabWorkflowPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LabTestsPage = () => {
-  const [activeTab, setActiveTab] = useState<'analytics' | 'tests' | 'billing'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'tests' | 'billing' | 'tracking'>('analytics');
+
+  // This function ensures we handle all possible tab values
+  const handleTabChange = (tab: 'analytics' | 'tests' | 'billing' | 'tracking') => {
+    setActiveTab(tab);
+  };
 
   return (
     <LabProvider>
@@ -28,7 +33,7 @@ const LabTestsPage = () => {
           
           <h1 className="text-xl font-semibold text-center flex-1">Lab Management</h1>
           
-          <LabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+          <LabNavigation activeTab={activeTab} setActiveTab={handleTabChange} />
         </div>
         
         <div className="flex-1 overflow-hidden flex">
@@ -37,6 +42,8 @@ const LabTestsPage = () => {
             {activeTab === 'analytics' && <LabAnalyticsTab />}
             {activeTab === 'tests' && <LabTestsTab />}
             {activeTab === 'billing' && <LabBillingTab />}
+            {/* We can add the tracking tab content when needed */}
+            {activeTab === 'tracking' && <div>Test tracking content will be added here</div>}
           </div>
           
           {/* Workflow tracking panel - always visible */}
