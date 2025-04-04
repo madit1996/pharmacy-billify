@@ -58,7 +58,30 @@ const UploadTestResultForm = ({
     setTimeout(() => setStep('options'), 300);
   };
   
-  // For options selection screen
+  // If test is not in reporting status, show appropriate message
+  if (test.status !== 'reporting' && test.status !== 'completed') {
+    return (
+      <div className="p-6 space-y-4">
+        <TestPatientInfo test={test} />
+        
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <h3 className="font-medium text-yellow-800">Test not ready for reporting</h3>
+          <p className="text-sm text-yellow-700 mt-1">
+            This test is currently in the "{test.status}" phase. 
+            Test results can only be uploaded once it reaches the reporting phase.
+          </p>
+        </div>
+        
+        <div className="flex justify-end">
+          <Button variant="outline" onClick={onCancel}>
+            Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+  
+  // For options selection screen (only when test is in reporting status)
   return (
     <>
       <div className="mb-5">

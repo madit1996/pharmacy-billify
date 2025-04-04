@@ -12,6 +12,10 @@ export type LabBillItem = {
   estimatedTime?: string;
   sampleDetails?: string; 
   sampleId?: string;
+  isHomeCollection?: boolean;
+  collectionAddress?: string;
+  collectionDateTime?: Date;
+  collectionNotes?: string;
 };
 
 export type LabCustomer = {
@@ -28,6 +32,7 @@ export interface LabTestOption {
   testName: string;
   price: number;
   category: 'pathology' | 'radiology' | 'other';
+  requiresHomeCollection?: boolean;
 }
 
 // Lab test representative
@@ -65,4 +70,14 @@ export interface LabTestWorkflow {
   estimatedCompletionTime: Date;
   assignedTo?: string;
   notes?: string[];
+}
+
+// Home collection specific types
+export interface HomeCollectionDetails {
+  address: string;
+  scheduledDate: Date;
+  contactNumber: string;
+  specialInstructions?: string;
+  collectorId?: string;
+  collectionStatus: 'scheduled' | 'in-progress' | 'completed' | 'failed';
 }

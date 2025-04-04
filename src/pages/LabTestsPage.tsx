@@ -10,7 +10,6 @@ import LabTestsTab from "@/components/lab/LabTestsTab";
 import LabBillingTab from "@/components/lab/LabBillingTab";
 import LabTestTrackingTab from "@/components/lab/LabTestTrackingTab";
 import { LabProvider } from "@/contexts/LabContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LabTestsPage = () => {
   const [activeTab, setActiveTab] = useState<'analytics' | 'tests' | 'billing' | 'tracking'>('analytics');

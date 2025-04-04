@@ -1,647 +1,504 @@
 
-import { useState } from "react";
 import { useLabContext } from "@/contexts/LabContext";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { LabTest, LabTestStatus } from "@/types/lab-tests";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  CheckCircle, 
-  Clock, 
-  FlaskConical, 
-  Loader2, 
-  ClipboardList,
-  AlertTriangle,
-  ArrowRight,
-  ArrowLeft,
-  MessageSquare,
-  UserCircle2,
-  Search,
-  Filter,
-  RotateCw
-} from "lucide-react";
-import { LabTest, LabTestStatus, WorkflowHistoryItem } from "@/types/lab-tests";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { LabTestRepresentative } from "@/types/lab-types";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Activity, ArrowRight, Calendar, CheckCircle, Clock, 
+  FileText, Home, Loader2, MapPin, Search, User 
+} from "lucide-react";
+import { useState } from "react";
+import UploadTestResultForm from "./UploadTestResultForm";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-// Define workflow stages
-const WORKFLOW_STAGES = [
-  { id: "sampling", name: "Sample Collection", icon: FlaskConical },
-  { id: "processing", name: "Lab Processing", icon: Loader2 },
-  { id: "reporting", name: "Report Creation", icon: ClipboardList },
-  { id: "completed", name: "Completed", icon: CheckCircle },
-];
+// Function to get workflow steps
+const getWorkflowSteps = (test: LabTest) => {
+  const baseSteps = [
+    { status: 'pending', label: 'Ordered', icon: Calendar },
+    { status: 'sampling', label: 'Sample Collection', icon: FileText },
+    { status: 'processing', label: 'Processing', icon: Loader2 },
+    { status: 'reporting', label: 'Reporting', icon: Activity },
+    { status: 'completed', label: 'Completed', icon: CheckCircle },
+  ];
+  
+  return baseSteps;
+};
 
-// Define representatives (this would normally come from a database)
-const REPRESENTATIVES: LabTestRepresentative[] = [
-  { id: "rep1", name: "Dr. Jane Smith", role: "Lab Technician", specialty: "Blood Work" },
-  { id: "rep2", name: "Dr. John Davis", role: "Lab Technician", specialty: "Microbiology" },
-  { id: "rep3", name: "Dr. Sarah Johnson", role: "Pathologist", specialty: "Histopathology" },
-  { id: "rep4", name: "Dr. Michael Chen", role: "Radiologist", specialty: "X-ray Analysis" },
-  { id: "rep5", name: "Dr. Lisa Wong", role: "Lab Supervisor", specialty: "General" },
-];
+// Function to get current step index
+const getCurrentStepIndex = (test: LabTest): number => {
+  const statuses = ['pending', 'sampling', 'processing', 'reporting', 'completed'];
+  return statuses.indexOf(test.status);
+};
 
 const LabTestTrackingTab = () => {
-  const { pendingTests, completedTests, updateTestWorkflow } = useLabContext();
-  const [activeStage, setActiveStage] = useState<LabTestStatus>("sampling");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  const [selectedPatientFilter, setSelectedPatientFilter] = useState<string>("");
+  const { 
+    pendingTests, 
+    completedTests,
+    handleUploadResult,
+    handleCreateReport,
+    updateTestWorkflow,
+  } = useLabContext();
+
   const [selectedTest, setSelectedTest] = useState<LabTest | null>(null);
-  
-  // Dialog states
-  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
-  const [isWorkflowDialogOpen, setIsWorkflowDialogOpen] = useState(false);
-  const [nextStage, setNextStage] = useState<string>("");
-  const [workflowNote, setWorkflowNote] = useState("");
-  const [selectedRep, setSelectedRep] = useState("");
-  const [additionalDetails, setAdditionalDetails] = useState("");
-  
-  // Function to filter tests by search term
-  const filterTests = (tests: LabTest[]) => {
-    if (!searchTerm && !selectedPatientFilter) return tests;
-    
-    return tests.filter(test => {
-      const matchesSearch = !searchTerm || 
-        test.testName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        test.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        test.patientId.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesPatient = !selectedPatientFilter || 
-        `${test.patientId}-${test.patientName}` === selectedPatientFilter;
-      
-      return matchesSearch && matchesPatient;
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterPatient, setFilterPatient] = useState("all-patients");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterHomeCollection, setFilterHomeCollection] = useState<boolean | null>(null);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+
+  const { toast } = useToast();
+
+  // Combine all tests for tracking
+  const allTests = [...pendingTests, ...completedTests];
+
+  // Get unique patients
+  const getAllPatients = () => {
+    const patientMap = new Map();
+    allTests.forEach(test => {
+      if (!patientMap.has(test.patientId)) {
+        patientMap.set(test.patientId, { key: test.patientId, name: test.patientName });
+      }
     });
+    return Array.from(patientMap.values());
   };
 
-  // Group tests by status
-  const getTestsByStatus = (status: LabTestStatus) => {
-    const tests = status === 'completed' ? 
-      filterTests(completedTests) : 
-      filterTests(pendingTests.filter(test => test.status === status));
+  // Filter tests based on search, patient, status and home collection
+  const filteredTests = allTests.filter(test => {
+    // Text search
+    const matchesSearch = searchQuery === "" || 
+      test.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      test.testName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      test.id.toLowerCase().includes(searchQuery.toLowerCase());
     
-    return groupTestsByPatient(tests);
+    // Patient filter  
+    const matchesPatient = filterPatient === "all-patients" || test.patientId === filterPatient;
+    
+    // Status filter
+    const matchesStatus = filterStatus === "all" || test.status === filterStatus;
+
+    // Home collection filter
+    const matchesHomeCollection = filterHomeCollection === null || 
+      test.isHomeCollection === filterHomeCollection;
+    
+    return matchesSearch && matchesPatient && matchesStatus && matchesHomeCollection;
+  });
+
+  // Count tests by status for analytics
+  const countByStatus = (status: LabTestStatus) => {
+    return allTests.filter(test => test.status === status).length;
   };
-  
-  // Group tests by patient
-  const groupTestsByPatient = (tests: LabTest[]) => {
-    const grouped = tests.reduce((acc, test) => {
-      const key = `${test.patientId}-${test.patientName}`;
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(test);
-      return acc;
-    }, {} as Record<string, LabTest[]>);
-    
-    return grouped;
-  };
-  
-  // Get all unique patients from pending and completed tests
-  const getAllPatients = () => {
-    const allTests = [...pendingTests, ...completedTests];
-    const uniquePatients = new Map();
-    
-    allTests.forEach(test => {
-      const key = `${test.patientId}-${test.patientName}`;
-      if (!uniquePatients.has(key)) {
-        uniquePatients.set(key, {
-          id: test.patientId,
-          name: test.patientName,
-          key
-        });
-      }
-    });
-    
-    return Array.from(uniquePatients.values());
-  };
-  
-  const groupedTests = getTestsByStatus(activeStage);
-  
-  // Open dialog with test information for viewing history
-  const viewTestHistory = (test: LabTest) => {
-    setSelectedTest(test);
-    setIsHistoryDialogOpen(true);
-  };
-  
-  // Open dialog for advancing workflow stage
-  const openAdvanceDialog = (test: LabTest) => {
-    const currentStageIndex = WORKFLOW_STAGES.findIndex(stage => stage.id === test.status);
-    
-    if (currentStageIndex < WORKFLOW_STAGES.length - 1) {
-      const nextStageId = WORKFLOW_STAGES[currentStageIndex + 1].id;
-      setSelectedTest(test);
-      setNextStage(nextStageId);
-      setWorkflowNote("");
-      setSelectedRep("");
-      setAdditionalDetails("");
-      setIsWorkflowDialogOpen(true);
-    }
-  };
-  
-  // Open dialog with test information for reverting stage
-  const openRevertDialog = (test: LabTest) => {
-    const currentStageIndex = WORKFLOW_STAGES.findIndex(stage => stage.id === test.status);
-    
-    if (currentStageIndex > 0) {
-      const prevStageId = WORKFLOW_STAGES[currentStageIndex - 1].id;
-      setSelectedTest(test);
-      setNextStage(prevStageId);
-      setWorkflowNote("");
-      setSelectedRep("");
-      setAdditionalDetails("");
-      setIsWorkflowDialogOpen(true);
-    }
-  };
-  
-  // Handle workflow stage change with notes and representative
-  const handleWorkflowChange = () => {
-    if (!selectedTest) return;
-    
-    const performerName = selectedRep ? 
-      REPRESENTATIVES.find(rep => rep.id === selectedRep)?.name : undefined;
-    
-    let detailsField = {};
-    if (nextStage === "sampling") {
-      detailsField = { sampleDetails: additionalDetails };
-    } else if (nextStage === "processing") {
-      detailsField = { processingDetails: additionalDetails };
-    } else if (nextStage === "reporting") {
-      detailsField = { reportingDetails: additionalDetails };
-    }
-    
-    const historyItem: Partial<WorkflowHistoryItem> = {
-      notes: workflowNote,
-      performedBy: selectedRep || undefined,
-      performerName,
-      ...detailsField
-    };
-    
-    updateTestWorkflow(selectedTest.id, nextStage, workflowNote, historyItem);
-    setIsWorkflowDialogOpen(false);
-    
-    // If we've moved to a different stage, update the active stage to follow the test
-    if (nextStage !== activeStage) {
-      setActiveStage(nextStage as LabTestStatus);
-    }
-  };
-  
-  const getStatusBadge = (status: string) => {
-    switch(status) {
-      case 'pending':
-        return <Badge variant="outline" className="ml-2">Pending</Badge>;
-      case 'sampling':
-        return <Badge variant="secondary" className="ml-2">Sampling</Badge>;
-      case 'processing':
-        return <Badge variant="default" className="ml-2 bg-amber-500">Processing</Badge>;
-      case 'reporting':
-        return <Badge variant="default" className="ml-2 bg-blue-500">Reporting</Badge>;
-      case 'completed':
-        return <Badge variant="default" className="ml-2 bg-green-500">Completed</Badge>;
-      default:
-        return <Badge variant="destructive" className="ml-2">Unknown</Badge>;
-    }
-  };
-  
-  const getStatusIcon = (status: string) => {
-    switch(status) {
-      case 'sampling': 
-        return <FlaskConical className="h-4 w-4 text-purple-500" />;
-      case 'processing':
-        return <Loader2 className="h-4 w-4 text-amber-500" />;
-      case 'reporting':
-        return <ClipboardList className="h-4 w-4 text-blue-500" />;
-      case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      default:
-        return <AlertTriangle className="h-4 w-4 text-red-500" />;
-    }
-  };
-  
-  // Patient test card component
-  const PatientTestGroup = ({ patientKey, tests }: { patientKey: string, tests: LabTest[] }) => {
-    const [patientId, patientName] = patientKey.split('-');
-    
-    return (
-      <Card key={patientKey} className="mb-4">
-        <CardHeader className="py-2 px-3 bg-slate-50">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium flex items-center">
-              {patientName}
-              <Badge variant="outline" className="ml-2 text-xs">
-                ID: {patientId}
-              </Badge>
-            </CardTitle>
-            <Badge variant="outline" className="bg-slate-100">
-              {tests.length} {tests.length === 1 ? 'test' : 'tests'}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="p-3 space-y-2">
-          {tests.map((test) => (
-            <div key={test.id} className="border rounded-md p-3 bg-white hover:bg-slate-50 transition-colors">
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="flex items-center">
-                    {getStatusIcon(test.status)}
-                    <h4 className="font-medium text-sm ml-2">{test.testName}</h4>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">{test.category || 'General'}</p>
-                  <div className="mt-1 flex items-center">
-                    {getStatusBadge(test.status)}
-                  </div>
-                </div>
-                
-                <div className="flex flex-col items-end">
-                  <div className="flex space-x-1 mb-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7 text-xs"
-                      onClick={() => openRevertDialog(test)}
-                      disabled={test.status === 'sampling' || test.status === 'completed'}
-                    >
-                      <ArrowLeft className="h-3 w-3 mr-1" />
-                      Back
-                    </Button>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7 text-xs"
-                      onClick={() => openAdvanceDialog(test)}
-                      disabled={test.status === 'completed'}
-                    >
-                      {test.status === 'reporting' ? (
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                      ) : (
-                        <ArrowRight className="h-3 w-3 mr-1" />
-                      )}
-                      {test.status === 'reporting' ? 'Complete' : 'Next'}
-                    </Button>
-                    
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-xs"
-                      onClick={() => viewTestHistory(test)}
-                    >
-                      <Clock className="h-3 w-3 mr-1" />
-                      History
-                    </Button>
-                  </div>
-                  
-                  {test.estimatedCompletionTime && (
-                    <div className="flex items-center text-xs text-gray-500">
-                      <Clock className="h-3 w-3 mr-1" />
-                      Est: {new Date(test.estimatedCompletionTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Representative info */}
-              {test.representativeId && (
-                <div className="mt-2 pt-2 border-t border-dashed text-xs text-gray-600">
-                  <UserCircle2 className="h-3 w-3 inline mr-1" />
-                  {REPRESENTATIVES.find(rep => rep.id === test.representativeId)?.name || 'Assigned Staff'}
-                </div>
-              )}
-              
-              {/* Sample info */}
-              {test.sampleDetails && (
-                <div className="mt-1 text-xs text-gray-600">
-                  <FlaskConical className="h-3 w-3 inline mr-1" />
-                  Sample: {test.sampleDetails}
-                </div>
-              )}
-              
-              {/* Last workflow note if available */}
-              {test.workflowHistory && test.workflowHistory.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-dashed">
-                  <p className="text-xs text-gray-500 flex items-start">
-                    <MessageSquare className="h-3 w-3 mr-1 mt-0.5" />
-                    "{test.workflowHistory[test.workflowHistory.length - 1].notes || 'No notes'}"
-                  </p>
-                </div>
-              )}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    );
-  };
-  
-  const EmptyStateMessage = () => (
-    <div className="text-center py-10">
-      <AlertTriangle className="h-10 w-10 text-amber-400 mx-auto mb-3 opacity-50" />
-      <p className="text-gray-500">No tests in this stage</p>
-      <div className="flex justify-center mt-2 space-x-2">
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={() => {
-            setSearchTerm("");
-            setSelectedPatientFilter("");
-          }}
-        >
-          <RotateCw className="h-3 w-3 mr-1" />
-          Clear filters
-        </Button>
-      </div>
-    </div>
+
+  // Count home collections
+  const homeCollectionCount = allTests.filter(test => test.isHomeCollection).length;
+  const pendingHomeCollections = allTests.filter(test => 
+    test.isHomeCollection && (test.status === 'pending' || test.status === 'sampling')
+  ).length;
+
+  // Order tests by date (newest first)
+  const orderedTests = [...filteredTests].sort((a, b) => 
+    b.orderedDate.getTime() - a.orderedDate.getTime()
   );
 
+  const handleSelectTest = (test: LabTest) => {
+    setSelectedTest(test);
+    
+    // If test is in reporting stage, open upload dialog directly
+    if (test.status === 'reporting') {
+      setIsUploadDialogOpen(true);
+    }
+  };
+
+  const handleUpdateWorkflow = (test: LabTest, newStatus: LabTestStatus, notes?: string) => {
+    updateTestWorkflow(test.id, newStatus, notes);
+    
+    // Show toast notification
+    toast({
+      title: `Test status updated`,
+      description: `${test.testName} moved to ${newStatus} stage`,
+    });
+    
+    // If moving to reporting stage, open upload dialog
+    if (newStatus === 'reporting') {
+      handleSelectTest({...test, status: newStatus});
+    }
+  };
+
+  const getNextStatus = (currentStatus: LabTestStatus): LabTestStatus | null => {
+    const statusFlow: LabTestStatus[] = ['pending', 'sampling', 'processing', 'reporting', 'completed'];
+    const currentIndex = statusFlow.indexOf(currentStatus);
+    
+    if (currentIndex < statusFlow.length - 1) {
+      return statusFlow[currentIndex + 1];
+    }
+    
+    return null;
+  };
+
+  const getStatusBadgeColor = (status: LabTestStatus) => {
+    switch (status) {
+      case 'pending': return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
+      case 'sampling': return "bg-blue-100 text-blue-800 hover:bg-blue-200";
+      case 'processing': return "bg-purple-100 text-purple-800 hover:bg-purple-200";
+      case 'reporting': return "bg-indigo-100 text-indigo-800 hover:bg-indigo-200";
+      case 'completed': return "bg-green-100 text-green-800 hover:bg-green-200";
+      default: return "bg-gray-100 text-gray-800 hover:bg-gray-200";
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Test Workflow & Tracking</h2>
-        <div className="flex items-center space-x-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search tests or patients" 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64 pl-8"
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Analytics Cards */}
+        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-blue-600">Pending Tests</p>
+                <h3 className="text-3xl font-bold mt-1">{countByStatus('pending')}</h3>
+              </div>
+              <div className="bg-blue-100 p-2 rounded-full">
+                <Clock className="h-5 w-5 text-blue-600" />
+              </div>
+            </div>
+            <Progress 
+              value={(countByStatus('pending') / allTests.length) * 100} 
+              className="h-1 mt-4 bg-blue-100" 
             />
-          </div>
-          <Select
-            value={selectedPatientFilter}
-            onValueChange={setSelectedPatientFilter}
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter by patient" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all-patients">All Patients</SelectItem>
-              {getAllPatients().map((patient) => (
-                <SelectItem key={patient.key} value={patient.key}>
-                  {patient.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-50 to-pink-50">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-purple-600">Processing</p>
+                <h3 className="text-3xl font-bold mt-1">
+                  {countByStatus('processing') + countByStatus('sampling')}
+                </h3>
+              </div>
+              <div className="bg-purple-100 p-2 rounded-full">
+                <Loader2 className="h-5 w-5 text-purple-600" />
+              </div>
+            </div>
+            <Progress 
+              value={((countByStatus('processing') + countByStatus('sampling')) / allTests.length) * 100} 
+              className="h-1 mt-4 bg-purple-100" 
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-green-600">Completed</p>
+                <h3 className="text-3xl font-bold mt-1">{countByStatus('completed')}</h3>
+              </div>
+              <div className="bg-green-100 p-2 rounded-full">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              </div>
+            </div>
+            <Progress 
+              value={(countByStatus('completed') / allTests.length) * 100} 
+              className="h-1 mt-4 bg-green-100" 
+            />
+          </CardContent>
+        </Card>
+
+        {/* Home Collection Analytics */}
+        <Card className="bg-gradient-to-br from-amber-50 to-orange-50">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-amber-600">Home Collections</p>
+                <h3 className="text-3xl font-bold mt-1">{homeCollectionCount}</h3>
+                <p className="text-xs text-amber-600 mt-1">
+                  {pendingHomeCollections} pending collections
+                </p>
+              </div>
+              <div className="bg-amber-100 p-2 rounded-full">
+                <Home className="h-5 w-5 text-amber-600" />
+              </div>
+            </div>
+            <Progress 
+              value={(homeCollectionCount / allTests.length) * 100} 
+              className="h-1 mt-4 bg-amber-100" 
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-4 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+          <Input
+            placeholder="Search by patient name or test..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
+        
+        <Select value={filterPatient} onValueChange={setFilterPatient}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by patient" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all-patients">All Patients</SelectItem>
+            {getAllPatients().map((patient) => (
+              <SelectItem key={patient.key} value={patient.key}>
+                {patient.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="sampling">Sampling</SelectItem>
+            <SelectItem value="processing">Processing</SelectItem>
+            <SelectItem value="reporting">Reporting</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        <Select 
+          value={filterHomeCollection === null ? "all" : filterHomeCollection ? "home" : "lab"} 
+          onValueChange={(value) => {
+            if (value === "all") setFilterHomeCollection(null);
+            else if (value === "home") setFilterHomeCollection(true);
+            else setFilterHomeCollection(false);
+          }}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Collection type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Collections</SelectItem>
+            <SelectItem value="home">Home Collection</SelectItem>
+            <SelectItem value="lab">Lab Collection</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       
-      <Tabs defaultValue="sampling" value={activeStage} onValueChange={(value) => setActiveStage(value as LabTestStatus)}>
-        <TabsList className="mb-4 w-full flex overflow-x-auto">
-          {WORKFLOW_STAGES.map((stage) => (
-            <TabsTrigger key={stage.id} value={stage.id} className="flex-1 flex items-center justify-center">
-              <stage.icon className="h-4 w-4 mr-2" />
-              <span>{stage.name}</span>
-            </TabsTrigger>
-          ))}
+      <Tabs defaultValue="all">
+        <TabsList>
+          <TabsTrigger value="all">All Tests</TabsTrigger>
+          <TabsTrigger value="active">Active Tests</TabsTrigger>
+          <TabsTrigger value="completed">Completed Tests</TabsTrigger>
+          <TabsTrigger value="home">Home Collections</TabsTrigger>
         </TabsList>
         
-        {WORKFLOW_STAGES.map((stage) => (
-          <TabsContent key={stage.id} value={stage.id} className="mt-0 space-y-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle>{stage.name}</CardTitle>
-                <CardDescription>
-                  {stage.id === 'sampling' && 'Tests awaiting sample collection'}
-                  {stage.id === 'processing' && 'Tests currently being processed'}
-                  {stage.id === 'reporting' && 'Tests awaiting final report generation'}
-                  {stage.id === 'completed' && 'Tests with final results'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="max-h-[600px] pr-4">
-                  {Object.keys(groupedTests).length > 0 ? (
-                    Object.entries(groupedTests).map(([patientKey, tests]) => (
-                      <PatientTestGroup key={patientKey} patientKey={patientKey} tests={tests} />
-                    ))
-                  ) : (
-                    <EmptyStateMessage />
-                  )}
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        ))}
+        <TabsContent value="all" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>All Test Workflows</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {renderTestTable(orderedTests)}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="active" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Test Workflows</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {renderTestTable(orderedTests.filter(test => test.status !== 'completed'))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="completed" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Completed Tests</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {renderTestTable(orderedTests.filter(test => test.status === 'completed'))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="home" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Home Collection Tests</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {renderTestTable(orderedTests.filter(test => test.isHomeCollection))}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
       
-      {/* Test History Dialog */}
-      <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle className="flex justify-between items-center">
-              <div>Test Workflow History</div>
-              {selectedTest && getStatusBadge(selectedTest.status)}
-            </DialogTitle>
-          </DialogHeader>
-          
+      {/* Test Upload Dialog */}
+      <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+        <DialogContent className="max-w-4xl">
           {selectedTest && (
-            <ScrollArea className="max-h-[400px] overflow-auto pr-4">
-              <div className="space-y-4 py-4">
-                <div className="bg-slate-50 p-4 rounded-md">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Test Name</p>
-                      <p>{selectedTest.testName}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Patient</p>
-                      <p>{selectedTest.patientName}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Ordered Date</p>
-                      <p>{new Date(selectedTest.orderedDate).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Doctor</p>
-                      <p>{selectedTest.doctorName}</p>
-                    </div>
-                    {selectedTest.sampleId && (
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Sample ID</p>
-                        <p>{selectedTest.sampleId}</p>
-                      </div>
-                    )}
-                    {selectedTest.category && (
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Category</p>
-                        <p>{selectedTest.category}</p>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {selectedTest.sampleDetails && (
-                    <div className="mt-3 pt-3 border-t">
-                      <p className="text-sm font-medium text-gray-500">Sample Details</p>
-                      <p className="text-sm">{selectedTest.sampleDetails}</p>
-                    </div>
-                  )}
-                </div>
-                
-                {(!selectedTest.workflowHistory || selectedTest.workflowHistory.length === 0) ? (
-                  <div className="text-center py-6">
-                    <AlertTriangle className="h-8 w-8 text-amber-400 mx-auto mb-2" />
-                    <p>No workflow history available</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-medium">Workflow Timeline</h3>
-                    
-                    <div className="relative border-l-2 border-gray-200 pl-6 ml-4">
-                      {selectedTest.workflowHistory.map((item, index) => (
-                        <div key={index} className="mb-6 relative">
-                          {/* Timeline dot */}
-                          <div className="absolute -left-9 mt-1.5 w-6 h-6 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center">
-                            {getStatusIcon(item.toStatus)}
-                          </div>
-                          
-                          <div className="border rounded-lg p-4 bg-white">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center">
-                                {getStatusBadge(item.toStatus)}
-                              </div>
-                              <span className="text-xs text-gray-500">
-                                {new Date(item.timestamp).toLocaleString()}
-                              </span>
-                            </div>
-                            
-                            {item.performerName && (
-                              <div className="mb-2">
-                                <span className="text-sm flex items-center text-gray-700">
-                                  <UserCircle2 className="h-4 w-4 mr-1 text-blue-500" />
-                                  Performed by: {item.performerName}
-                                </span>
-                              </div>
-                            )}
-                            
-                            {item.notes && (
-                              <div className="mb-2 bg-slate-50 p-2 rounded-md">
-                                <p className="text-sm flex items-start">
-                                  <MessageSquare className="h-4 w-4 mr-1 mt-0.5 text-gray-500" />
-                                  <span className="italic">"{item.notes}"</span>
-                                </p>
-                              </div>
-                            )}
-                            
-                            {/* Status-specific details */}
-                            {(item.sampleDetails || item.processingDetails || item.reportingDetails) && (
-                              <div className="mt-2 pt-2 border-t border-dashed">
-                                {item.sampleDetails && (
-                                  <p className="text-sm my-1">
-                                    <FlaskConical className="h-4 w-4 inline mr-1 text-purple-500" />
-                                    Sample: {item.sampleDetails}
-                                  </p>
-                                )}
-                                
-                                {item.processingDetails && (
-                                  <p className="text-sm my-1">
-                                    <Loader2 className="h-4 w-4 inline mr-1 text-amber-500" />
-                                    Processing: {item.processingDetails}
-                                  </p>
-                                )}
-                                
-                                {item.reportingDetails && (
-                                  <p className="text-sm my-1">
-                                    <ClipboardList className="h-4 w-4 inline mr-1 text-blue-500" />
-                                    Report: {item.reportingDetails}
-                                  </p>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
+            <UploadTestResultForm
+              test={selectedTest}
+              onUpload={handleUploadResult}
+              onCreateReport={handleCreateReport}
+              onCancel={() => setIsUploadDialogOpen(false)}
+            />
           )}
-          
-          <DialogFooter>
-            <Button onClick={() => setIsHistoryDialogOpen(false)}>Close</Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
       
-      {/* Workflow Update Dialog */}
-      <Dialog open={isWorkflowDialogOpen} onOpenChange={setIsWorkflowDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>
-              {nextStage === selectedTest?.status ? "Revert to" : "Advance to"} {
-                WORKFLOW_STAGES.find(stage => stage.id === nextStage)?.name || nextStage
-              }
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            {selectedTest && (
-              <div className="bg-slate-50 p-3 rounded-md mb-4">
-                <p className="font-medium">{selectedTest.testName}</p>
-                <p className="text-sm text-gray-600">Patient: {selectedTest.patientName}</p>
-                <div className="flex items-center mt-1">
-                  <p className="text-sm text-gray-600 mr-2">Current Status:</p>
-                  {getStatusBadge(selectedTest.status)}
+      {/* Helper function to render test tables */}
+      function renderTestTable(tests: LabTest[]) {
+        if (tests.length === 0) {
+          return (
+            <div className="p-6 text-center text-gray-500">
+              No tests match the selected filters
+            </div>
+          );
+        }
+        
+        // Group tests by patient for better organization
+        const testsByPatient: Record<string, LabTest[]> = {};
+        tests.forEach(test => {
+          if (!testsByPatient[test.patientId]) {
+            testsByPatient[test.patientId] = [];
+          }
+          testsByPatient[test.patientId].push(test);
+        });
+        
+        return (
+          <div className="divide-y">
+            {Object.entries(testsByPatient).map(([patientId, patientTests]) => (
+              <div key={patientId} className="p-4">
+                <div className="flex items-center mb-4">
+                  <User className="h-5 w-5 mr-2 text-gray-500" />
+                  <h3 className="font-medium">{patientTests[0].patientName}</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  {patientTests.map(test => (
+                    <div 
+                      key={test.id} 
+                      className={`border rounded-lg p-4 ${test.isHomeCollection ? 'bg-blue-50 border-blue-200' : ''}`}
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <div className="flex items-center">
+                            <h4 className="font-medium">{test.testName}</h4>
+                            {test.isHomeCollection && (
+                              <Badge variant="outline" className="ml-2 bg-blue-100 text-blue-800 border-blue-200 flex items-center gap-1">
+                                <Home className="h-3 w-3" />
+                                Home Collection
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 mt-1">
+                            ID: {test.id} • Ordered: {test.orderedDate.toLocaleDateString()}
+                          </p>
+                          {test.isHomeCollection && test.collectionAddress && (
+                            <div className="flex items-start mt-2 text-sm text-gray-600">
+                              <MapPin className="h-3.5 w-3.5 mr-1 mt-0.5 text-gray-500" />
+                              <span>{test.collectionAddress}</span>
+                            </div>
+                          )}
+                        </div>
+                        <Badge className={getStatusBadgeColor(test.status)}>
+                          {test.status.charAt(0).toUpperCase() + test.status.slice(1)}
+                        </Badge>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        {/* Workflow progress visualization */}
+                        <div className="relative">
+                          <div className="flex justify-between mb-2">
+                            {getWorkflowSteps(test).map((step, idx) => {
+                              const isComplete = idx <= getCurrentStepIndex(test);
+                              const isCurrent = idx === getCurrentStepIndex(test);
+                              
+                              return (
+                                <div 
+                                  key={step.status} 
+                                  className={`flex flex-col items-center ${
+                                    isComplete ? 'text-blue-600' : 'text-gray-400'
+                                  }`}
+                                  style={{ width: `${100 / getWorkflowSteps(test).length}%` }}
+                                >
+                                  <div className={`
+                                    rounded-full p-1.5
+                                    ${isComplete ? 'bg-blue-100' : 'bg-gray-100'}
+                                    ${isCurrent ? 'ring-2 ring-blue-300 ring-offset-2' : ''}
+                                  `}>
+                                    <step.icon className={`h-4 w-4 ${
+                                      isComplete ? 'text-blue-600' : 'text-gray-400'
+                                    }`} />
+                                  </div>
+                                  <span className="text-xs mt-1">{step.label}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div className="absolute top-[14px] h-0.5 w-full bg-gray-100 -z-10" />
+                          <div 
+                            className="absolute top-[14px] h-0.5 bg-blue-500 -z-10"
+                            style={{
+                              width: `calc(${
+                                (getCurrentStepIndex(test) / (getWorkflowSteps(test).length - 1)) * 100
+                              }% - ${getCurrentStepIndex(test) > 0 ? 
+                                (getCurrentStepIndex(test) / (getWorkflowSteps(test).length - 1)) * 16 : 0}px)`
+                            }}
+                          />
+                        </div>
+                        
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSelectTest(test)}
+                          >
+                            View Details
+                          </Button>
+                          
+                          {/* Only show next action button if there's a next status and not completed */}
+                          {test.status !== 'completed' && getNextStatus(test.status) && (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                const nextStatus = getNextStatus(test.status);
+                                if (nextStatus) handleUpdateWorkflow(test, nextStatus);
+                              }}
+                            >
+                              Move to {getNextStatus(test.status)}
+                              <ArrowRight className="ml-1 h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            )}
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Assigned Representative</label>
-              <Select value={selectedRep} onValueChange={setSelectedRep}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a representative" />
-                </SelectTrigger>
-                <SelectContent>
-                  {REPRESENTATIVES.map(rep => (
-                    <SelectItem key={rep.id} value={rep.id}>
-                      {rep.name} ({rep.role})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Notes</label>
-              <Textarea 
-                value={workflowNote} 
-                onChange={(e) => setWorkflowNote(e.target.value)}
-                placeholder="Add notes about this workflow change..."
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                {nextStage === "sampling" && "Sample Details"}
-                {nextStage === "processing" && "Processing Details"}
-                {nextStage === "reporting" && "Report Details"}
-                {nextStage === "completed" && "Completion Details"}
-              </label>
-              <Textarea 
-                value={additionalDetails} 
-                onChange={(e) => setAdditionalDetails(e.target.value)}
-                placeholder={`Add any ${nextStage} specific details...`}
-              />
-            </div>
+            ))}
           </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsWorkflowDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleWorkflowChange}>Save & Continue</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        );
+      }
     </div>
   );
 };

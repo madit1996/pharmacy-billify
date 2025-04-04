@@ -7,6 +7,15 @@ import { BeakerIcon } from "./LabIcons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { CalendarIcon, Home } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface LabBillingPanelProps {
   billItems: LabBillItem[];
@@ -26,7 +35,7 @@ interface LabBillingPanelProps {
   onSearchCustomer: (term: string) => void;
   assignTestToRepresentative?: (testId: string, representativeId: string) => void;
   onUpdateStatus?: (id: string, status: string, estimatedTime?: string) => void;
-  onUpdateSampleDetails?: (id: string, details: string) => void;
+  onUpdateSampleDetails?: (id: string, details: string, sampleId?: string) => void;
 }
 
 const representatives: LabTestRepresentative[] = [
@@ -56,11 +65,42 @@ const LabBillingPanel = ({
   onUpdateSampleDetails
 }: LabBillingPanelProps) => {
   const [selectedRepresentative, setSelectedRepresentative] = useState<string>("all");
+  const [showHomeCollectionDetails, setShowHomeCollectionDetails] = useState(false);
+  const [homeCollectionData, setHomeCollectionData] = useState({
+    address: selectedCustomer?.address || "",
+    collectionDate: new Date(),
+    collectionNotes: "",
+    usePatientAddress: true
+  });
   
   const handleAssignRepresentative = (testId: string, repId: string) => {
     if (assignTestToRepresentative && repId !== "all") {
       assignTestToRepresentative(testId, repId);
     }
+  };
+
+  // Apply home collection settings to bill items
+  const applyHomeCollection = () => {
+    if (!onUpdateSampleDetails) return;
+    
+    // Apply to all items
+    billItems.forEach(item => {
+      onUpdateSampleDetails(
+        item.id, 
+        homeCollectionData.collectionNotes,
+        item.sampleId
+      );
+      
+      // Mark these items as home collection with address details
+      item.isHomeCollection = true;
+      item.collectionAddress = homeCollectionData.usePatientAddress && selectedCustomer 
+        ? selectedCustomer.address 
+        : homeCollectionData.address;
+      item.collectionDateTime = homeCollectionData.collectionDate;
+      item.collectionNotes = homeCollectionData.collectionNotes;
+    });
+    
+    setShowHomeCollectionDetails(false);
   };
 
   // Group bill items by patient
@@ -71,6 +111,9 @@ const LabBillingPanel = ({
     acc[item.category].push(item);
     return acc;
   }, {} as Record<string, LabBillItem[]>);
+
+  // Check if any tests are marked for home collection
+  const hasHomeCollectionItems = billItems.some(item => item.isHomeCollection);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -109,6 +152,134 @@ const LabBillingPanel = ({
               </SelectContent>
             </Select>
           </div>
+        </div>
+      )}
+
+      {/* Home Collection Toggle */}
+      {billItems.length > 0 && !hasHomeCollectionItems && (
+        <div className="px-4 py-3 bg-blue-50 border-y border-blue-100">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Home className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-800">Home Collection</span>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-white"
+              onClick={() => setShowHomeCollectionDetails(true)}
+            >
+              Setup
+            </Button>
+          </div>
+          
+          {showHomeCollectionDetails && (
+            <div className="mt-3 space-y-4 p-3 bg-white rounded-md border border-blue-100">
+              <div className="flex items-start gap-2">
+                <Checkbox 
+                  id="use-patient-address" 
+                  checked={homeCollectionData.usePatientAddress}
+                  onCheckedChange={(checked) => 
+                    setHomeCollectionData(prev => ({
+                      ...prev, 
+                      usePatientAddress: checked === true
+                    }))
+                  }
+                />
+                <div className="grid gap-1.5">
+                  <Label htmlFor="use-patient-address">
+                    Use patient address for collection
+                  </Label>
+                  {selectedCustomer?.address && (
+                    <p className="text-xs text-gray-500">{selectedCustomer.address}</p>
+                  )}
+                </div>
+              </div>
+              
+              {!homeCollectionData.usePatientAddress && (
+                <div className="space-y-2">
+                  <Label htmlFor="collection-address">Collection Address</Label>
+                  <Textarea 
+                    id="collection-address"
+                    placeholder="Enter full collection address"
+                    value={homeCollectionData.address}
+                    onChange={(e) => 
+                      setHomeCollectionData(prev => ({
+                        ...prev,
+                        address: e.target.value
+                      }))
+                    }
+                    rows={3}
+                  />
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="collection-date">Collection Date & Time</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="collection-date"
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {homeCollectionData.collectionDate ? (
+                        format(homeCollectionData.collectionDate, "PPP")
+                      ) : (
+                        <span>Select collection date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={homeCollectionData.collectionDate}
+                      onSelect={(date) => 
+                        setHomeCollectionData(prev => ({
+                          ...prev,
+                          collectionDate: date || new Date()
+                        }))
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="collection-notes">Special Instructions</Label>
+                <Textarea 
+                  id="collection-notes"
+                  placeholder="Any special instructions for collection"
+                  value={homeCollectionData.collectionNotes}
+                  onChange={(e) => 
+                    setHomeCollectionData(prev => ({
+                      ...prev,
+                      collectionNotes: e.target.value
+                    }))
+                  }
+                  rows={2}
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowHomeCollectionDetails(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={applyHomeCollection}
+                >
+                  Apply to All Tests
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

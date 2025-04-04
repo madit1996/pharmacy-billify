@@ -43,4 +43,12 @@ export interface LabContextType {
     additionalInfo?: Partial<WorkflowHistoryItem>
   ) => void;
   updateSampleDetails: (testId: string, sampleDetails: string, sampleId?: string) => void;
+  setupHomeCollection?: (
+    testIds: string[],
+    collectionDetails: {
+      address: string;
+      collectionDate: Date;
+      notes?: string;
+    }
+  ) => void;
 }

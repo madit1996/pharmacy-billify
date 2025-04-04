@@ -23,6 +23,11 @@ export interface LabTest {
   sampleId?: string; // Sample identifier
   representativeId?: string; // ID of assigned lab representative
   workflowHistory?: WorkflowHistoryItem[]; // Track status changes
+  isHomeCollection?: boolean; // Flag for home collection
+  collectionAddress?: string; // Address for home collection
+  collectionDateTime?: Date; // When the collection is scheduled
+  collectionNotes?: string; // Any notes for collection
+  collectionRepresentativeId?: string; // Who will collect the sample
 }
 
 // Track workflow history with enhanced representative tracking
@@ -36,4 +41,5 @@ export interface WorkflowHistoryItem {
   sampleDetails?: string; // Details specific to sample collection
   processingDetails?: string; // Details specific to processing
   reportingDetails?: string; // Details specific to reporting
+  collectionDetails?: string; // Details specific to home collection
 }

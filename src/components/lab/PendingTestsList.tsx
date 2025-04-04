@@ -2,9 +2,10 @@
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
-import { FileUp } from "lucide-react";
+import { FileUp, Home } from "lucide-react";
 import { LabTest } from "@/types/lab-tests";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PendingTestsListProps {
   tests: LabTest[];
@@ -89,20 +90,48 @@ const PendingTestsList = ({ tests, onSelectTest }: PendingTestsListProps) => {
                       </TableHeader>
                       <TableBody>
                         {patientTests.map((test) => (
-                          <TableRow key={test.id}>
+                          <TableRow key={test.id} className={test.isHomeCollection ? "bg-blue-50" : ""}>
                             <TableCell className="font-medium">{test.id}</TableCell>
-                            <TableCell>{test.testName}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                {test.isHomeCollection && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <Home className="h-4 w-4 text-blue-500" />
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        Home Collection
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                                {test.testName}
+                              </div>
+                            </TableCell>
                             <TableCell className="capitalize">{test.category || 'general'}</TableCell>
                             <TableCell>{test.doctorName}</TableCell>
                             <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => onSelectTest(test)}
-                              >
-                                <FileUp className="mr-2 h-4 w-4" />
-                                Upload
-                              </Button>
+                              {test.status === 'reporting' ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => onSelectTest(test)}
+                                >
+                                  <FileUp className="mr-2 h-4 w-4" />
+                                  Finalize
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => onSelectTest(test)}
+                                  disabled={test.status === 'sampling'} 
+                                >
+                                  <FileUp className="mr-2 h-4 w-4" />
+                                  {test.status === 'sampling' ? 'Awaiting Sample' : 'Process'}
+                                </Button>
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}
