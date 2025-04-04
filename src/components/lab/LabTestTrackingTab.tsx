@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useLabContext } from "@/contexts/LabContext";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -176,7 +175,6 @@ const LabTestTrackingTab = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full"
-            prefix={<Search className="w-4 h-4 text-gray-500" />}
           />
         </div>
       </div>
