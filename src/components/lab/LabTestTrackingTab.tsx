@@ -385,7 +385,7 @@ const LabTestTrackingTab = () => {
               <SelectValue placeholder="Filter by patient" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Patients</SelectItem>
+              <SelectItem value="all-patients">All Patients</SelectItem>
               {getAllPatients().map((patient) => (
                 <SelectItem key={patient.key} value={patient.key}>
                   {patient.name}
