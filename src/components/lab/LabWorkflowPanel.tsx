@@ -10,13 +10,15 @@ import {
   ArrowRight,
   ArrowLeft,
   Clock,
-  RotateCw
+  RotateCw,
+  MessageSquare,
+  UserCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LabTest } from "@/types/lab-tests";
+import { LabTest, WorkflowHistoryItem } from "@/types/lab-tests";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
@@ -27,6 +29,9 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { LabTestRepresentative } from "@/types/lab-types";
 
 // Define workflow stages
 const WORKFLOW_STAGES = [
@@ -36,10 +41,27 @@ const WORKFLOW_STAGES = [
   { id: "completed", name: "Completed", icon: CheckCircle2 },
 ];
 
+// Define representatives (this would normally come from a database)
+const REPRESENTATIVES: LabTestRepresentative[] = [
+  { id: "rep1", name: "Dr. Jane Smith", role: "Lab Technician", specialty: "Blood Work" },
+  { id: "rep2", name: "Dr. John Davis", role: "Lab Technician", specialty: "Microbiology" },
+  { id: "rep3", name: "Dr. Sarah Johnson", role: "Pathologist", specialty: "Histopathology" },
+  { id: "rep4", name: "Dr. Michael Chen", role: "Radiologist", specialty: "X-ray Analysis" },
+  { id: "rep5", name: "Dr. Lisa Wong", role: "Lab Supervisor", specialty: "General" },
+];
+
 const LabWorkflowPanel = () => {
   const { pendingTests, completedTests, updateTestWorkflow } = useLabContext();
   const [activeStage, setActiveStage] = useState<string>("sampling");
   const [filterPatient, setFilterPatient] = useState<string>("");
+  
+  // Dialog state for note taking
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedTest, setSelectedTest] = useState<LabTest | null>(null);
+  const [nextStage, setNextStage] = useState<string>("");
+  const [workflowNote, setWorkflowNote] = useState("");
+  const [selectedRep, setSelectedRep] = useState("");
+  const [additionalDetails, setAdditionalDetails] = useState("");
   
   // Group tests by patient
   const groupTestsByPatient = (tests: LabTest[]) => {
@@ -80,28 +102,61 @@ const LabWorkflowPanel = () => {
   
   const groupedTests = getStageTests();
   
-  // Handle workflow stage change
-  const handleAdvanceStage = (test: LabTest) => {
-    let nextStage = "";
-    
-    // Find the next stage
+  // Open dialog with test information for advancing stage
+  const openAdvanceDialog = (test: LabTest) => {
     const currentStageIndex = WORKFLOW_STAGES.findIndex(stage => stage.id === test.status);
-    if (currentStageIndex < WORKFLOW_STAGES.length - 1) {
-      nextStage = WORKFLOW_STAGES[currentStageIndex + 1].id;
-    }
     
-    if (nextStage) {
-      updateTestWorkflow(test.id, nextStage);
+    if (currentStageIndex < WORKFLOW_STAGES.length - 1) {
+      const nextStageId = WORKFLOW_STAGES[currentStageIndex + 1].id;
+      setSelectedTest(test);
+      setNextStage(nextStageId);
+      setWorkflowNote("");
+      setSelectedRep("");
+      setAdditionalDetails("");
+      setIsDialogOpen(true);
     }
   };
   
-  const handleRevertStage = (test: LabTest) => {
+  // Open dialog with test information for reverting stage
+  const openRevertDialog = (test: LabTest) => {
     const currentStageIndex = WORKFLOW_STAGES.findIndex(stage => stage.id === test.status);
     
     if (currentStageIndex > 0) {
-      const prevStage = WORKFLOW_STAGES[currentStageIndex - 1].id;
-      updateTestWorkflow(test.id, prevStage);
+      const prevStageId = WORKFLOW_STAGES[currentStageIndex - 1].id;
+      setSelectedTest(test);
+      setNextStage(prevStageId);
+      setWorkflowNote("");
+      setSelectedRep("");
+      setAdditionalDetails("");
+      setIsDialogOpen(true);
     }
+  };
+  
+  // Handle workflow stage change with notes and representative
+  const handleWorkflowChange = () => {
+    if (!selectedTest) return;
+    
+    const performerName = selectedRep ? 
+      REPRESENTATIVES.find(rep => rep.id === selectedRep)?.name : undefined;
+    
+    let detailsField = {};
+    if (nextStage === "sampling") {
+      detailsField = { sampleDetails: additionalDetails };
+    } else if (nextStage === "processing") {
+      detailsField = { processingDetails: additionalDetails };
+    } else if (nextStage === "reporting") {
+      detailsField = { reportingDetails: additionalDetails };
+    }
+    
+    const historyItem: Partial<WorkflowHistoryItem> = {
+      notes: workflowNote,
+      performedBy: selectedRep || undefined,
+      performerName,
+      ...detailsField
+    };
+    
+    updateTestWorkflow(selectedTest.id, nextStage, workflowNote, historyItem);
+    setIsDialogOpen(false);
   };
   
   const getStatusBadge = (status: string) => {
@@ -179,7 +234,7 @@ const LabWorkflowPanel = () => {
                                 variant="outline"
                                 size="sm"
                                 className="h-7 text-xs"
-                                onClick={() => handleRevertStage(test)}
+                                onClick={() => openRevertDialog(test)}
                                 disabled={test.status === 'sampling' || test.status === 'completed'}
                               >
                                 <ArrowLeft className="h-3 w-3 mr-1" />
@@ -190,7 +245,7 @@ const LabWorkflowPanel = () => {
                                 variant="outline"
                                 size="sm"
                                 className="h-7 text-xs"
-                                onClick={() => handleAdvanceStage(test)}
+                                onClick={() => openAdvanceDialog(test)}
                                 disabled={test.status === 'completed'}
                               >
                                 {test.status === 'reporting' ? (
@@ -217,6 +272,26 @@ const LabWorkflowPanel = () => {
                             <p>Sample: {test.sampleDetails}</p>
                           </div>
                         )}
+                        
+                        {/* Show workflow history */}
+                        {test.workflowHistory && test.workflowHistory.length > 0 && (
+                          <div className="mt-2 pt-2 border-t border-dashed">
+                            <p className="text-xs text-gray-500 mb-1">Workflow History:</p>
+                            <div className="space-y-1">
+                              {test.workflowHistory.map((item, index) => (
+                                <div key={index} className="flex items-start text-xs text-gray-600">
+                                  <Badge variant="outline" className="text-xs mr-1">{item.toStatus}</Badge>
+                                  {item.performerName && (
+                                    <span className="mr-1">by {item.performerName}</span>
+                                  )}
+                                  {item.notes && (
+                                    <span className="text-gray-500 italic">"{item.notes}"</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </CardContent>
@@ -240,6 +315,73 @@ const LabWorkflowPanel = () => {
           )}
         </div>
       </ScrollArea>
+      
+      {/* Dialog for adding notes and representative information */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>
+              {nextStage === selectedTest?.status ? "Revert to" : "Advance to"} {
+                WORKFLOW_STAGES.find(stage => stage.id === nextStage)?.name || nextStage
+              }
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {selectedTest && (
+              <div className="bg-slate-50 p-3 rounded-md mb-4">
+                <p className="font-medium">{selectedTest.testName}</p>
+                <p className="text-sm text-gray-600">Patient: {selectedTest.patientName}</p>
+                <p className="text-sm text-gray-600">Current Status: {selectedTest.status}</p>
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Assigned Representative</label>
+              <Select value={selectedRep} onValueChange={setSelectedRep}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a representative" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REPRESENTATIVES.map(rep => (
+                    <SelectItem key={rep.id} value={rep.id}>
+                      {rep.name} ({rep.role})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Notes</label>
+              <Textarea 
+                value={workflowNote} 
+                onChange={(e) => setWorkflowNote(e.target.value)}
+                placeholder="Add notes about this workflow change..."
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {nextStage === "sampling" && "Sample Details"}
+                {nextStage === "processing" && "Processing Details"}
+                {nextStage === "reporting" && "Report Details"}
+                {nextStage === "completed" && "Completion Details"}
+              </label>
+              <Textarea 
+                value={additionalDetails} 
+                onChange={(e) => setAdditionalDetails(e.target.value)}
+                placeholder={`Add any ${nextStage} specific details...`}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleWorkflowChange}>Save & Continue</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

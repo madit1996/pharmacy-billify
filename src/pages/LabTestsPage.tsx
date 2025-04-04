@@ -22,7 +22,8 @@ const LabTestsPage = () => {
   };
 
   // Determine if the workflow panel should be visible
-  const showWorkflowPanel = activeTab !== 'billing';
+  // Only show the workflow panel in the tracking tab
+  const showWorkflowPanel = activeTab === 'tracking';
 
   return (
     <LabProvider>
@@ -49,7 +50,7 @@ const LabTestsPage = () => {
             {activeTab === 'tracking' && <LabTestTrackingTab />}
           </div>
           
-          {/* Workflow tracking panel - only visible for non-billing tabs */}
+          {/* Workflow tracking panel - only visible for tracking tab */}
           {showWorkflowPanel && (
             <div className="w-96 border-l bg-white overflow-auto">
               <LabWorkflowPanel />

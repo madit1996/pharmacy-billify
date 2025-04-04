@@ -25,11 +25,15 @@ export interface LabTest {
   workflowHistory?: WorkflowHistoryItem[]; // Track status changes
 }
 
-// Track workflow history
+// Track workflow history with enhanced representative tracking
 export interface WorkflowHistoryItem {
   fromStatus: LabTestStatus;
   toStatus: LabTestStatus;
   timestamp: Date;
-  performedBy?: string;
+  performedBy?: string; // ID of the representative who performed this step
+  performerName?: string; // Name of the representative who performed this step
   notes?: string;
+  sampleDetails?: string; // Details specific to sample collection
+  processingDetails?: string; // Details specific to processing
+  reportingDetails?: string; // Details specific to reporting
 }

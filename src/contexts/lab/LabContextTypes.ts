@@ -36,6 +36,11 @@ export interface LabContextType {
   waitlistPatients: LabWaitlistPatient[];
   handleSelectWaitlistPatient: (patient: LabWaitlistPatient) => void;
   updateTestStatus: (testId: string, status: string, estimatedTime?: string) => void;
-  updateTestWorkflow: (testId: string, newStatus: string, notes?: string) => void;
+  updateTestWorkflow: (
+    testId: string, 
+    newStatus: string, 
+    notes?: string, 
+    additionalInfo?: Partial<WorkflowHistoryItem>
+  ) => void;
   updateSampleDetails: (testId: string, sampleDetails: string, sampleId?: string) => void;
 }

@@ -69,7 +69,12 @@ export function useLabTests() {
     });
   };
 
-  const updateTestWorkflow = (testId: string, newStatus: string, notes?: string) => {
+  const updateTestWorkflow = (
+    testId: string, 
+    newStatus: string, 
+    notes?: string,
+    additionalInfo?: Partial<WorkflowHistoryItem>
+  ) => {
     const pendingTestIndex = pendingTests.findIndex(test => test.id === testId);
     
     if (pendingTestIndex !== -1) {
@@ -80,7 +85,8 @@ export function useLabTests() {
         fromStatus: test.status,
         toStatus: newStatus as LabTestStatus,
         timestamp: new Date(),
-        notes: notes
+        notes: notes,
+        ...(additionalInfo || {})
       };
       
       const updatedTest = {
@@ -91,6 +97,16 @@ export function useLabTests() {
           historyItem
         ]
       };
+      
+      // If a representative was assigned, update the main test with it
+      if (additionalInfo?.performedBy) {
+        updatedTest.representativeId = additionalInfo.performedBy;
+      }
+      
+      // If sample details were provided, update the main test
+      if (additionalInfo?.sampleDetails) {
+        updatedTest.sampleDetails = additionalInfo.sampleDetails;
+      }
       
       if (newStatus === 'completed' && !updatedTest.completedDate) {
         updatedTest.completedDate = new Date();
@@ -121,7 +137,8 @@ export function useLabTests() {
         fromStatus: test.status,
         toStatus: newStatus as LabTestStatus,
         timestamp: new Date(),
-        notes: notes
+        notes: notes,
+        ...(additionalInfo || {})
       };
       
       if (newStatus !== 'completed') {
@@ -134,6 +151,16 @@ export function useLabTests() {
             historyItem
           ]
         };
+        
+        // If a representative was assigned, update the main test with it
+        if (additionalInfo?.performedBy) {
+          updatedTest.representativeId = additionalInfo.performedBy;
+        }
+        
+        // If sample details were provided, update the main test
+        if (additionalInfo?.sampleDetails) {
+          updatedTest.sampleDetails = additionalInfo.sampleDetails;
+        }
         
         setPendingTests([...pendingTests, updatedTest]);
         updatedCompletedTests.splice(completedTestIndex, 1);
