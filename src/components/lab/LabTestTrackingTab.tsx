@@ -366,7 +366,7 @@ const LabTestTrackingTab = () => {
       </Dialog>
       
       {/* Helper function to render test tables */}
-      function renderTestTable(tests: LabTest[]) {
+      {function renderTestTable(tests: LabTest[]) {
         if (tests.length === 0) {
           return (
             <div className="p-6 text-center text-gray-500">
@@ -498,10 +498,9 @@ const LabTestTrackingTab = () => {
             ))}
           </div>
         );
-      }
+      }}
     </div>
   );
 };
 
 export default LabTestTrackingTab;
-
