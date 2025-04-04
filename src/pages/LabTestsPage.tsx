@@ -10,7 +10,6 @@ import LabTestsTab from "@/components/lab/LabTestsTab";
 import LabBillingTab from "@/components/lab/LabBillingTab";
 import LabTestTrackingTab from "@/components/lab/LabTestTrackingTab";
 import { LabProvider } from "@/contexts/LabContext";
-import LabWorkflowPanel from "@/components/lab/LabWorkflowPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LabTestsPage = () => {
@@ -20,10 +19,6 @@ const LabTestsPage = () => {
   const handleTabChange = (tab: 'analytics' | 'tests' | 'billing' | 'tracking') => {
     setActiveTab(tab);
   };
-
-  // Determine if the workflow panel should be visible
-  // Only show the workflow panel in the tracking tab
-  const showWorkflowPanel = activeTab === 'tracking';
 
   return (
     <LabProvider>
@@ -42,20 +37,12 @@ const LabTestsPage = () => {
         </div>
         
         <div className="flex-1 overflow-hidden flex">
-          {/* Main content */}
-          <div className={`flex-1 overflow-auto p-6 bg-gray-50 ${showWorkflowPanel ? '' : 'w-full'}`}>
+          <div className="flex-1 overflow-auto p-6 bg-gray-50">
             {activeTab === 'analytics' && <LabAnalyticsTab />}
             {activeTab === 'tests' && <LabTestsTab />}
             {activeTab === 'billing' && <LabBillingTab />}
             {activeTab === 'tracking' && <LabTestTrackingTab />}
           </div>
-          
-          {/* Workflow tracking panel - only visible for tracking tab */}
-          {showWorkflowPanel && (
-            <div className="w-96 border-l bg-white overflow-auto">
-              <LabWorkflowPanel />
-            </div>
-          )}
         </div>
       </div>
     </LabProvider>
