@@ -1,8 +1,13 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Home, ArrowRight, MapPin } from "lucide-react";
+import { 
+  Activity, ArrowRight, Calendar, CheckCircle, Clock, FileText, Home, Loader2, MapPin
+} from "lucide-react";
 import { LabTest, LabTestStatus } from "@/types/lab-tests";
+
+// Import the WorkflowProgress component
+import WorkflowProgress from "./WorkflowProgress";
 
 interface TestCardProps {
   test: LabTest;
@@ -49,11 +54,6 @@ const TestCard = ({ test, onSelectTest, onUpdateWorkflow }: TestCardProps) => {
       default: return "bg-gray-100 text-gray-800 hover:bg-gray-200";
     }
   };
-
-  // Import the necessary icons at the top of the file
-  import { 
-    Activity, Calendar, CheckCircle, Clock, FileText, Loader2
-  } from "lucide-react";
 
   return (
     <div 
