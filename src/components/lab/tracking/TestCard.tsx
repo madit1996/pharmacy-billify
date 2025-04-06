@@ -2,20 +2,40 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  Activity, ArrowRight, Calendar, CheckCircle, Clock, FileText, Home, Loader2, MapPin
+  Activity, ArrowRight, Calendar, CheckCircle, Clock, FileText, Home, Loader2, MapPin, User, History, Edit
 } from "lucide-react";
 import { LabTest, LabTestStatus } from "@/types/lab-tests";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 // Import the WorkflowProgress component
 import WorkflowProgress from "./WorkflowProgress";
 
+// Define a list of representatives for assigning tests
+const representatives = [
+  { id: "R1", name: "Dr. Sarah Smith", role: "Lab Technician" },
+  { id: "R2", name: "Dr. Robert Johnson", role: "Pathologist" },
+  { id: "R3", name: "Dr. Emily Williams", role: "Radiologist" },
+  { id: "R4", name: "John Miller", role: "Lab Assistant" }
+];
+
 interface TestCardProps {
   test: LabTest;
   onSelectTest: (test: LabTest) => void;
-  onUpdateWorkflow: (test: LabTest, newStatus: LabTestStatus, notes?: string) => void;
+  onUpdateWorkflow: (test: LabTest, newStatus: LabTestStatus, notes?: string, additionalInfo?: any) => void;
 }
 
 const TestCard = ({ test, onSelectTest, onUpdateWorkflow }: TestCardProps) => {
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [selectedRepresentative, setSelectedRepresentative] = useState("");
+  const { toast } = useToast();
+
   const getWorkflowSteps = (test: LabTest) => {
     const baseSteps = [
       { status: 'pending', label: 'Ordered', icon: Calendar },
@@ -55,6 +75,31 @@ const TestCard = ({ test, onSelectTest, onUpdateWorkflow }: TestCardProps) => {
     }
   };
 
+  const handleUpdateStatus = () => {
+    const nextStatus = getNextStatus(test.status);
+    if (!nextStatus) return;
+    
+    const additionalInfo: any = {};
+    
+    if (selectedRepresentative) {
+      const rep = representatives.find(r => r.id === selectedRepresentative);
+      if (rep) {
+        additionalInfo.performedBy = rep.id;
+        additionalInfo.performerName = rep.name;
+      }
+    }
+    
+    onUpdateWorkflow(test, nextStatus, notes, additionalInfo);
+    setIsUpdateDialogOpen(false);
+    setNotes("");
+    setSelectedRepresentative("");
+    
+    toast({
+      title: "Test status updated",
+      description: `${test.testName} moved to ${nextStatus} status`,
+    });
+  };
+
   return (
     <div 
       key={test.id} 
@@ -80,6 +125,14 @@ const TestCard = ({ test, onSelectTest, onUpdateWorkflow }: TestCardProps) => {
               <span>{test.collectionAddress}</span>
             </div>
           )}
+          {test.representativeId && (
+            <div className="flex items-center mt-2 text-sm text-gray-600">
+              <User className="h-3.5 w-3.5 mr-1 text-gray-500" />
+              <span>Assigned to: {
+                representatives.find(r => r.id === test.representativeId)?.name || 'Unknown'
+              }</span>
+            </div>
+          )}
         </div>
         <Badge className={getStatusBadgeColor(test.status)}>
           {test.status.charAt(0).toUpperCase() + test.status.slice(1)}
@@ -90,30 +143,144 @@ const TestCard = ({ test, onSelectTest, onUpdateWorkflow }: TestCardProps) => {
         {/* Workflow progress visualization */}
         <WorkflowProgress test={test} />
         
-        <div className="flex justify-end space-x-2">
+        <div className="flex justify-between items-center">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            onClick={() => onSelectTest(test)}
+            onClick={() => setIsHistoryDialogOpen(true)}
+            className="text-gray-500"
           >
-            View Details
+            <History className="mr-1 h-4 w-4" />
+            History
           </Button>
           
-          {/* Only show next action button if there's a next status and not completed */}
-          {test.status !== 'completed' && getNextStatus(test.status) && (
+          <div className="flex space-x-2">
             <Button
+              variant="outline"
               size="sm"
-              onClick={() => {
-                const nextStatus = getNextStatus(test.status);
-                if (nextStatus) onUpdateWorkflow(test, nextStatus);
-              }}
+              onClick={() => onSelectTest(test)}
             >
-              Move to {getNextStatus(test.status)}
-              <ArrowRight className="ml-1 h-4 w-4" />
+              {test.status === 'reporting' ? (
+                <>
+                  <Edit className="mr-1 h-4 w-4" />
+                  Report
+                </>
+              ) : (
+                <>View Details</>
+              )}
             </Button>
-          )}
+            
+            {/* Only show next action button if there's a next status and not completed */}
+            {test.status !== 'completed' && getNextStatus(test.status) && (
+              <Button
+                size="sm"
+                onClick={() => setIsUpdateDialogOpen(true)}
+              >
+                Move to {getNextStatus(test.status)}
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Status Update Dialog */}
+      <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Test Status</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="test-representative">Assign to Representative</Label>
+              <Select 
+                value={selectedRepresentative} 
+                onValueChange={setSelectedRepresentative}
+              >
+                <SelectTrigger id="test-representative">
+                  <SelectValue placeholder="Select a representative" />
+                </SelectTrigger>
+                <SelectContent>
+                  {representatives.map(rep => (
+                    <SelectItem key={rep.id} value={rep.id}>
+                      {rep.name} ({rep.role})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="test-notes">Notes</Label>
+              <Textarea
+                id="test-notes"
+                placeholder="Add notes about this status change"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsUpdateDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateStatus}>
+                Update to {getNextStatus(test.status)}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* History Dialog */}
+      <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Test History</DialogTitle>
+          </DialogHeader>
+          
+          <div className="max-h-[60vh] overflow-auto">
+            {!test.workflowHistory || test.workflowHistory.length === 0 ? (
+              <p className="text-center py-8 text-gray-500">No history available for this test.</p>
+            ) : (
+              <div className="space-y-4">
+                {test.workflowHistory.map((history, index) => (
+                  <div 
+                    key={index} 
+                    className="border-l-2 border-blue-300 pl-4 py-2"
+                  >
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">
+                        {history.fromStatus} → {history.toStatus}
+                      </span>
+                      <span className="text-gray-500">
+                        {history.timestamp.toLocaleString()}
+                      </span>
+                    </div>
+                    
+                    {history.performerName && (
+                      <div className="text-sm mt-1 flex items-center text-gray-700">
+                        <User className="h-3 w-3 mr-1" />
+                        <span>{history.performerName}</span>
+                      </div>
+                    )}
+                    
+                    {history.notes && (
+                      <p className="text-sm mt-1 text-gray-600">
+                        {history.notes}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

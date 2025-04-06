@@ -18,6 +18,7 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
     handleCreateReport,
     updateTestWorkflow,
     updateSampleDetails,
+    setupHomeCollection,
     setPendingTests
   } = useLabTests();
 
@@ -84,6 +85,7 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
         updateTestStatus,
         updateTestWorkflow,
         updateSampleDetails,
+        setupHomeCollection
       }}
     >
       {children}

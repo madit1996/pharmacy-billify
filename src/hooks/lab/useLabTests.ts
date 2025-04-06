@@ -4,8 +4,51 @@ import { LabTest, LabTestStatus, WorkflowHistoryItem } from "@/types/lab-tests";
 import { initialPendingTests, initialCompletedTests } from "@/contexts/lab/LabInitialData";
 import { useToast } from "@/hooks/use-toast";
 
+// Add some home collection sample data to initial tests
+const enhancedInitialPendingTests = initialPendingTests.map((test, index) => {
+  // Add home collection to first 2 tests for demonstration
+  if (index < 2) {
+    return {
+      ...test,
+      isHomeCollection: true,
+      collectionAddress: "123 Patient Home St, Medical City, MC 12345",
+      collectionDateTime: new Date(new Date().setDate(new Date().getDate() + 1)),
+      collectionNotes: "Patient prefers morning collection, has a dog in the house.",
+      workflowHistory: [
+        {
+          fromStatus: 'pending',
+          toStatus: 'pending',
+          timestamp: new Date(new Date().setDate(new Date().getDate() - 1)),
+          notes: "Home collection scheduled",
+          performedBy: "R5",
+          performerName: "David Wilson"
+        }
+      ]
+    };
+  }
+  
+  // Add workflow history to other tests
+  if (!test.workflowHistory) {
+    return {
+      ...test,
+      workflowHistory: [
+        {
+          fromStatus: 'pending',
+          toStatus: 'pending',
+          timestamp: new Date(new Date().setDate(new Date().getDate() - 2)),
+          notes: "Test ordered by doctor",
+          performedBy: "D1",
+          performerName: "Dr. James Wilson"
+        }
+      ]
+    };
+  }
+  
+  return test;
+});
+
 export function useLabTests() {
-  const [pendingTests, setPendingTests] = useState<LabTest[]>(initialPendingTests);
+  const [pendingTests, setPendingTests] = useState<LabTest[]>(enhancedInitialPendingTests);
   const [completedTests, setCompletedTests] = useState<LabTest[]>(initialCompletedTests);
   const [selectedTest, setSelectedTest] = useState<LabTest | null>(null);
   const { toast } = useToast();
@@ -25,7 +68,16 @@ export function useLabTests() {
       ...testToUpdate,
       status: "completed" as LabTestStatus,
       completedDate: new Date(),
-      resultUrl: fakeResultUrl
+      resultUrl: fakeResultUrl,
+      workflowHistory: [
+        ...(testToUpdate.workflowHistory || []),
+        {
+          fromStatus: testToUpdate.status,
+          toStatus: 'completed',
+          timestamp: new Date(),
+          notes: `Result uploaded: ${resultFile.name}`
+        }
+      ]
     };
     
     const updatedPendingTests = pendingTests.filter(test => test.id !== testId);
@@ -53,7 +105,17 @@ export function useLabTests() {
       status: "completed" as LabTestStatus,
       completedDate: new Date(),
       resultUrl: fakeResultUrl,
-      notes: JSON.stringify(reportData)
+      notes: JSON.stringify(reportData),
+      workflowHistory: [
+        ...(testToUpdate.workflowHistory || []),
+        {
+          fromStatus: testToUpdate.status,
+          toStatus: 'completed',
+          timestamp: new Date(),
+          notes: "Report created by lab staff",
+          reportingDetails: JSON.stringify(reportData.supportingFiles || [])
+        }
+      ]
     };
     
     const updatedPendingTests = pendingTests.filter(test => test.id !== testId);
@@ -85,7 +147,7 @@ export function useLabTests() {
         fromStatus: test.status,
         toStatus: newStatus as LabTestStatus,
         timestamp: new Date(),
-        notes: notes,
+        notes: notes || `Status changed from ${test.status} to ${newStatus}`,
         ...(additionalInfo || {})
       };
       
@@ -106,6 +168,11 @@ export function useLabTests() {
       // If sample details were provided, update the main test
       if (additionalInfo?.sampleDetails) {
         updatedTest.sampleDetails = additionalInfo.sampleDetails;
+      }
+      
+      // If collection details were provided, update them
+      if (additionalInfo?.collectionDetails) {
+        updatedTest.collectionNotes = additionalInfo.collectionDetails;
       }
       
       if (newStatus === 'completed' && !updatedTest.completedDate) {
@@ -137,7 +204,7 @@ export function useLabTests() {
         fromStatus: test.status,
         toStatus: newStatus as LabTestStatus,
         timestamp: new Date(),
-        notes: notes,
+        notes: notes || `Status changed from ${test.status} to ${newStatus}`,
         ...(additionalInfo || {})
       };
       
@@ -160,6 +227,11 @@ export function useLabTests() {
         // If sample details were provided, update the main test
         if (additionalInfo?.sampleDetails) {
           updatedTest.sampleDetails = additionalInfo.sampleDetails;
+        }
+        
+        // If collection details were provided, update them
+        if (additionalInfo?.collectionDetails) {
+          updatedTest.collectionNotes = additionalInfo.collectionDetails;
         }
         
         setPendingTests([...pendingTests, updatedTest]);
@@ -188,18 +260,76 @@ export function useLabTests() {
     
     if (pendingTestIndex !== -1) {
       const updatedPendingTests = [...pendingTests];
+      const test = updatedPendingTests[pendingTestIndex];
+      
       updatedPendingTests[pendingTestIndex] = {
-        ...updatedPendingTests[pendingTestIndex],
+        ...test,
         sampleDetails,
-        sampleId
+        sampleId,
+        workflowHistory: [
+          ...(test.workflowHistory || []),
+          {
+            fromStatus: test.status,
+            toStatus: test.status,
+            timestamp: new Date(),
+            notes: "Sample details updated",
+            sampleDetails
+          }
+        ]
       };
       setPendingTests(updatedPendingTests);
       
       toast({
         title: "Sample details updated",
-        description: `Sample information updated for ${updatedPendingTests[pendingTestIndex].testName}`,
+        description: `Sample information updated for ${test.testName}`,
       });
     }
+  };
+
+  const setupHomeCollection = (
+    testIds: string[],
+    collectionDetails: {
+      address: string;
+      collectionDate: Date;
+      notes?: string;
+      representativeId?: string;
+    }
+  ) => {
+    const updatedPendingTests = [...pendingTests];
+    
+    testIds.forEach(testId => {
+      const testIndex = updatedPendingTests.findIndex(test => test.id === testId);
+      if (testIndex !== -1) {
+        const test = updatedPendingTests[testIndex];
+        
+        updatedPendingTests[testIndex] = {
+          ...test,
+          isHomeCollection: true,
+          collectionAddress: collectionDetails.address,
+          collectionDateTime: collectionDetails.collectionDate,
+          collectionNotes: collectionDetails.notes,
+          collectionRepresentativeId: collectionDetails.representativeId,
+          workflowHistory: [
+            ...(test.workflowHistory || []),
+            {
+              fromStatus: test.status,
+              toStatus: test.status,
+              timestamp: new Date(),
+              notes: "Home collection scheduled",
+              collectionDetails: collectionDetails.notes,
+              performedBy: collectionDetails.representativeId
+            }
+          ]
+        };
+      }
+    });
+    
+    setPendingTests(updatedPendingTests);
+    
+    toast({
+      title: "Home collection scheduled",
+      description: `Home collection scheduled for ${testIds.length} tests`,
+    });
   };
 
   return {
@@ -211,6 +341,7 @@ export function useLabTests() {
     handleCreateReport,
     updateTestWorkflow,
     updateSampleDetails,
+    setupHomeCollection,
     setPendingTests
   };
 }

@@ -12,10 +12,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon, Home } from "lucide-react";
+import { CalendarIcon, Clock, Home, MapPin } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
+import { TimePicker } from "@/components/ui/time-picker";
+
+// Define a type for the time selection
+interface TimeSelection {
+  hours: string;
+  minutes: string;
+  ampm: 'AM' | 'PM';
+}
 
 interface LabBillingPanelProps {
   billItems: LabBillItem[];
@@ -42,7 +51,8 @@ const representatives: LabTestRepresentative[] = [
   { id: "R1", name: "Dr. Sarah Smith", role: "Lab Technician" },
   { id: "R2", name: "Dr. Robert Johnson", role: "Pathologist" },
   { id: "R3", name: "Dr. Emily Williams", role: "Radiologist" },
-  { id: "R4", name: "John Miller", role: "Lab Assistant" }
+  { id: "R4", name: "John Miller", role: "Lab Assistant" },
+  { id: "R5", name: "David Wilson", role: "Collection Specialist" }
 ];
 
 const LabBillingPanel = ({
@@ -72,6 +82,13 @@ const LabBillingPanel = ({
     collectionNotes: "",
     usePatientAddress: true
   });
+  const [selectedTime, setSelectedTime] = useState<TimeSelection>({
+    hours: "09",
+    minutes: "00",
+    ampm: "AM"
+  });
+
+  const { toast } = useToast();
   
   const handleAssignRepresentative = (testId: string, repId: string) => {
     if (assignTestToRepresentative && repId !== "all") {
@@ -83,6 +100,29 @@ const LabBillingPanel = ({
   const applyHomeCollection = () => {
     if (!onUpdateSampleDetails) return;
     
+    // Convert time to a proper format
+    const hours = selectedTime.ampm === 'PM' && selectedTime.hours !== '12' 
+      ? parseInt(selectedTime.hours) + 12 
+      : (selectedTime.ampm === 'AM' && selectedTime.hours === '12' ? 0 : parseInt(selectedTime.hours));
+    
+    const collectionDateTime = new Date(homeCollectionData.collectionDate);
+    collectionDateTime.setHours(hours);
+    collectionDateTime.setMinutes(parseInt(selectedTime.minutes));
+    
+    // Generate a collection address
+    const collectionAddress = homeCollectionData.usePatientAddress && selectedCustomer 
+      ? selectedCustomer.address 
+      : homeCollectionData.address;
+    
+    if (!collectionAddress) {
+      toast({
+        title: "Address required",
+        description: "Please provide a collection address",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Apply to all items
     billItems.forEach(item => {
       onUpdateSampleDetails(
@@ -93,14 +133,17 @@ const LabBillingPanel = ({
       
       // Mark these items as home collection with address details
       item.isHomeCollection = true;
-      item.collectionAddress = homeCollectionData.usePatientAddress && selectedCustomer 
-        ? selectedCustomer.address 
-        : homeCollectionData.address;
-      item.collectionDateTime = homeCollectionData.collectionDate;
+      item.collectionAddress = collectionAddress;
+      item.collectionDateTime = collectionDateTime;
       item.collectionNotes = homeCollectionData.collectionNotes;
     });
     
     setShowHomeCollectionDetails(false);
+    
+    toast({
+      title: "Home collection setup",
+      description: `Home collection scheduled for ${format(collectionDateTime, "PPP 'at' h:mm a")}`,
+    });
   };
 
   // Group bill items by patient
@@ -114,6 +157,9 @@ const LabBillingPanel = ({
 
   // Check if any tests are marked for home collection
   const hasHomeCollectionItems = billItems.some(item => item.isHomeCollection);
+
+  // Find a collection specialist
+  const collectionSpecialist = representatives.find(rep => rep.role === "Collection Specialist");
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -155,7 +201,39 @@ const LabBillingPanel = ({
         </div>
       )}
 
-      {/* Home Collection Toggle */}
+      {/* Home Collection Info Banner - Shows when home collection is active */}
+      {hasHomeCollectionItems && (
+        <div className="px-4 py-3 bg-blue-50 border-y border-blue-100">
+          <div className="flex items-start space-x-2">
+            <Home className="h-4 w-4 text-blue-600 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="text-sm font-medium text-blue-800">Home Collection Active</h4>
+              {billItems[0].collectionAddress && (
+                <div className="text-sm text-blue-700 mt-1 flex items-start">
+                  <MapPin className="h-3.5 w-3.5 mr-1 mt-0.5 text-blue-500" />
+                  <span>{billItems[0].collectionAddress}</span>
+                </div>
+              )}
+              {billItems[0].collectionDateTime && (
+                <div className="text-sm text-blue-700 mt-1 flex items-start">
+                  <Clock className="h-3.5 w-3.5 mr-1 mt-0.5 text-blue-500" />
+                  <span>{format(billItems[0].collectionDateTime, "PPP 'at' h:mm a")}</span>
+                </div>
+              )}
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-white whitespace-nowrap"
+              onClick={() => setShowHomeCollectionDetails(true)}
+            >
+              Edit Details
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Home Collection Setup Button - Only show when no home collection is set */}
       {billItems.length > 0 && !hasHomeCollectionItems && (
         <div className="px-4 py-3 bg-blue-50 border-y border-blue-100">
           <div className="flex justify-between items-center">
@@ -172,50 +250,60 @@ const LabBillingPanel = ({
               Setup
             </Button>
           </div>
-          
-          {showHomeCollectionDetails && (
-            <div className="mt-3 space-y-4 p-3 bg-white rounded-md border border-blue-100">
-              <div className="flex items-start gap-2">
-                <Checkbox 
-                  id="use-patient-address" 
-                  checked={homeCollectionData.usePatientAddress}
-                  onCheckedChange={(checked) => 
+        </div>
+      )}
+      
+      {/* Home Collection Details Form */}
+      {showHomeCollectionDetails && (
+        <Card className="m-4 border-blue-200">
+          <CardContent className="p-4 space-y-4">
+            <h3 className="font-medium text-blue-800 flex items-center gap-2">
+              <Home className="h-4 w-4" />
+              Home Collection Setup
+            </h3>
+            
+            <div className="flex items-start gap-2">
+              <Checkbox 
+                id="use-patient-address" 
+                checked={homeCollectionData.usePatientAddress}
+                onCheckedChange={(checked) => 
+                  setHomeCollectionData(prev => ({
+                    ...prev, 
+                    usePatientAddress: checked === true
+                  }))
+                }
+              />
+              <div className="grid gap-1.5">
+                <Label htmlFor="use-patient-address">
+                  Use patient address for collection
+                </Label>
+                {selectedCustomer?.address && (
+                  <p className="text-xs text-gray-500">{selectedCustomer.address}</p>
+                )}
+              </div>
+            </div>
+            
+            {!homeCollectionData.usePatientAddress && (
+              <div className="space-y-2">
+                <Label htmlFor="collection-address">Collection Address</Label>
+                <Textarea 
+                  id="collection-address"
+                  placeholder="Enter full collection address"
+                  value={homeCollectionData.address}
+                  onChange={(e) => 
                     setHomeCollectionData(prev => ({
-                      ...prev, 
-                      usePatientAddress: checked === true
+                      ...prev,
+                      address: e.target.value
                     }))
                   }
+                  rows={3}
                 />
-                <div className="grid gap-1.5">
-                  <Label htmlFor="use-patient-address">
-                    Use patient address for collection
-                  </Label>
-                  {selectedCustomer?.address && (
-                    <p className="text-xs text-gray-500">{selectedCustomer.address}</p>
-                  )}
-                </div>
               </div>
-              
-              {!homeCollectionData.usePatientAddress && (
-                <div className="space-y-2">
-                  <Label htmlFor="collection-address">Collection Address</Label>
-                  <Textarea 
-                    id="collection-address"
-                    placeholder="Enter full collection address"
-                    value={homeCollectionData.address}
-                    onChange={(e) => 
-                      setHomeCollectionData(prev => ({
-                        ...prev,
-                        address: e.target.value
-                      }))
-                    }
-                    rows={3}
-                  />
-                </div>
-              )}
-              
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="collection-date">Collection Date & Time</Label>
+                <Label htmlFor="collection-date">Collection Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -242,45 +330,119 @@ const LabBillingPanel = ({
                         }))
                       }
                       initialFocus
+                      disabled={(date) => date < new Date()}
                     />
                   </PopoverContent>
                 </Popover>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="collection-notes">Special Instructions</Label>
-                <Textarea 
-                  id="collection-notes"
-                  placeholder="Any special instructions for collection"
-                  value={homeCollectionData.collectionNotes}
-                  onChange={(e) => 
-                    setHomeCollectionData(prev => ({
-                      ...prev,
-                      collectionNotes: e.target.value
-                    }))
-                  }
-                  rows={2}
-                />
-              </div>
-              
-              <div className="flex justify-end space-x-2 pt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowHomeCollectionDetails(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  size="sm"
-                  onClick={applyHomeCollection}
-                >
-                  Apply to All Tests
-                </Button>
+                <Label>Collection Time</Label>
+                <div className="flex items-center space-x-2">
+                  <Select 
+                    value={selectedTime.hours}
+                    onValueChange={(value) => setSelectedTime(prev => ({ ...prev, hours: value }))}
+                  >
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map(hour => (
+                        <SelectItem key={hour} value={hour.toString().padStart(2, '0')}>
+                          {hour.toString().padStart(2, '0')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <span>:</span>
+                  
+                  <Select 
+                    value={selectedTime.minutes}
+                    onValueChange={(value) => setSelectedTime(prev => ({ ...prev, minutes: value }))}
+                  >
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['00', '15', '30', '45'].map(minute => (
+                        <SelectItem key={minute} value={minute}>
+                          {minute}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select 
+                    value={selectedTime.ampm}
+                    onValueChange={(value) => setSelectedTime(prev => ({ ...prev, ampm: value as 'AM' | 'PM' }))}
+                  >
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="AM">AM</SelectItem>
+                      <SelectItem value="PM">PM</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
-          )}
-        </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="collection-notes">Special Instructions</Label>
+              <Textarea 
+                id="collection-notes"
+                placeholder="Any special instructions for collection"
+                value={homeCollectionData.collectionNotes}
+                onChange={(e) => 
+                  setHomeCollectionData(prev => ({
+                    ...prev,
+                    collectionNotes: e.target.value
+                  }))
+                }
+                rows={2}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="collection-specialist">Assign Collection Specialist</Label>
+              <Select 
+                defaultValue={collectionSpecialist?.id}
+              >
+                <SelectTrigger id="collection-specialist">
+                  <SelectValue placeholder="Select a specialist" />
+                </SelectTrigger>
+                <SelectContent>
+                  {representatives
+                    .filter(rep => rep.role.includes("Collection") || rep.role.includes("Lab Assistant"))
+                    .map(rep => (
+                      <SelectItem key={rep.id} value={rep.id}>
+                        {rep.name} ({rep.role})
+                      </SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowHomeCollectionDetails(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                size="sm"
+                onClick={applyHomeCollection}
+              >
+                Apply to All Tests
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <div className="px-4 py-2 bg-gradient-to-r from-slate-800 to-gray-700 text-white flex items-center justify-between text-xs">

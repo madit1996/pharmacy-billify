@@ -8,6 +8,7 @@ import { LabTest } from "@/types/lab-tests";
 import ReportCreationOptions from "./ReportCreationOptions";
 import TestReportForm from "./TestReportForm";
 import TestPatientInfo from "./TestPatientInfo";
+import { ArrowLeft, PlusCircle } from "lucide-react";
 
 interface UploadTestResultFormProps {
   test: LabTest;
@@ -25,12 +26,24 @@ const UploadTestResultForm = ({
   const [file, setFile] = useState<File | null>(null);
   const [step, setStep] = useState<'options' | 'upload' | 'create'>('options');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [supportingFiles, setSupportingFiles] = useState<File[]>([]);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       setFile(files[0]);
     }
+  };
+  
+  const handleSupportingFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      setSupportingFiles(prev => [...prev, files[0]]);
+    }
+  };
+  
+  const handleRemoveSupportingFile = (index: number) => {
+    setSupportingFiles(prev => prev.filter((_, i) => i !== index));
   };
   
   const handleUpload = () => {
@@ -42,7 +55,11 @@ const UploadTestResultForm = ({
   
   const handleCreateReport = (testId: string, reportData: Record<string, any>) => {
     if (onCreateReport) {
-      onCreateReport(testId, reportData);
+      // Add supporting files info to reportData
+      const filesInfo = supportingFiles.map(f => ({ name: f.name, size: f.size }));
+      const enhancedReportData = { ...reportData, supportingFiles: filesInfo };
+      
+      onCreateReport(testId, enhancedReportData);
       setDialogOpen(false);
     }
   };
@@ -56,6 +73,10 @@ const UploadTestResultForm = ({
     setDialogOpen(false);
     // Reset to options after closing dialog
     setTimeout(() => setStep('options'), 300);
+  };
+
+  const handleBackToOptions = () => {
+    setStep('options');
   };
   
   // If test is not in reporting status, show appropriate message
@@ -88,11 +109,20 @@ const UploadTestResultForm = ({
         <TestPatientInfo test={test} />
       </div>
       
-      <ReportCreationOptions
-        test={test}
-        onSelectUpload={() => handleOpenDialog('upload')}
-        onSelectCreate={() => handleOpenDialog('create')}
-      />
+      {step === 'options' ? (
+        <ReportCreationOptions
+          test={test}
+          onSelectUpload={() => handleOpenDialog('upload')}
+          onSelectCreate={() => handleOpenDialog('create')}
+        />
+      ) : (
+        <div className="mb-4">
+          <Button variant="ghost" onClick={handleBackToOptions} className="pl-0">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to options
+          </Button>
+        </div>
+      )}
       
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -129,11 +159,50 @@ const UploadTestResultForm = ({
           )}
           
           {step === 'create' && (
-            <TestReportForm 
-              test={test} 
-              onSubmit={handleCreateReport} 
-              onCancel={handleCloseDialog}
-            />
+            <div className="space-y-4">
+              <div className="mb-6 border rounded-md p-4 bg-gray-50">
+                <h3 className="text-sm font-medium mb-2">Supporting Files</h3>
+                
+                <div className="space-y-3">
+                  {supportingFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between bg-white p-2 rounded border">
+                      <span className="text-sm truncate max-w-[300px]">{file.name}</span>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleRemoveSupportingFile(index)}
+                        className="text-red-500 h-8 px-2"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                  
+                  <div className="pt-2">
+                    <Label 
+                      htmlFor="supporting-file" 
+                      className="flex items-center cursor-pointer text-blue-600 hover:text-blue-800"
+                    >
+                      <PlusCircle className="h-4 w-4 mr-1" />
+                      <span>Add supporting file</span>
+                      <Input
+                        id="supporting-file"
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx"
+                        onChange={handleSupportingFileChange}
+                        className="hidden"
+                      />
+                    </Label>
+                  </div>
+                </div>
+              </div>
+              
+              <TestReportForm 
+                test={test} 
+                onSubmit={handleCreateReport} 
+                onCancel={handleCloseDialog}
+              />
+            </div>
           )}
         </DialogContent>
       </Dialog>

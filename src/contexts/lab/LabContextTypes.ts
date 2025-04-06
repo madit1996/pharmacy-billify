@@ -49,6 +49,7 @@ export interface LabContextType {
       address: string;
       collectionDate: Date;
       notes?: string;
+      representativeId?: string;
     }
   ) => void;
 }
