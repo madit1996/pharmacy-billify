@@ -16,8 +16,8 @@ const enhancedInitialPendingTests = initialPendingTests.map((test, index) => {
       collectionNotes: "Patient prefers morning collection, has a dog in the house.",
       workflowHistory: [
         {
-          fromStatus: 'pending',
-          toStatus: 'pending',
+          fromStatus: 'pending' as LabTestStatus,
+          toStatus: 'pending' as LabTestStatus,
           timestamp: new Date(new Date().setDate(new Date().getDate() - 1)),
           notes: "Home collection scheduled",
           performedBy: "R5",
@@ -33,8 +33,8 @@ const enhancedInitialPendingTests = initialPendingTests.map((test, index) => {
       ...test,
       workflowHistory: [
         {
-          fromStatus: 'pending',
-          toStatus: 'pending',
+          fromStatus: 'pending' as LabTestStatus,
+          toStatus: 'pending' as LabTestStatus,
           timestamp: new Date(new Date().setDate(new Date().getDate() - 2)),
           notes: "Test ordered by doctor",
           performedBy: "D1",

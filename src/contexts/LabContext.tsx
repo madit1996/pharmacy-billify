@@ -5,6 +5,7 @@ import { useLabTests } from "@/hooks/lab/useLabTests";
 import { useLabBilling } from "@/hooks/lab/useLabBilling";
 import { useLabWaitlist } from "@/hooks/lab/useLabWaitlist";
 import { labTestOptions } from "./lab/LabInitialData";
+import { useLabAnalytics } from "@/hooks/lab/useLabAnalytics";
 
 const LabContext = createContext<LabContextType | undefined>(undefined);
 
@@ -53,6 +54,11 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
     customersState
   );
 
+  const {
+    getRepresentativeAnalytics,
+    getAcquisitionAnalytics
+  } = useLabAnalytics(pendingTests, completedTests);
+
   return (
     <LabContext.Provider
       value={{
@@ -85,7 +91,9 @@ export const LabProvider = ({ children }: { children: ReactNode }) => {
         updateTestStatus,
         updateTestWorkflow,
         updateSampleDetails,
-        setupHomeCollection
+        setupHomeCollection,
+        getRepresentativeAnalytics,
+        getAcquisitionAnalytics
       }}
     >
       {children}

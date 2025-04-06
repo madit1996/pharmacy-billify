@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  Activity, ArrowRight, Calendar, CheckCircle, Clock, FileText, Home, Loader2, MapPin, User, History, Edit
+  Activity, ArrowRight, Calendar, CheckCircle, Clock, FileText, Home, Loader2, MapPin, User, History, Edit, Upload
 } from "lucide-react";
 import { LabTest, LabTestStatus } from "@/types/lab-tests";
 import { useState } from "react";
@@ -32,6 +32,7 @@ interface TestCardProps {
 const TestCard = ({ test, onSelectTest, onUpdateWorkflow }: TestCardProps) => {
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [notes, setNotes] = useState("");
   const [selectedRepresentative, setSelectedRepresentative] = useState("");
   const { toast } = useToast();
@@ -71,8 +72,24 @@ const TestCard = ({ test, onSelectTest, onUpdateWorkflow }: TestCardProps) => {
       case 'processing': return "bg-purple-100 text-purple-800 hover:bg-purple-200";
       case 'reporting': return "bg-indigo-100 text-indigo-800 hover:bg-indigo-200";
       case 'completed': return "bg-green-100 text-green-800 hover:bg-green-200";
+      case 'cancelled': return "bg-red-100 text-red-800 hover:bg-red-200";
       default: return "bg-gray-100 text-gray-800 hover:bg-gray-200";
     }
+  };
+
+  // Find the last person who updated this status
+  const getLastRepresentativeForStatus = (test: LabTest, status: LabTestStatus): string | null => {
+    if (!test.workflowHistory || test.workflowHistory.length === 0) return null;
+    
+    // Find all history items where the test entered the specified status
+    const statusUpdates = test.workflowHistory
+      .filter(item => item.toStatus === status)
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    
+    // Return the name of the person who performed the latest update
+    return statusUpdates.length > 0 && statusUpdates[0].performerName 
+      ? statusUpdates[0].performerName 
+      : null;
   };
 
   const handleUpdateStatus = () => {
@@ -134,25 +151,50 @@ const TestCard = ({ test, onSelectTest, onUpdateWorkflow }: TestCardProps) => {
             </div>
           )}
         </div>
-        <Badge className={getStatusBadgeColor(test.status)}>
-          {test.status.charAt(0).toUpperCase() + test.status.slice(1)}
-        </Badge>
+        <div className="flex flex-col items-end">
+          <Badge className={getStatusBadgeColor(test.status)}>
+            {test.status.charAt(0).toUpperCase() + test.status.slice(1)}
+          </Badge>
+          
+          {/* Show the representative who last updated this status */}
+          {getLastRepresentativeForStatus(test, test.status) && (
+            <span className="text-xs text-gray-500 mt-1">
+              By: {getLastRepresentativeForStatus(test, test.status)}
+            </span>
+          )}
+        </div>
       </div>
       
       <div className="space-y-4">
         {/* Workflow progress visualization */}
-        <WorkflowProgress test={test} />
+        <WorkflowProgress 
+          test={test} 
+          representatives={representatives}
+          getLastRepresentativeForStatus={getLastRepresentativeForStatus}
+        />
         
         <div className="flex justify-between items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsHistoryDialogOpen(true)}
-            className="text-gray-500"
-          >
-            <History className="mr-1 h-4 w-4" />
-            History
-          </Button>
+          <div className="flex space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsHistoryDialogOpen(true)}
+              className="text-gray-500"
+            >
+              <History className="mr-1 h-4 w-4" />
+              History
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsUploadDialogOpen(true)}
+              className="text-gray-500"
+            >
+              <Upload className="mr-1 h-4 w-4" />
+              Upload
+            </Button>
+          </div>
           
           <div className="flex space-x-2">
             <Button
@@ -278,6 +320,64 @@ const TestCard = ({ test, onSelectTest, onUpdateWorkflow }: TestCardProps) => {
                 ))}
               </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Upload Dialog */}
+      <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload Supporting Files</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <input 
+                type="file" 
+                id="file-upload" 
+                className="hidden" 
+                accept=".pdf,.jpg,.jpeg,.png"
+              />
+              <label 
+                htmlFor="file-upload"
+                className="flex flex-col items-center justify-center cursor-pointer"
+              >
+                <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                <span className="text-sm font-medium text-gray-700">
+                  Click to upload or drag and drop
+                </span>
+                <span className="text-xs text-gray-500 mt-1">
+                  PDF, JPG, PNG (max. 10MB)
+                </span>
+              </label>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="file-notes">Notes</Label>
+              <Textarea
+                id="file-notes"
+                placeholder="Add notes about this file"
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsUploadDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={() => {
+                toast({
+                  title: "File uploaded",
+                  description: "Your file has been uploaded successfully"
+                });
+                setIsUploadDialogOpen(false);
+              }}>
+                Upload File
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

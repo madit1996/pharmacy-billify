@@ -6,14 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { 
-  Activity, CheckCircle, Clock, Home, Loader2
+  Activity, CheckCircle, Clock, Home, Loader2, Users, BarChart4, TrendingUp
 } from "lucide-react";
 import UploadTestResultForm from "./UploadTestResultForm";
 
-// Import the new components
+// Import the components
 import AnalyticsCard from "./tracking/AnalyticsCard";
 import TestFilters from "./tracking/TestFilters";
 import TestTable from "./tracking/TestTable";
+import RepresentativeAnalytics from "./tracking/RepresentativeAnalytics";
+import AcquisitionAnalytics from "./tracking/AcquisitionAnalytics";
 
 const LabTestTrackingTab = () => {
   const { 
@@ -22,6 +24,8 @@ const LabTestTrackingTab = () => {
     handleUploadResult,
     handleCreateReport,
     updateTestWorkflow,
+    getRepresentativeAnalytics,
+    getAcquisitionAnalytics
   } = useLabContext();
 
   const [selectedTest, setSelectedTest] = useState<LabTest | null>(null);
@@ -30,6 +34,7 @@ const LabTestTrackingTab = () => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterHomeCollection, setFilterHomeCollection] = useState<boolean | null>(null);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   // Combine all tests for tracking
   const allTests = [...pendingTests, ...completedTests];
@@ -91,8 +96,8 @@ const LabTestTrackingTab = () => {
     }
   };
 
-  const handleUpdateWorkflow = (test: LabTest, newStatus: LabTestStatus, notes?: string) => {
-    updateTestWorkflow(test.id, newStatus, notes);
+  const handleUpdateWorkflow = (test: LabTest, newStatus: LabTestStatus, notes?: string, additionalInfo?: any) => {
+    updateTestWorkflow(test.id, newStatus, notes, additionalInfo);
     
     // If moving to reporting stage, open upload dialog
     if (newStatus === 'reporting') {
@@ -102,41 +107,90 @@ const LabTestTrackingTab = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Analytics Cards */}
-        <AnalyticsCard
-          title="Pending Tests"
-          value={countByStatus('pending')}
-          total={allTests.length}
-          color="blue"
-          icon={<Clock className="h-5 w-5 text-blue-600" />}
-        />
+      <div className="flex justify-between items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
+          {/* Analytics Cards */}
+          <AnalyticsCard
+            title="Pending Tests"
+            value={countByStatus('pending')}
+            total={allTests.length}
+            color="blue"
+            icon={<Clock className="h-5 w-5 text-blue-600" />}
+          />
 
-        <AnalyticsCard
-          title="Processing"
-          value={countByStatus('processing') + countByStatus('sampling')}
-          total={allTests.length}
-          color="purple"
-          icon={<Loader2 className="h-5 w-5 text-purple-600" />}
-        />
+          <AnalyticsCard
+            title="Processing"
+            value={countByStatus('processing') + countByStatus('sampling')}
+            total={allTests.length}
+            color="purple"
+            icon={<Loader2 className="h-5 w-5 text-purple-600" />}
+          />
 
-        <AnalyticsCard
-          title="Completed"
-          value={countByStatus('completed')}
-          total={allTests.length}
-          color="green"
-          icon={<CheckCircle className="h-5 w-5 text-green-600" />}
-        />
+          <AnalyticsCard
+            title="Completed"
+            value={countByStatus('completed')}
+            total={allTests.length}
+            color="green"
+            icon={<CheckCircle className="h-5 w-5 text-green-600" />}
+          />
 
-        <AnalyticsCard
-          title="Home Collections"
-          value={homeCollectionCount}
-          total={allTests.length}
-          color="amber"
-          icon={<Home className="h-5 w-5 text-amber-600" />}
-          subtitle={`${pendingHomeCollections} pending collections`}
-        />
+          <AnalyticsCard
+            title="Home Collections"
+            value={homeCollectionCount}
+            total={allTests.length}
+            color="amber"
+            icon={<Home className="h-5 w-5 text-amber-600" />}
+            subtitle={`${pendingHomeCollections} pending collections`}
+          />
+        </div>
+        
+        {/* Toggle analytics button */}
+        <button 
+          onClick={() => setShowAnalytics(!showAnalytics)}
+          className="flex items-center gap-2 px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-md transition-colors"
+        >
+          <BarChart4 className="h-4 w-4" />
+          <span>{showAnalytics ? 'Hide Analytics' : 'Show Analytics'}</span>
+        </button>
       </div>
+      
+      {/* Advanced Analytics Section */}
+      {showAnalytics && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-blue-600" />
+                Staff Performance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RepresentativeAnalytics 
+                analytics={getRepresentativeAnalytics ? getRepresentativeAnalytics() : []}
+              />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-green-600" />
+                Patient Acquisition
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AcquisitionAnalytics 
+                analytics={getAcquisitionAnalytics ? getAcquisitionAnalytics() : {
+                  walkIn: 0,
+                  homeCollection: 0,
+                  online: 0,
+                  referral: 0
+                }}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <TestFilters
         searchQuery={searchQuery}

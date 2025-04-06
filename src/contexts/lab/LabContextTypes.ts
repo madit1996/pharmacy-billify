@@ -7,6 +7,22 @@ export interface MultiPatientBill {
   testCount: number;
 }
 
+export interface RepresentativeAnalytics {
+  representativeId: string;
+  representativeName: string;
+  testsHandled: number;
+  stepsCompleted: number;
+  efficiency: number; // average time to complete steps
+  specialties: Record<string, number>; // count by test category
+}
+
+export interface AcquisitionAnalytics {
+  walkIn: number;
+  homeCollection: number;
+  online: number;
+  referral: number;
+}
+
 export interface LabContextType {
   pendingTests: LabTest[];
   completedTests: LabTest[];
@@ -52,4 +68,6 @@ export interface LabContextType {
       representativeId?: string;
     }
   ) => void;
+  getRepresentativeAnalytics?: () => RepresentativeAnalytics[];
+  getAcquisitionAnalytics?: () => AcquisitionAnalytics;
 }
