@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useBloodBankContext } from "@/contexts/BloodBankContext";
 import { BloodGroup, BloodUnit } from "@/types/blood-bank";
@@ -24,7 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Droplet, Filter, Archive, ArchiveX } from "lucide-react";
+import { Droplet, Filter, Archive, ArchiveX, TransferIcon, MoveRight } from "lucide-react";
 import { 
   BarChart, 
   Bar, 
@@ -40,6 +39,8 @@ import {
   LineChart,
   Line
 } from 'recharts';
+import TransferDialog from "./TransferDialog";
+import { toast } from "sonner";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#ff7300'];
 const CRITICAL_LEVEL = 3;
@@ -48,10 +49,12 @@ const LOW_LEVEL = 10;
 const stockAgeLabels = ['0-7 days', '8-14 days', '15-21 days', '22-28 days', '29-35 days', 'Over 35 days'];
 
 const BloodStockManagementTab = () => {
-  const { bloodUnits, inventory, updateBloodUnit } = useBloodBankContext();
+  const { bloodUnits, inventory, updateBloodUnit, transfers } = useBloodBankContext();
   const [filterGroup, setFilterGroup] = useState<BloodGroup | 'all'>('all');
   const [filterLocation, setFilterLocation] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("overview");
+  const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
+  const [transferFromLocation, setTransferFromLocation] = useState<string>("");
 
   // Get unique locations from blood units
   const locations = [...new Set(bloodUnits.map(unit => unit.location))];
@@ -109,6 +112,8 @@ const BloodStockManagementTab = () => {
       ...unit,
       status: newStatus
     });
+    
+    toast.success(`Blood unit ${unit.id} status updated to ${newStatus}`);
   };
 
   // Get blood units that are expiring soon (within 7 days)
@@ -125,6 +130,16 @@ const BloodStockManagementTab = () => {
   };
   
   const expiringSoon = getExpiringSoon();
+
+  const openTransferDialog = (location?: string) => {
+    setTransferFromLocation(location || "");
+    setIsTransferDialogOpen(true);
+  };
+
+  // Get recent transfers (last 5)
+  const recentTransfers = [...transfers]
+    .sort((a, b) => new Date(b.transferDate).getTime() - new Date(a.transferDate).getTime())
+    .slice(0, 5);
 
   return (
     <div className="space-y-6">
@@ -183,7 +198,7 @@ const BloodStockManagementTab = () => {
         <TabsList className="grid grid-cols-3 mb-4">
           <TabsTrigger value="overview">Stock Overview</TabsTrigger>
           <TabsTrigger value="details">Detailed Inventory</TabsTrigger>
-          <TabsTrigger value="expiry">Expiry Management</TabsTrigger>
+          <TabsTrigger value="expiry">Expiry & Transfer Management</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
@@ -242,6 +257,7 @@ const BloodStockManagementTab = () => {
               ))}
           </div>
           
+          {/* Stock distribution charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
             <Card>
               <CardHeader>
@@ -366,6 +382,14 @@ const BloodStockManagementTab = () => {
                               >
                                 Use
                               </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-green-600 border-green-600 hover:bg-green-50"
+                                onClick={() => openTransferDialog(unit.location)}
+                              >
+                                <MoveRight className="h-4 w-4" />
+                              </Button>
                             </>
                           )}
                           {unit.status === 'reserved' && (
@@ -466,8 +490,9 @@ const BloodStockManagementTab = () => {
                                   size="sm" 
                                   variant="outline" 
                                   className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                                  onClick={() => openTransferDialog(unit.location)}
                                 >
-                                  Prioritize
+                                  Transfer
                                 </Button>
                                 <Button 
                                   size="sm" 
@@ -491,7 +516,7 @@ const BloodStockManagementTab = () => {
             <Card className="mt-4">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Archive className="h-5 w-5" />
+                  <TransferIcon className="h-5 w-5" />
                   Transfer Management
                 </CardTitle>
                 <CardDescription>
@@ -505,7 +530,10 @@ const BloodStockManagementTab = () => {
                       <div className="text-center">
                         <h3 className="font-semibold mb-2">Schedule Transfer</h3>
                         <p className="text-gray-500 text-sm mb-4">Create a new blood units transfer</p>
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                        <Button 
+                          className="w-full bg-blue-600 hover:bg-blue-700"
+                          onClick={() => openTransferDialog()}
+                        >
                           New Transfer
                         </Button>
                       </div>
@@ -551,39 +579,41 @@ const BloodStockManagementTab = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <TableRow>
-                      <TableCell>2025-05-14</TableCell>
-                      <TableCell>Main Storage</TableCell>
-                      <TableCell>Emergency Unit</TableCell>
-                      <TableCell>5 x O-</TableCell>
-                      <TableCell>
-                        <Badge className="bg-green-100 text-green-800 border-green-300">
-                          Completed
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>2025-05-13</TableCell>
-                      <TableCell>City Blood Bank</TableCell>
-                      <TableCell>Main Storage</TableCell>
-                      <TableCell>10 x A+</TableCell>
-                      <TableCell>
-                        <Badge className="bg-green-100 text-green-800 border-green-300">
-                          Completed
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>2025-05-16</TableCell>
-                      <TableCell>Main Storage</TableCell>
-                      <TableCell>Surgery Department</TableCell>
-                      <TableCell>3 x AB+</TableCell>
-                      <TableCell>
-                        <Badge className="bg-blue-100 text-blue-800 border-blue-300">
-                          Scheduled
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
+                    {recentTransfers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-4 text-gray-500">
+                          No recent transfers
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      recentTransfers.map((transfer) => (
+                        <TableRow key={transfer.id}>
+                          <TableCell>{transfer.transferDate}</TableCell>
+                          <TableCell>{transfer.fromLocation}</TableCell>
+                          <TableCell>{transfer.toLocation}</TableCell>
+                          <TableCell>
+                            {transfer.units.length} x {
+                              transfer.units.length > 1 
+                                ? 'Multiple groups' 
+                                : transfer.units[0].bloodGroup
+                            }
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={`
+                              ${transfer.status === 'completed' 
+                                ? 'bg-green-100 text-green-800 border-green-300' 
+                                : transfer.status === 'in-transit'
+                                ? 'bg-blue-100 text-blue-800 border-blue-300'
+                                : transfer.status === 'requested'
+                                ? 'bg-amber-100 text-amber-800 border-amber-300'
+                                : 'bg-gray-100 text-gray-800 border-gray-300'}
+                            `}>
+                              {transfer.status.charAt(0).toUpperCase() + transfer.status.slice(1)}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -591,6 +621,12 @@ const BloodStockManagementTab = () => {
           </div>
         </TabsContent>
       </Tabs>
+      
+      <TransferDialog 
+        open={isTransferDialogOpen} 
+        onOpenChange={setIsTransferDialogOpen}
+        fromLocation={transferFromLocation}
+      />
     </div>
   );
 };
