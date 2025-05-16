@@ -50,7 +50,7 @@ const stockAgeLabels = ['0-7 days', '8-14 days', '15-21 days', '22-28 days', '29
 const BloodStockManagementTab = () => {
   const { bloodUnits, inventory, updateBloodUnit } = useBloodBankContext();
   const [filterGroup, setFilterGroup] = useState<BloodGroup | 'all'>('all');
-  const [filterLocation, setFilterLocation] = useState<string>('');
+  const [filterLocation, setFilterLocation] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("overview");
 
   // Get unique locations from blood units
@@ -99,7 +99,7 @@ const BloodStockManagementTab = () => {
   // Filter blood units based on selected filters
   const filteredUnits = bloodUnits.filter(unit => {
     if (filterGroup !== 'all' && unit.bloodGroup !== filterGroup) return false;
-    if (filterLocation && unit.location !== filterLocation) return false;
+    if (filterLocation !== "all" && unit.location !== filterLocation) return false;
     return true;
   });
 
@@ -154,7 +154,7 @@ const BloodStockManagementTab = () => {
                 <SelectValue placeholder="Storage Location" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Locations</SelectItem>
+                <SelectItem value="all">All Locations</SelectItem>
                 {locations.map(location => (
                   <SelectItem key={location} value={location}>
                     {location}
@@ -168,7 +168,7 @@ const BloodStockManagementTab = () => {
               size="sm"
               onClick={() => {
                 setFilterGroup('all');
-                setFilterLocation('');
+                setFilterLocation('all');
               }}
               className="flex items-center gap-1"
             >
