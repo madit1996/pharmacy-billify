@@ -1,6 +1,6 @@
 
 import { Droplet, Users, ClipboardList, Calendar, BarChart2, Database } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface BloodBankNavigationProps {
   activeTab: 'inventory' | 'donors' | 'requests' | 'camps' | 'analytics' | 'stock';
@@ -9,133 +9,57 @@ interface BloodBankNavigationProps {
 
 const BloodBankNavigation = ({ activeTab, setActiveTab }: BloodBankNavigationProps) => {
   return (
-    <div className="flex gap-3">
-      {activeTab !== 'inventory' && (
-        <Button 
-          variant="outline"
-          onClick={() => setActiveTab('inventory')}
-          className="flex items-center gap-1 border-red-500 text-red-600 hover:bg-red-50"
-        >
+    <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="w-full">
+      <TabsList className="grid grid-cols-6">
+        <TabsTrigger value="inventory" className="flex items-center gap-1">
           <Droplet className="h-4 w-4 mr-1" />
-          Inventory
-        </Button>
-      )}
-      
-      {activeTab !== 'stock' && (
-        <Button 
-          variant="outline"
-          onClick={() => setActiveTab('stock')}
-          className="flex items-center gap-1 border-cyan-500 text-cyan-600 hover:bg-cyan-50"
-        >
+          <span className="hidden md:inline">Inventory</span>
+          <span className="inline md:hidden">
+            <Droplet className="h-4 w-4" />
+          </span>
+        </TabsTrigger>
+        
+        <TabsTrigger value="stock" className="flex items-center gap-1">
           <Database className="h-4 w-4 mr-1" />
-          Stock Management
-        </Button>
-      )}
-      
-      {activeTab !== 'donors' && (
-        <Button 
-          variant="outline"
-          onClick={() => setActiveTab('donors')}
-          className="flex items-center gap-1 border-blue-500 text-blue-600 hover:bg-blue-50"
-        >
+          <span className="hidden md:inline">Stock</span>
+          <span className="inline md:hidden">
+            <Database className="h-4 w-4" />
+          </span>
+        </TabsTrigger>
+        
+        <TabsTrigger value="donors" className="flex items-center gap-1">
           <Users className="h-4 w-4 mr-1" />
-          Donors
-        </Button>
-      )}
-      
-      {activeTab !== 'requests' && (
-        <Button 
-          variant="outline"
-          onClick={() => setActiveTab('requests')}
-          className="flex items-center gap-1 border-green-500 text-green-600 hover:bg-green-50"
-        >
+          <span className="hidden md:inline">Donors</span>
+          <span className="inline md:hidden">
+            <Users className="h-4 w-4" />
+          </span>
+        </TabsTrigger>
+        
+        <TabsTrigger value="requests" className="flex items-center gap-1">
           <ClipboardList className="h-4 w-4 mr-1" />
-          Requests
-        </Button>
-      )}
-
-      {activeTab !== 'camps' && (
-        <Button 
-          variant="outline"
-          onClick={() => setActiveTab('camps')}
-          className="flex items-center gap-1 border-amber-500 text-amber-600 hover:bg-amber-50"
-        >
+          <span className="hidden md:inline">Requests</span>
+          <span className="inline md:hidden">
+            <ClipboardList className="h-4 w-4" />
+          </span>
+        </TabsTrigger>
+        
+        <TabsTrigger value="camps" className="flex items-center gap-1">
           <Calendar className="h-4 w-4 mr-1" />
-          Donation Camps
-        </Button>
-      )}
-
-      {activeTab !== 'analytics' && (
-        <Button 
-          variant="outline"
-          onClick={() => setActiveTab('analytics')}
-          className="flex items-center gap-1 border-purple-500 text-purple-600 hover:bg-purple-50"
-        >
+          <span className="hidden md:inline">Camps</span>
+          <span className="inline md:hidden">
+            <Calendar className="h-4 w-4" />
+          </span>
+        </TabsTrigger>
+        
+        <TabsTrigger value="analytics" className="flex items-center gap-1">
           <BarChart2 className="h-4 w-4 mr-1" />
-          Analytics
-        </Button>
-      )}
-      
-      {activeTab === 'inventory' && (
-        <Button 
-          className="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white"
-          disabled
-        >
-          <Droplet className="h-4 w-4 mr-1" />
-          Inventory
-        </Button>
-      )}
-      
-      {activeTab === 'stock' && (
-        <Button 
-          className="flex items-center gap-1 bg-cyan-600 hover:bg-cyan-700 text-white"
-          disabled
-        >
-          <Database className="h-4 w-4 mr-1" />
-          Stock Management
-        </Button>
-      )}
-      
-      {activeTab === 'donors' && (
-        <Button 
-          className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white"
-          disabled
-        >
-          <Users className="h-4 w-4 mr-1" />
-          Donors
-        </Button>
-      )}
-      
-      {activeTab === 'requests' && (
-        <Button 
-          className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white"
-          disabled
-        >
-          <ClipboardList className="h-4 w-4 mr-1" />
-          Requests
-        </Button>
-      )}
-
-      {activeTab === 'camps' && (
-        <Button 
-          className="flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white"
-          disabled
-        >
-          <Calendar className="h-4 w-4 mr-1" />
-          Donation Camps
-        </Button>
-      )}
-
-      {activeTab === 'analytics' && (
-        <Button 
-          className="flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white"
-          disabled
-        >
-          <BarChart2 className="h-4 w-4 mr-1" />
-          Analytics
-        </Button>
-      )}
-    </div>
+          <span className="hidden md:inline">Analytics</span>
+          <span className="inline md:hidden">
+            <BarChart2 className="h-4 w-4" />
+          </span>
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
   );
 };
 
