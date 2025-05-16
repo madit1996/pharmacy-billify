@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Droplet, TransferIcon, AlertTriangle, UserPlus, ClipboardCheck, Calendar } from "lucide-react";
+import { Droplet, ArrowRight, AlertTriangle, UserPlus, ClipboardCheck, Calendar } from "lucide-react";
 import { useBloodBankContext } from "@/contexts/BloodBankContext";
 
 interface QuickActionsProps {
@@ -55,7 +55,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ activeTab, setActive
           className="justify-start"
           onClick={() => setActiveTab('stock')}
         >
-          <TransferIcon className="h-4 w-4 mr-2" />
+          <ArrowRight className="h-4 w-4 mr-2" />
           Manage Stock
         </Button>
         

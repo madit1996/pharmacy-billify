@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useBloodBankContext } from "@/contexts/BloodBankContext";
 import { BloodGroup, BloodUnit } from "@/types/blood-bank";
@@ -23,7 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Droplet, Filter, Archive, ArchiveX, TransferIcon, MoveRight } from "lucide-react";
+import { Droplet, Filter, Archive, ArchiveX, ArrowLeft, ArrowRight, MoveRight } from "lucide-react";
 import { 
   BarChart, 
   Bar, 
@@ -516,7 +517,7 @@ const BloodStockManagementTab = () => {
             <Card className="mt-4">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TransferIcon className="h-5 w-5" />
+                  <ArrowRight className="h-5 w-5" />
                   Transfer Management
                 </CardTitle>
                 <CardDescription>
