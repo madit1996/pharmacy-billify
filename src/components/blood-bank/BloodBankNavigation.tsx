@@ -1,10 +1,10 @@
 
-import { Droplet, Users, ClipboardList, Calendar, BarChart2 } from "lucide-react";
+import { Droplet, Users, ClipboardList, Calendar, BarChart2, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface BloodBankNavigationProps {
-  activeTab: 'inventory' | 'donors' | 'requests' | 'camps' | 'analytics';
-  setActiveTab: (tab: 'inventory' | 'donors' | 'requests' | 'camps' | 'analytics') => void;
+  activeTab: 'inventory' | 'donors' | 'requests' | 'camps' | 'analytics' | 'stock';
+  setActiveTab: (tab: 'inventory' | 'donors' | 'requests' | 'camps' | 'analytics' | 'stock') => void;
 }
 
 const BloodBankNavigation = ({ activeTab, setActiveTab }: BloodBankNavigationProps) => {
@@ -18,6 +18,17 @@ const BloodBankNavigation = ({ activeTab, setActiveTab }: BloodBankNavigationPro
         >
           <Droplet className="h-4 w-4 mr-1" />
           Inventory
+        </Button>
+      )}
+      
+      {activeTab !== 'stock' && (
+        <Button 
+          variant="outline"
+          onClick={() => setActiveTab('stock')}
+          className="flex items-center gap-1 border-cyan-500 text-cyan-600 hover:bg-cyan-50"
+        >
+          <Database className="h-4 w-4 mr-1" />
+          Stock Management
         </Button>
       )}
       
@@ -72,6 +83,16 @@ const BloodBankNavigation = ({ activeTab, setActiveTab }: BloodBankNavigationPro
         >
           <Droplet className="h-4 w-4 mr-1" />
           Inventory
+        </Button>
+      )}
+      
+      {activeTab === 'stock' && (
+        <Button 
+          className="flex items-center gap-1 bg-cyan-600 hover:bg-cyan-700 text-white"
+          disabled
+        >
+          <Database className="h-4 w-4 mr-1" />
+          Stock Management
         </Button>
       )}
       

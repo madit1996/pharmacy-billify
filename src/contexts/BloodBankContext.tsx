@@ -6,7 +6,9 @@ import {
   BloodRequest, 
   BloodInventorySummary, 
   BloodDonationCamp,
-  BloodGroup
+  BloodGroup,
+  BloodTransfusion,
+  BloodStockTransfer
 } from "@/types/blood-bank";
 import { useBloodBank } from "@/hooks/blood-bank/useBloodBank";
 
@@ -15,6 +17,8 @@ interface BloodBankContextType {
   donors: BloodDonor[];
   requests: BloodRequest[];
   camps: BloodDonationCamp[];
+  transfusions: BloodTransfusion[];
+  transfers: BloodStockTransfer[];
   inventory: BloodInventorySummary[];
   addBloodUnit: (unit: Omit<BloodUnit, "id">) => void;
   updateBloodUnit: (unit: BloodUnit) => void;
@@ -28,10 +32,23 @@ interface BloodBankContextType {
   addCamp: (camp: Omit<BloodDonationCamp, "id">) => void;
   updateCamp: (camp: BloodDonationCamp) => void;
   deleteCamp: (id: string) => void;
+  addTransfusion: (transfusion: Omit<BloodTransfusion, "id">) => void;
+  updateTransfusion: (transfusion: BloodTransfusion) => void;
+  deleteTransfusion: (id: string) => void;
+  addTransfer: (transfer: Omit<BloodStockTransfer, "id">) => void;
+  updateTransfer: (transfer: BloodStockTransfer) => void;
+  deleteTransfer: (id: string) => void;
   getBloodTypeCompatibility: (bloodType: BloodGroup) => BloodGroup[];
   getDonorAnalytics: () => { bloodGroup: BloodGroup; count: number }[];
   getRequestAnalytics: () => { status: string; count: number }[];
   getCampPerformance: () => { campName: string; donors: number; expected: number }[];
+  getStockAgeAnalysis: () => Record<string, number>;
+  getExpiringUnits: (days?: number) => BloodUnit[];
+  getInventoryByLocation: () => { location: string; available: number; reserved: number; total: number }[];
+  checkCompatibleBloodAvailability: (bloodGroup: BloodGroup, quantity?: number) => { 
+    available: boolean; 
+    groups: { bloodGroup: BloodGroup; count: number }[] 
+  };
 }
 
 const BloodBankContext = createContext<BloodBankContextType | undefined>(undefined);

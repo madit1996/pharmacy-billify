@@ -1,16 +1,16 @@
 
 import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BloodBankNavigation from "@/components/blood-bank/BloodBankNavigation";
 import BloodInventoryTab from "@/components/blood-bank/BloodInventoryTab";
 import BloodDonorsTab from "@/components/blood-bank/BloodDonorsTab";
 import BloodRequestsTab from "@/components/blood-bank/BloodRequestsTab";
 import BloodDonationCampTab from "@/components/blood-bank/BloodDonationCampTab";
 import BloodAnalyticsTab from "@/components/blood-bank/BloodAnalyticsTab";
+import BloodStockManagementTab from "@/components/blood-bank/BloodStockManagementTab";
 import { BloodBankProvider } from "@/contexts/BloodBankContext";
 
 const BloodBankPage = () => {
-  const [activeTab, setActiveTab] = useState<'inventory' | 'donors' | 'requests' | 'camps' | 'analytics'>('inventory');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'donors' | 'requests' | 'camps' | 'analytics' | 'stock'>('inventory');
 
   return (
     <BloodBankProvider>
@@ -26,6 +26,7 @@ const BloodBankPage = () => {
           {activeTab === 'requests' && <BloodRequestsTab />}
           {activeTab === 'camps' && <BloodDonationCampTab />}
           {activeTab === 'analytics' && <BloodAnalyticsTab />}
+          {activeTab === 'stock' && <BloodStockManagementTab />}
         </div>
       </div>
     </BloodBankProvider>
