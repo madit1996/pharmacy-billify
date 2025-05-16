@@ -225,7 +225,15 @@ const BloodAnalyticsTab = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value, name) => [value, `${name.charAt(0).toUpperCase() + name.slice(1)} Requests`]} />
+                    <Tooltip 
+                      formatter={(value: number, name: any) => {
+                        // Check if name is a string before using string methods
+                        const displayName = typeof name === 'string' 
+                          ? `${name.charAt(0).toUpperCase()}${name.slice(1)} Requests` 
+                          : `${name} Requests`;
+                        return [value, displayName];
+                      }} 
+                    />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
