@@ -31,19 +31,30 @@ import {
   Calendar,
   Stethoscope,
   Activity as Pulse,
-  DollarSign
+  DollarSign,
+  Clock,
+  AlertCircle,
+  Heart
 } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   
-  // Revenue data for different departments
+  // Appointment status data
+  const appointmentStatusData = [
+    { name: "Completed", value: 156, color: "#10B981" },
+    { name: "Upcoming", value: 89, color: "#3B82F6" },
+    { name: "Missed", value: 23, color: "#EF4444" }
+  ];
+  
+  // Revenue data for different departments including ICU
   const departmentRevenueData = [
-    { name: "OPD", value: 45000 },
+    { name: "ICU", value: 98000 },
     { name: "IPD", value: 72000 },
+    { name: "OPD", value: 45000 },
     { name: "Pharmacy", value: 38000 },
     { name: "Lab", value: 25000 },
-    { name: "Radiology", value: 18000 }
+    { name: "OT", value: 35000 }
   ];
   
   // Monthly revenue trend data
@@ -79,7 +90,7 @@ const Dashboard = () => {
     { name: "Dr. Sarah Tanoto", department: "Neurology", patients: 85, revenue: 21250 }
   ];
   
-  // Department metrics
+  // Department metrics including ICU
   const departmentMetrics = [
     {
       title: "OPD",
@@ -98,25 +109,25 @@ const Dashboard = () => {
       icon: <BedDouble className="h-5 w-5 text-purple-500" />
     },
     {
-      title: "Pharmacy",
-      value: "1,423",
-      revenue: "$38,000",
-      percentage: "+12.5%",
+      title: "ICU",
+      value: "24",
+      revenue: "$98,000",
+      percentage: "+22.1%",
       trend: "up",
-      icon: <ShoppingBag className="h-5 w-5 text-green-500" />
+      icon: <Heart className="h-5 w-5 text-red-500" />
     },
     {
-      title: "Laboratory",
-      value: "235",
-      revenue: "$25,000",
-      percentage: "+9.8%",
+      title: "OT",
+      value: "47",
+      revenue: "$35,000",
+      percentage: "+18.7%",
       trend: "up",
-      icon: <FlaskConical className="h-5 w-5 text-amber-500" />
+      icon: <Activity className="h-5 w-5 text-orange-500" />
     }
   ];
   
   // Colors for charts
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
   
   return (
     <div className="container mx-auto pb-8">
@@ -139,6 +150,59 @@ const Dashboard = () => {
           </Button>
         </div>
       </div>
+      
+      {/* Financial Summary - Moved to Top */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-green-600" />
+            Financial Summary
+          </CardTitle>
+          <CardDescription>Monthly financial overview and performance</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium text-green-800">Total Revenue</h4>
+                <DollarSign className="h-4 w-4 text-green-600" />
+              </div>
+              <p className="text-2xl font-bold text-green-700">$313,000</p>
+              <p className="text-xs text-green-600 mt-1">
+                <TrendingUp className="h-3 w-3 inline mr-1" />
+                +18.5% from last month
+              </p>
+            </div>
+            
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium text-blue-800">Outstanding Payments</h4>
+                <Clock className="h-4 w-4 text-blue-600" />
+              </div>
+              <p className="text-2xl font-bold text-blue-700">$24,500</p>
+              <p className="text-xs text-blue-600 mt-1">7.8% of total revenue</p>
+            </div>
+            
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium text-purple-800">Net Profit</h4>
+                <TrendingUp className="h-4 w-4 text-purple-600" />
+              </div>
+              <p className="text-2xl font-bold text-purple-700">$187,200</p>
+              <p className="text-xs text-purple-600 mt-1">59.8% profit margin</p>
+            </div>
+            
+            <div className="bg-amber-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium text-amber-800">Average Bill Value</h4>
+                <FileText className="h-4 w-4 text-amber-600" />
+              </div>
+              <p className="text-2xl font-bold text-amber-700">$425.50</p>
+              <p className="text-xs text-amber-600 mt-1">+$32 from last month</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       
       {/* Department Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -169,58 +233,93 @@ const Dashboard = () => {
         ))}
       </div>
       
-      {/* Revenue Chart */}
+      {/* Appointments Status and Revenue Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Revenue Trend</CardTitle>
-            <CardDescription>Monthly revenue across all departments</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={monthlyRevenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="revenue" stroke="#8884d8" fill="#8884d8" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-        
         <Card>
           <CardHeader>
-            <CardTitle>Revenue by Department</CardTitle>
-            <CardDescription>Distribution across units</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Appointment Status
+            </CardTitle>
+            <CardDescription>Today's appointment overview</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={departmentRevenueData}
+                    data={appointmentStatusData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({name, value}) => `${name}: ${value}`}
                   >
-                    {departmentRevenueData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    {appointmentStatusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `$${value}`} />
+                  <Tooltip />
                 </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-4 space-y-2">
+              {appointmentStatusData.map((item, index) => (
+                <div key={index} className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{backgroundColor: item.color}}></div>
+                    <span className="text-sm">{item.name}</span>
+                  </div>
+                  <span className="font-medium">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Revenue by Department</CardTitle>
+            <CardDescription>Monthly revenue distribution including ICU</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={departmentRevenueData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                  <Bar dataKey="value" fill="#8884d8" />
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
       </div>
+      
+      {/* Revenue Trend */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Revenue Trend</CardTitle>
+          <CardDescription>Monthly revenue across all departments</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={monthlyRevenueData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Area type="monotone" dataKey="revenue" stroke="#8884d8" fill="#8884d8" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
       
       {/* Top Doctors and Diseases */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -280,109 +379,66 @@ const Dashboard = () => {
         </Card>
       </div>
       
-      {/* Recent Activity & Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest events from all departments</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-start">
-                <div className="bg-blue-100 p-2 rounded-full mr-3">
-                  <FileText className="h-4 w-4 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">New prescription filled for Ahmad Wijaya</p>
-                  <p className="text-xs text-gray-500">15 minutes ago • Pharmacy</p>
-                </div>
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Activity</CardTitle>
+          <CardDescription>Latest events from all departments</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-start">
+              <div className="bg-red-100 p-2 rounded-full mr-3">
+                <Heart className="h-4 w-4 text-red-600" />
               </div>
-              
-              <div className="flex items-start">
-                <div className="bg-green-100 p-2 rounded-full mr-3">
-                  <FlaskConical className="h-4 w-4 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Lab results uploaded for Siti Rahayu</p>
-                  <p className="text-xs text-gray-500">32 minutes ago • Laboratory</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start">
-                <div className="bg-purple-100 p-2 rounded-full mr-3">
-                  <Calendar className="h-4 w-4 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">New appointment scheduled with Dr. Budi</p>
-                  <p className="text-xs text-gray-500">1 hour ago • OPD</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start">
-                <div className="bg-amber-100 p-2 rounded-full mr-3">
-                  <BedDouble className="h-4 w-4 text-amber-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">New patient admitted to Ward 3</p>
-                  <p className="text-xs text-gray-500">2 hours ago • IPD</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start">
-                <div className="bg-red-100 p-2 rounded-full mr-3">
-                  <Pulse className="h-4 w-4 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Emergency case handled for Rini Kusuma</p>
-                  <p className="text-xs text-gray-500">3 hours ago • Emergency</p>
-                </div>
+              <div>
+                <p className="text-sm font-medium">ICU patient admitted - Critical condition</p>
+                <p className="text-xs text-gray-500">5 minutes ago • ICU</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Financial Summary</CardTitle>
-            <CardDescription>Monthly overview</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="bg-green-50 p-4 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium text-green-800">Total Revenue</h4>
-                  <DollarSign className="h-4 w-4 text-green-600" />
-                </div>
-                <p className="text-2xl font-bold text-green-700">$198,000</p>
-                <p className="text-xs text-green-600 mt-1">
-                  <TrendingUp className="h-3 w-3 inline mr-1" />
-                  +12.3% from last month
-                </p>
+            
+            <div className="flex items-start">
+              <div className="bg-blue-100 p-2 rounded-full mr-3">
+                <FileText className="h-4 w-4 text-blue-600" />
               </div>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Outstanding Payments</span>
-                  <span className="font-medium">$24,500</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Average Bill Value</span>
-                  <span className="font-medium">$345.50</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Expenses</span>
-                  <span className="font-medium">$87,300</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Net Profit</span>
-                  <span className="font-medium text-green-600">$110,700</span>
-                </div>
+              <div>
+                <p className="text-sm font-medium">New prescription filled for Ahmad Wijaya</p>
+                <p className="text-xs text-gray-500">15 minutes ago • Pharmacy</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            
+            <div className="flex items-start">
+              <div className="bg-green-100 p-2 rounded-full mr-3">
+                <FlaskConical className="h-4 w-4 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Lab results uploaded for Siti Rahayu</p>
+                <p className="text-xs text-gray-500">32 minutes ago • Laboratory</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <div className="bg-orange-100 p-2 rounded-full mr-3">
+                <Activity className="h-4 w-4 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Surgery completed in OT-2</p>
+                <p className="text-xs text-gray-500">45 minutes ago • OT</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <div className="bg-purple-100 p-2 rounded-full mr-3">
+                <Calendar className="h-4 w-4 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">New appointment scheduled with Dr. Budi</p>
+                <p className="text-xs text-gray-500">1 hour ago • OPD</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
