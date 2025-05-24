@@ -10,7 +10,9 @@ import {
   Clock, 
   UserCog,
   BedDouble,
-  Droplet
+  Droplet,
+  Heart,
+  Activity
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -24,6 +26,9 @@ const Sidebar = () => {
     { icon: Pill, label: "Pharmacy", path: "/pharmacy" },
     { icon: FlaskConical, label: "Lab Tests", path: "/lab-tests" },
     { icon: Droplet, label: "Blood Bank", path: "/blood-bank" },
+    { icon: BedDouble, label: "IPD", path: "/ipd" },
+    { icon: Heart, label: "ICU", path: "/icu" },
+    { icon: Activity, label: "OT", path: "/ot" },
     { icon: BedDouble, label: "Bed Management", path: "/bed-management" },
     { icon: Clock, label: "Availability", path: "/availability" },
     { icon: UserCog, label: "Human Resource", path: "/human-resource" },
