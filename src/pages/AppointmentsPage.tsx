@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,7 +44,7 @@ interface Doctor {
 
 const AppointmentsPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedDoctor, setSelectedDoctor] = useState<string>("");
+  const [selectedDoctor, setSelectedDoctor] = useState<string>("all");
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const { toast } = useToast();
@@ -83,7 +82,7 @@ const AppointmentsPage = () => {
 
   const filteredAppointments = appointments.filter(apt => {
     const dateMatch = apt.date.toDateString() === selectedDate.toDateString();
-    const doctorMatch = !selectedDoctor || apt.doctorName === selectedDoctor;
+    const doctorMatch = selectedDoctor === "all" || apt.doctorName === selectedDoctor;
     return dateMatch && doctorMatch;
   });
 
@@ -188,7 +187,7 @@ const AppointmentsPage = () => {
                     <SelectValue placeholder="All Doctors" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Doctors</SelectItem>
+                    <SelectItem value="all">All Doctors</SelectItem>
                     {doctors.map(doctor => (
                       <SelectItem key={doctor.id} value={doctor.name}>
                         {doctor.name} - {doctor.department}
