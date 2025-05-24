@@ -1,36 +1,64 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddStaffDialogProps {
   onClose: () => void;
 }
 
 const AddStaffDialog = ({ onClose }: AddStaffDialogProps) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
+    staffId: "",
     department: "",
     designation: "",
     phone: "",
     email: "",
+    joinDate: "",
+    salary: "",
     address: "",
     emergencyContact: "",
-    salary: "",
     experience: "",
     certifications: ""
   });
 
-  const departments = ["Cardiology", "Emergency", "Orthopedics", "Radiology", "Pharmacy", "Administration"];
+  const departments = [
+    "Cardiology", "Emergency", "Orthopedics", "Radiology", 
+    "Pharmacy", "Laboratory", "Administration", "ICU", "OT"
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Adding new staff:", formData);
+    
+    // Basic validation
+    if (!formData.name || !formData.staffId || !formData.department) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log("Adding new staff member:", formData);
+    
+    toast({
+      title: "Success",
+      description: "Staff member added successfully",
+    });
+    
     onClose();
+  };
+
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -41,108 +69,134 @@ const AddStaffDialog = ({ onClose }: AddStaffDialogProps) => {
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="name">Full Name *</Label>
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              onChange={(e) => handleChange("name", e.target.value)}
+              placeholder="Enter full name"
               required
             />
           </div>
-          
-          <div>
+
+          <div className="space-y-2">
+            <Label htmlFor="staffId">Staff ID *</Label>
+            <Input
+              id="staffId"
+              value={formData.staffId}
+              onChange={(e) => handleChange("staffId", e.target.value)}
+              placeholder="e.g., EMP001"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="department">Department *</Label>
-            <Select value={formData.department} onValueChange={(value) => setFormData({...formData, department: value})}>
+            <Select value={formData.department} onValueChange={(value) => handleChange("department", value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select department" />
               </SelectTrigger>
               <SelectContent>
                 {departments.map(dept => (
-                  <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                  <SelectItem key={dept} value={dept}>
+                    {dept}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          <div>
-            <Label htmlFor="designation">Designation *</Label>
+          <div className="space-y-2">
+            <Label htmlFor="designation">Designation</Label>
             <Input
               id="designation"
               value={formData.designation}
-              onChange={(e) => setFormData({...formData, designation: e.target.value})}
-              required
+              onChange={(e) => handleChange("designation", e.target.value)}
+              placeholder="e.g., Senior Doctor"
             />
           </div>
 
-          <div>
-            <Label htmlFor="phone">Phone Number *</Label>
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number</Label>
             <Input
               id="phone"
               value={formData.phone}
-              onChange={(e) => setFormData({...formData, phone: e.target.value})}
-              required
+              onChange={(e) => handleChange("phone", e.target.value)}
+              placeholder="+91 9876543210"
             />
           </div>
 
-          <div>
-            <Label htmlFor="email">Email *</Label>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              required
+              onChange={(e) => handleChange("email", e.target.value)}
+              placeholder="email@hospital.com"
             />
           </div>
 
-          <div>
+          <div className="space-y-2">
+            <Label htmlFor="joinDate">Join Date</Label>
+            <Input
+              id="joinDate"
+              type="date"
+              value={formData.joinDate}
+              onChange={(e) => handleChange("joinDate", e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="salary">Salary</Label>
             <Input
               id="salary"
               value={formData.salary}
-              onChange={(e) => setFormData({...formData, salary: e.target.value})}
+              onChange={(e) => handleChange("salary", e.target.value)}
               placeholder="₹50,000"
             />
           </div>
 
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="experience">Experience</Label>
             <Input
               id="experience"
               value={formData.experience}
-              onChange={(e) => setFormData({...formData, experience: e.target.value})}
+              onChange={(e) => handleChange("experience", e.target.value)}
               placeholder="5 years"
             />
           </div>
 
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="emergencyContact">Emergency Contact</Label>
             <Input
               id="emergencyContact"
               value={formData.emergencyContact}
-              onChange={(e) => setFormData({...formData, emergencyContact: e.target.value})}
+              onChange={(e) => handleChange("emergencyContact", e.target.value)}
+              placeholder="+91 9876543211"
             />
           </div>
         </div>
 
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="address">Address</Label>
           <Textarea
             id="address"
             value={formData.address}
-            onChange={(e) => setFormData({...formData, address: e.target.value})}
+            onChange={(e) => handleChange("address", e.target.value)}
+            placeholder="Enter full address"
             rows={2}
           />
         </div>
 
-        <div>
-          <Label htmlFor="certifications">Certifications (comma-separated)</Label>
+        <div className="space-y-2">
+          <Label htmlFor="certifications">Certifications</Label>
           <Textarea
             id="certifications"
             value={formData.certifications}
-            onChange={(e) => setFormData({...formData, certifications: e.target.value})}
-            placeholder="MBBS, MD, Fellowship..."
+            onChange={(e) => handleChange("certifications", e.target.value)}
+            placeholder="Enter certifications separated by commas"
             rows={2}
           />
         </div>
@@ -152,7 +206,7 @@ const AddStaffDialog = ({ onClose }: AddStaffDialogProps) => {
             Cancel
           </Button>
           <Button type="submit">
-            Add Staff
+            Add Staff Member
           </Button>
         </div>
       </form>

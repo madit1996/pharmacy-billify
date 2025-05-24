@@ -13,7 +13,10 @@ import {
   Droplet,
   Heart,
   Activity,
-  Package
+  Package,
+  DollarSign,
+  FileText,
+  Truck
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -32,8 +35,11 @@ const Sidebar = () => {
     { icon: Activity, label: "OT", path: "/ot" },
     { icon: BedDouble, label: "Bed Management", path: "/bed-management" },
     { icon: Package, label: "Material Store", path: "/material-store" },
-    { icon: Clock, label: "Availability", path: "/availability" },
     { icon: UserCog, label: "Human Resource", path: "/human-resource" },
+    { icon: DollarSign, label: "Accounts & Finance", path: "/accounts-finance" },
+    { icon: FileText, label: "Legal/Certificates", path: "/legal-certificates" },
+    { icon: Truck, label: "Ambulance Dispatch", path: "/ambulance-dispatch" },
+    { icon: Clock, label: "Availability", path: "/availability" },
   ];
 
   return (
