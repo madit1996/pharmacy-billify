@@ -59,7 +59,7 @@ interface OTRoom {
 const OTPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
-  const [selectedOT, setSelectedOT] = useState<string>("");
+  const [selectedOT, setSelectedOT] = useState<string>("all");
   const { toast } = useToast();
 
   const otRooms: OTRoom[] = [
@@ -153,7 +153,7 @@ const OTPage = () => {
 
   const filteredSurgeries = surgeries.filter(surgery => {
     const dateMatch = surgery.date.toDateString() === selectedDate.toDateString();
-    const otMatch = !selectedOT || surgery.otRoom === selectedOT;
+    const otMatch = selectedOT === "all" || surgery.otRoom === selectedOT;
     return dateMatch && otMatch;
   });
 
@@ -353,7 +353,7 @@ const OTPage = () => {
                     <SelectValue placeholder="All OTs" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All OTs</SelectItem>
+                    <SelectItem value="all">All OTs</SelectItem>
                     {otRooms.map(room => (
                       <SelectItem key={room.id} value={room.name}>
                         {room.name} - {room.type}
