@@ -629,7 +629,8 @@ const SurgeryScheduleForm = ({ onSubmit, otRooms }: {
     e.preventDefault();
     const submitData = {
       ...formData,
-      estimatedDuration: Number(formData.estimatedDuration)
+      estimatedDuration: Number(formData.estimatedDuration),
+      assistantSurgeon: formData.assistantSurgeon === 'none' ? undefined : formData.assistantSurgeon
     };
     onSubmit(submitData);
   };
@@ -713,7 +714,7 @@ const SurgeryScheduleForm = ({ onSubmit, otRooms }: {
               <SelectValue placeholder="Select Assistant" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">None</SelectItem>
+              <SelectItem value="none">None</SelectItem>
               {doctors.map(doctor => (
                 <SelectItem key={doctor} value={doctor}>
                   {doctor}
