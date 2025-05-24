@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -54,7 +53,7 @@ interface Ward {
 
 const IPDPage = () => {
   const [isAdmissionDialogOpen, setIsAdmissionDialogOpen] = useState(false);
-  const [selectedWard, setSelectedWard] = useState<string>("");
+  const [selectedWard, setSelectedWard] = useState<string>("all");
   const { toast } = useToast();
 
   const wards: Ward[] = [
@@ -125,7 +124,7 @@ const IPDPage = () => {
     }
   ]);
 
-  const filteredPatients = selectedWard 
+  const filteredPatients = selectedWard !== "all"
     ? ipdPatients.filter(patient => patient.wardName === selectedWard)
     : ipdPatients;
 
@@ -283,7 +282,7 @@ const IPDPage = () => {
                     <SelectValue placeholder="All Wards" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Wards</SelectItem>
+                    <SelectItem value="all">All Wards</SelectItem>
                     {wards.map(ward => (
                       <SelectItem key={ward.id} value={ward.name}>
                         {ward.name}
