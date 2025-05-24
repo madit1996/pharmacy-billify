@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Calendar, Users, Clock, CheckCircle, XCircle, AlertCircle, UserPlus } from "lucide-react";
 import StaffAttendanceTab from "@/components/hr/StaffAttendanceTab";
 import LeaveApprovalsTab from "@/components/hr/LeaveApprovalsTab";
 import ShiftPlannerTab from "@/components/hr/ShiftPlannerTab";
+import StaffManagementTab from "@/components/hr/StaffManagementTab";
 
 const HumanResourcePage = () => {
-  const [activeTab, setActiveTab] = useState("attendance");
+  const [activeTab, setActiveTab] = useState("staff");
 
   // Sample data for overview cards
   const hrStats = {
@@ -95,11 +96,16 @@ const HumanResourcePage = () => {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="staff">Staff Management</TabsTrigger>
           <TabsTrigger value="attendance">Staff Attendance</TabsTrigger>
           <TabsTrigger value="leaves">Leave Approvals</TabsTrigger>
           <TabsTrigger value="shifts">Shift Planner</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="staff" className="space-y-4">
+          <StaffManagementTab />
+        </TabsContent>
 
         <TabsContent value="attendance" className="space-y-4">
           <StaffAttendanceTab />

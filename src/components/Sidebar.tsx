@@ -12,7 +12,8 @@ import {
   BedDouble,
   Droplet,
   Heart,
-  Activity
+  Activity,
+  Package
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -30,6 +31,7 @@ const Sidebar = () => {
     { icon: Heart, label: "ICU", path: "/icu" },
     { icon: Activity, label: "OT", path: "/ot" },
     { icon: BedDouble, label: "Bed Management", path: "/bed-management" },
+    { icon: Package, label: "Material Store", path: "/material-store" },
     { icon: Clock, label: "Availability", path: "/availability" },
     { icon: UserCog, label: "Human Resource", path: "/human-resource" },
   ];
