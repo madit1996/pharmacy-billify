@@ -1,12 +1,15 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Download, Eye } from "lucide-react";
+import { Search, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import CertificateRequestDialog from "./CertificateRequestDialog";
+import ViewDetailsDialog from "../shared/ViewDetailsDialog";
 
 type CertificateRequest = {
   id: string;
@@ -25,6 +28,7 @@ const CertificateRequestsTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { toast } = useToast();
 
   const certificateRequests: CertificateRequest[] = [
     {
@@ -104,16 +108,20 @@ const CertificateRequestsTab = () => {
     );
   };
 
+  const handleDownload = (requestId: string) => {
+    toast({
+      title: "Download Started",
+      description: `Certificate ${requestId} is being downloaded.`,
+    });
+  };
+
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Certificate Requests</CardTitle>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Request
-            </Button>
+            <CertificateRequestDialog />
           </div>
         </CardHeader>
         <CardContent>
@@ -187,11 +195,23 @@ const CertificateRequestsTab = () => {
                     <TableCell>{getStatusBadge(request.status)}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        <ViewDetailsDialog
+                          title={`Certificate Request - ${request.requestId}`}
+                          data={{
+                            "Request ID": request.requestId,
+                            "Type": request.type,
+                            "Patient Name": request.patientName,
+                            "Requested By": request.requestedBy,
+                            "Request Date": request.requestDate,
+                            "Required Date": request.requiredDate,
+                            "Fees": `₹${request.fees}`,
+                            "Payment Status": request.paymentStatus,
+                            "Status": request.status
+                          }}
+                          downloadable={request.status === "Ready"}
+                        />
                         {request.status === "Ready" && (
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => handleDownload(request.requestId)}>
                             <Download className="h-4 w-4" />
                           </Button>
                         )}

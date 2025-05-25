@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, MapPin, Clock, Route } from "lucide-react";
+import ViewDetailsDialog from "../shared/ViewDetailsDialog";
 
 type DispatchRecord = {
   id: string;
@@ -169,6 +170,7 @@ const DispatchTrackingTab = () => {
                   <TableHead>Distance</TableHead>
                   <TableHead>Priority</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -209,6 +211,27 @@ const DispatchTrackingTab = () => {
                     <TableCell>{record.distance}</TableCell>
                     <TableCell>{getPriorityBadge(record.priority)}</TableCell>
                     <TableCell>{getStatusBadge(record.status)}</TableCell>
+                    <TableCell>
+                      <ViewDetailsDialog
+                        title={`Dispatch Record - ${record.requestId}`}
+                        data={{
+                          "Request ID": record.requestId,
+                          "Vehicle Number": record.vehicleNumber,
+                          "Driver Name": record.driverName,
+                          "Patient Name": record.patientName,
+                          "Pickup Location": record.pickupLocation,
+                          "Destination": record.destination,
+                          "Dispatch Time": record.dispatchTime,
+                          "Estimated Arrival": record.estimatedArrival,
+                          "Actual Arrival": record.actualArrival || "N/A",
+                          "Completion Time": record.completionTime || "N/A",
+                          "Distance": record.distance,
+                          "Priority": record.priority,
+                          "Status": record.status
+                        }}
+                        downloadable={record.status === "Completed"}
+                      />
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

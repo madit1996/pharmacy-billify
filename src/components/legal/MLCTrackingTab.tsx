@@ -1,12 +1,15 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, AlertTriangle, Eye, FileText } from "lucide-react";
+import { Search, AlertTriangle, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import MLCRegistrationDialog from "./MLCRegistrationDialog";
+import ViewDetailsDialog from "../shared/ViewDetailsDialog";
 
 type MLCCase = {
   id: string;
@@ -27,6 +30,7 @@ const MLCTrackingTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+  const { toast } = useToast();
 
   const mlcCases: MLCCase[] = [
     {
@@ -113,6 +117,13 @@ const MLCTrackingTab = () => {
     );
   };
 
+  const handleGenerateReport = (mlcNumber: string) => {
+    toast({
+      title: "Report Generated",
+      description: `MLC report for ${mlcNumber} has been generated and is ready for download.`,
+    });
+  };
+
   return (
     <div className="space-y-4">
       <Card>
@@ -122,10 +133,7 @@ const MLCTrackingTab = () => {
               <AlertTriangle className="mr-2 h-5 w-5 text-red-500" />
               Medico-Legal Cases (MLC) Tracking
             </CardTitle>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Register MLC
-            </Button>
+            <MLCRegistrationDialog />
           </div>
         </CardHeader>
         <CardContent>
@@ -202,10 +210,24 @@ const MLCTrackingTab = () => {
                     <TableCell>{getStatusBadge(mlcCase.status)}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
+                        <ViewDetailsDialog
+                          title={`MLC Case - ${mlcCase.mlcNumber}`}
+                          data={{
+                            "MLC Number": mlcCase.mlcNumber,
+                            "Patient Name": mlcCase.patientName,
+                            "Age": `${mlcCase.age} years`,
+                            "Gender": mlcCase.gender,
+                            "Case Type": mlcCase.caseType,
+                            "Police Station": mlcCase.policeStation,
+                            "Officer": mlcCase.officerName,
+                            "Admission Date": mlcCase.admissionDate,
+                            "Priority": mlcCase.priority,
+                            "Status": mlcCase.status,
+                            "Last Updated": mlcCase.lastUpdated
+                          }}
+                          downloadable={true}
+                        />
+                        <Button variant="outline" size="sm" onClick={() => handleGenerateReport(mlcCase.mlcNumber)}>
                           <FileText className="h-4 w-4" />
                         </Button>
                       </div>

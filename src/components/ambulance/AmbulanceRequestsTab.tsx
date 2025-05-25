@@ -1,88 +1,100 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Phone, MapPin, Clock } from "lucide-react";
+import { Search, Clock } from "lucide-react";
+import AmbulanceRequestDialog from "./AmbulanceRequestDialog";
+import ViewDetailsDialog from "../shared/ViewDetailsDialog";
+import VehicleAssignDialog from "./VehicleAssignDialog";
 
 type AmbulanceRequest = {
   id: string;
   requestId: string;
   patientName: string;
-  callerName: string;
-  callerPhone: string;
+  contactNumber: string;
   pickupLocation: string;
   destination: string;
   requestTime: string;
   priority: "Emergency" | "High" | "Medium" | "Low";
-  status: "Pending" | "Assigned" | "En Route" | "Arrived" | "Completed" | "Cancelled";
-  medicalCondition: string;
-  specialRequirements: string;
+  status: "Pending" | "Assigned" | "En Route" | "Completed" | "Cancelled";
+  assignedVehicle?: string;
+  estimatedArrival?: string;
 };
 
 const AmbulanceRequestsTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [priorityFilter, setPriorityFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
 
   const ambulanceRequests: AmbulanceRequest[] = [
     {
       id: "1",
       requestId: "AMB001",
       patientName: "John Doe",
-      callerName: "Mary Doe",
-      callerPhone: "+91 9876543210",
-      pickupLocation: "123 Main Street, Downtown",
-      destination: "City Hospital Emergency",
-      requestTime: "2024-01-17 14:30",
+      contactNumber: "+91 9876543210",
+      pickupLocation: "123 Main Street, City Center",
+      destination: "City Hospital",
+      requestTime: "14:30",
       priority: "Emergency",
-      status: "En Route",
-      medicalCondition: "Chest Pain",
-      specialRequirements: "Oxygen Support"
+      status: "Completed",
+      assignedVehicle: "AMB-001",
+      estimatedArrival: "14:45"
     },
     {
       id: "2",
       requestId: "AMB002",
       patientName: "Jane Smith",
-      callerName: "Robert Smith",
-      callerPhone: "+91 9876543211",
-      pickupLocation: "456 Oak Avenue, Suburb",
+      contactNumber: "+91 9876543211",
+      pickupLocation: "456 Oak Avenue, Downtown",
       destination: "Metro Hospital",
-      requestTime: "2024-01-17 15:15",
+      requestTime: "15:15",
       priority: "High",
-      status: "Assigned",
-      medicalCondition: "Pregnancy Emergency",
-      specialRequirements: "Female Attendant"
+      status: "En Route",
+      assignedVehicle: "AMB-002",
+      estimatedArrival: "15:35"
     },
     {
       id: "3",
       requestId: "AMB003",
       patientName: "Robert Wilson",
-      callerName: "Self",
-      callerPhone: "+91 9876543212",
-      pickupLocation: "789 Pine Street, Uptown",
+      contactNumber: "+91 9876543212",
+      pickupLocation: "789 Pine Street, Suburb",
       destination: "General Hospital",
-      requestTime: "2024-01-17 16:00",
+      requestTime: "16:00",
       priority: "Medium",
-      status: "Pending",
-      medicalCondition: "Fracture",
-      specialRequirements: "Stretcher"
+      status: "Pending"
     }
   ];
 
+  const statuses = ["all", "Pending", "Assigned", "En Route", "Completed", "Cancelled"];
   const priorities = ["all", "Emergency", "High", "Medium", "Low"];
-  const statuses = ["all", "Pending", "Assigned", "En Route", "Arrived", "Completed", "Cancelled"];
 
   const filteredRequests = ambulanceRequests.filter(request => {
     const matchesSearch = request.requestId.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          request.patientName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPriority = priorityFilter === "all" || request.priority === priorityFilter;
     const matchesStatus = statusFilter === "all" || request.status === statusFilter;
-    return matchesSearch && matchesPriority && matchesStatus;
+    const matchesPriority = priorityFilter === "all" || request.priority === priorityFilter;
+    return matchesSearch && matchesStatus && matchesPriority;
   });
+
+  const getStatusBadge = (status: AmbulanceRequest["status"]) => {
+    const statusConfig = {
+      "Pending": "bg-yellow-100 text-yellow-800",
+      "Assigned": "bg-blue-100 text-blue-800",
+      "En Route": "bg-orange-100 text-orange-800",
+      "Completed": "bg-green-100 text-green-800",
+      "Cancelled": "bg-red-100 text-red-800"
+    };
+
+    return (
+      <Badge className={statusConfig[status]}>
+        {status}
+      </Badge>
+    );
+  };
 
   const getPriorityBadge = (priority: AmbulanceRequest["priority"]) => {
     const priorityConfig = {
@@ -99,33 +111,16 @@ const AmbulanceRequestsTab = () => {
     );
   };
 
-  const getStatusBadge = (status: AmbulanceRequest["status"]) => {
-    const statusConfig = {
-      "Pending": "bg-gray-100 text-gray-800",
-      "Assigned": "bg-blue-100 text-blue-800",
-      "En Route": "bg-yellow-100 text-yellow-800",
-      "Arrived": "bg-orange-100 text-orange-800",
-      "Completed": "bg-green-100 text-green-800",
-      "Cancelled": "bg-red-100 text-red-800"
-    };
-
-    return (
-      <Badge className={statusConfig[status]}>
-        {status}
-      </Badge>
-    );
-  };
-
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>Ambulance Requests</CardTitle>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Log New Request
-            </Button>
+            <CardTitle className="flex items-center">
+              <Clock className="mr-2 h-5 w-5" />
+              Ambulance Requests
+            </CardTitle>
+            <AmbulanceRequestDialog />
           </div>
         </CardHeader>
         <CardContent>
@@ -141,19 +136,6 @@ const AmbulanceRequestsTab = () => {
               />
             </div>
 
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by priority" />
-              </SelectTrigger>
-              <SelectContent>
-                {priorities.map(priority => (
-                  <SelectItem key={priority} value={priority}>
-                    {priority === "all" ? "All Priorities" : priority}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Filter by status" />
@@ -166,6 +148,19 @@ const AmbulanceRequestsTab = () => {
                 ))}
               </SelectContent>
             </Select>
+
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by priority" />
+              </SelectTrigger>
+              <SelectContent>
+                {priorities.map(priority => (
+                  <SelectItem key={priority} value={priority}>
+                    {priority === "all" ? "All Priorities" : priority}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Requests Table */}
@@ -174,10 +169,10 @@ const AmbulanceRequestsTab = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Request ID</TableHead>
-                  <TableHead>Patient</TableHead>
-                  <TableHead>Caller</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Condition</TableHead>
+                  <TableHead>Patient Name</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Pickup Location</TableHead>
+                  <TableHead>Destination</TableHead>
                   <TableHead>Request Time</TableHead>
                   <TableHead>Priority</TableHead>
                   <TableHead>Status</TableHead>
@@ -189,48 +184,32 @@ const AmbulanceRequestsTab = () => {
                   <TableRow key={request.id}>
                     <TableCell className="font-medium">{request.requestId}</TableCell>
                     <TableCell>{request.patientName}</TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{request.callerName}</p>
-                        <p className="text-sm text-gray-600 flex items-center">
-                          <Phone className="h-3 w-3 mr-1" />
-                          {request.callerPhone}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <p className="flex items-center">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          From: {request.pickupLocation.substring(0, 20)}...
-                        </p>
-                        <p>To: {request.destination}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{request.medicalCondition}</p>
-                        <p className="text-sm text-gray-600">{request.specialRequirements}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {request.requestTime}
-                      </div>
-                    </TableCell>
+                    <TableCell>{request.contactNumber}</TableCell>
+                    <TableCell className="max-w-xs truncate">{request.pickupLocation}</TableCell>
+                    <TableCell>{request.destination}</TableCell>
+                    <TableCell>{request.requestTime}</TableCell>
                     <TableCell>{getPriorityBadge(request.priority)}</TableCell>
                     <TableCell>{getStatusBadge(request.status)}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
+                        <ViewDetailsDialog
+                          title={`Ambulance Request - ${request.requestId}`}
+                          data={{
+                            "Request ID": request.requestId,
+                            "Patient Name": request.patientName,
+                            "Contact Number": request.contactNumber,
+                            "Pickup Location": request.pickupLocation,
+                            "Destination": request.destination,
+                            "Request Time": request.requestTime,
+                            "Priority": request.priority,
+                            "Status": request.status,
+                            "Assigned Vehicle": request.assignedVehicle || "Not assigned",
+                            "Estimated Arrival": request.estimatedArrival || "N/A"
+                          }}
+                        />
                         {request.status === "Pending" && (
-                          <Button variant="outline" size="sm">
-                            Assign
-                          </Button>
+                          <VehicleAssignDialog requestId={request.requestId} />
                         )}
-                        <Button variant="outline" size="sm">
-                          View
-                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
