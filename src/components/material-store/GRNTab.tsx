@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Search, FileText, CheckCircle, Eye } from "lucide-react";
+import { Search, FileText, CheckCircle } from "lucide-react";
 import CreateGRNDialog from "./CreateGRNDialog";
+import ViewGRNDialog from "./ViewGRNDialog";
 import { useToast } from "@/hooks/use-toast";
 
 type GRNRecord = {
@@ -83,13 +84,6 @@ const GRNTab = () => {
     toast({
       title: "GRN Verified",
       description: `GRN ${grnNumber} has been verified and approved`,
-    });
-  };
-
-  const handleViewGRN = (grnNumber: string) => {
-    toast({
-      title: "View GRN",
-      description: `Opening details for ${grnNumber}`,
     });
   };
 
@@ -177,13 +171,7 @@ const GRNTab = () => {
                     <TableCell>{getStatusBadge(record.status)}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleViewGRN(record.grnNumber)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        <ViewGRNDialog grnNumber={record.grnNumber} />
                         <Button 
                           variant="outline" 
                           size="sm"

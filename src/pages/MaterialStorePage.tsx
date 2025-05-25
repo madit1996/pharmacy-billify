@@ -2,11 +2,12 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, FileText, ShoppingCart, ClipboardCheck } from "lucide-react";
+import { Package, FileText, ShoppingCart, ClipboardCheck, Receipt } from "lucide-react";
 import ItemInventoryTab from "@/components/material-store/ItemInventoryTab";
 import DepartmentIssueTab from "@/components/material-store/DepartmentIssueTab";
 import PurchaseOrderTab from "@/components/material-store/PurchaseOrderTab";
 import GRNTab from "@/components/material-store/GRNTab";
+import PurchaseInvoicesTab from "@/components/material-store/PurchaseInvoicesTab";
 
 const MaterialStorePage = () => {
   const [activeTab, setActiveTab] = useState("inventory");
@@ -15,7 +16,8 @@ const MaterialStorePage = () => {
     totalItems: 1250,
     lowStock: 45,
     pendingOrders: 8,
-    recentGRNs: 12
+    recentGRNs: 12,
+    pendingInvoices: 6
   };
 
   return (
@@ -28,7 +30,7 @@ const MaterialStorePage = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -76,15 +78,28 @@ const MaterialStorePage = () => {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Pending Invoices</p>
+                <p className="text-2xl font-bold text-purple-600">{storeStats.pendingInvoices}</p>
+              </div>
+              <Receipt className="h-8 w-8 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="inventory">Item Inventory</TabsTrigger>
           <TabsTrigger value="issues">Department Issues</TabsTrigger>
           <TabsTrigger value="orders">Purchase Orders</TabsTrigger>
           <TabsTrigger value="grn">GRN Records</TabsTrigger>
+          <TabsTrigger value="invoices">Purchase Invoices</TabsTrigger>
         </TabsList>
 
         <TabsContent value="inventory" className="space-y-4">
@@ -101,6 +116,10 @@ const MaterialStorePage = () => {
 
         <TabsContent value="grn" className="space-y-4">
           <GRNTab />
+        </TabsContent>
+
+        <TabsContent value="invoices" className="space-y-4">
+          <PurchaseInvoicesTab />
         </TabsContent>
       </Tabs>
     </div>
