@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Eye, Receipt } from "lucide-react";
+import { Search, Eye, Receipt } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import PatientBillingDialog from "./PatientBillingDialog";
+import ViewDetailsDialog from "../shared/ViewDetailsDialog";
 
 type PatientBill = {
   id: string;
@@ -25,6 +27,7 @@ type PatientBill = {
 const PatientBillingTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { toast } = useToast();
 
   const patientBills: PatientBill[] = [
     {
@@ -91,16 +94,20 @@ const PatientBillingTab = () => {
     );
   };
 
+  const handlePrintReceipt = (billNumber: string) => {
+    toast({
+      title: "Receipt Printed",
+      description: `Receipt for bill ${billNumber} has been sent to printer.`,
+    });
+  };
+
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Patient Billing Summary</CardTitle>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Bill
-            </Button>
+            <PatientBillingDialog />
           </div>
         </CardHeader>
         <CardContent>
@@ -163,10 +170,23 @@ const PatientBillingTab = () => {
                     <TableCell>{getStatusBadge(bill.status)}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
+                        <ViewDetailsDialog
+                          title={`Bill Details - ${bill.billNumber}`}
+                          data={{
+                            "Bill Number": bill.billNumber,
+                            "Patient Name": bill.patientName,
+                            "Department": bill.department,
+                            "Services": bill.services.join(", "),
+                            "Total Amount": `₹${bill.totalAmount.toLocaleString()}`,
+                            "Paid Amount": `₹${bill.paidAmount.toLocaleString()}`,
+                            "Pending Amount": `₹${bill.pendingAmount.toLocaleString()}`,
+                            "Status": bill.status,
+                            "Bill Date": bill.billDate,
+                            "Payment Mode": bill.paymentMode
+                          }}
+                          downloadable={true}
+                        />
+                        <Button variant="outline" size="sm" onClick={() => handlePrintReceipt(bill.billNumber)}>
                           <Receipt className="h-4 w-4" />
                         </Button>
                       </div>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, ArrowUpDown, RefreshCw } from "lucide-react";
+import { Search, ArrowUpDown, RefreshCw } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import AdvanceCollectionDialog from "./AdvanceCollectionDialog";
+import ViewDetailsDialog from "../shared/ViewDetailsDialog";
 
 type AdvanceRecord = {
   id: string;
@@ -24,6 +26,7 @@ type AdvanceRecord = {
 const AdvanceCollectionTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const { toast } = useToast();
 
   const advanceRecords: AdvanceRecord[] = [
     {
@@ -100,6 +103,13 @@ const AdvanceCollectionTab = () => {
     );
   };
 
+  const handleProcessRefund = (receiptNumber: string) => {
+    toast({
+      title: "Refund Processed",
+      description: `Refund for receipt ${receiptNumber} has been initiated.`,
+    });
+  };
+
   return (
     <div className="space-y-4">
       <Card>
@@ -107,14 +117,11 @@ const AdvanceCollectionTab = () => {
           <div className="flex justify-between items-center">
             <CardTitle>Advance Collection & Refunds</CardTitle>
             <div className="flex space-x-2">
-              <Button variant="outline">
+              <Button variant="outline" onClick={() => handleProcessRefund("REF001")}>
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Process Refund
               </Button>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Collect Advance
-              </Button>
+              <AdvanceCollectionDialog />
             </div>
           </div>
         </CardHeader>
@@ -175,9 +182,21 @@ const AdvanceCollectionTab = () => {
                     <TableCell>{record.paymentMode}</TableCell>
                     <TableCell>{getStatusBadge(record.status)}</TableCell>
                     <TableCell>
-                      <Button variant="outline" size="sm">
-                        <ArrowUpDown className="h-4 w-4" />
-                      </Button>
+                      <ViewDetailsDialog
+                        title={`Advance Record - ${record.receiptNumber}`}
+                        data={{
+                          "Receipt Number": record.receiptNumber,
+                          "Patient Name": record.patientName,
+                          "Amount": `₹${record.amount.toLocaleString()}`,
+                          "Type": record.type,
+                          "Purpose": record.purpose,
+                          "Collected By": record.collectedBy,
+                          "Date": record.date,
+                          "Payment Mode": record.paymentMode,
+                          "Status": record.status
+                        }}
+                        downloadable={true}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

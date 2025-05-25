@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, CheckCircle, Clock } from "lucide-react";
+import { Search, CheckCircle, Clock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import VendorPaymentDialog from "./VendorPaymentDialog";
+import ViewDetailsDialog from "../shared/ViewDetailsDialog";
 
 type VendorPayment = {
   id: string;
@@ -25,6 +27,7 @@ type VendorPayment = {
 const VendorPaymentTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { toast } = useToast();
 
   const vendorPayments: VendorPayment[] = [
     {
@@ -92,16 +95,27 @@ const VendorPaymentTab = () => {
     );
   };
 
+  const handleMarkPaid = (invoiceNumber: string) => {
+    toast({
+      title: "Payment Marked as Paid",
+      description: `Invoice ${invoiceNumber} has been marked as paid.`,
+    });
+  };
+
+  const handleSchedulePayment = (invoiceNumber: string) => {
+    toast({
+      title: "Payment Scheduled",
+      description: `Payment for invoice ${invoiceNumber} has been scheduled.`,
+    });
+  };
+
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Vendor Payment Tracking</CardTitle>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Record Payment
-            </Button>
+            <VendorPaymentDialog />
           </div>
         </CardHeader>
         <CardContent>
@@ -160,12 +174,27 @@ const VendorPaymentTab = () => {
                     <TableCell>{getStatusBadge(payment.status)}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
+                        <ViewDetailsDialog
+                          title={`Payment Details - ${payment.invoiceNumber}`}
+                          data={{
+                            "Vendor Name": payment.vendorName,
+                            "Invoice Number": payment.invoiceNumber,
+                            "Invoice Amount": `₹${payment.invoiceAmount.toLocaleString()}`,
+                            "Paid Amount": `₹${payment.paidAmount.toLocaleString()}`,
+                            "Pending Amount": `₹${payment.pendingAmount.toLocaleString()}`,
+                            "Due Date": payment.dueDate,
+                            "Category": payment.category,
+                            "Status": payment.status,
+                            "Payment Mode": payment.paymentMode
+                          }}
+                          downloadable={true}
+                        />
                         {payment.status !== "Paid" && (
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => handleMarkPaid(payment.invoiceNumber)}>
                             <CheckCircle className="h-4 w-4" />
                           </Button>
                         )}
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => handleSchedulePayment(payment.invoiceNumber)}>
                           <Clock className="h-4 w-4" />
                         </Button>
                       </div>
