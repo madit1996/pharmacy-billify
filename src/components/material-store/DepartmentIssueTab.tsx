@@ -1,12 +1,13 @@
-
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, FileText, CheckCircle, XCircle } from "lucide-react";
+import CreateIssueDialog from "./CreateIssueDialog";
+import { useToast } from "@/hooks/use-toast";
 
 type IssueRecord = {
   id: string;
@@ -23,6 +24,7 @@ const DepartmentIssueTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { toast } = useToast();
 
   const issueRecords: IssueRecord[] = [
     {
@@ -79,16 +81,34 @@ const DepartmentIssueTab = () => {
     );
   };
 
+  const handleApproveIssue = (issueId: string) => {
+    toast({
+      title: "Issue Approved",
+      description: `Issue request ${issueId} has been approved`,
+    });
+  };
+
+  const handleRejectIssue = (issueId: string) => {
+    toast({
+      title: "Issue Rejected",
+      description: `Issue request ${issueId} has been rejected`,
+    });
+  };
+
+  const handleViewDetails = (issueId: string) => {
+    toast({
+      title: "View Details",
+      description: `Opening details for issue ${issueId}`,
+    });
+  };
+
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Department Issue Log</CardTitle>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Issue Request
-            </Button>
+            <CreateIssueDialog />
           </div>
         </CardHeader>
         <CardContent>
@@ -165,9 +185,33 @@ const DepartmentIssueTab = () => {
                     <TableCell>₹{record.totalValue.toLocaleString()}</TableCell>
                     <TableCell>{getStatusBadge(record.status)}</TableCell>
                     <TableCell>
-                      <Button variant="outline" size="sm">
-                        <FileText className="h-4 w-4" />
-                      </Button>
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewDetails(record.issueId)}
+                        >
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                        {record.status === "Pending" && (
+                          <>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleApproveIssue(record.issueId)}
+                            >
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleRejectIssue(record.issueId)}
+                            >
+                              <XCircle className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

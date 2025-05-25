@@ -1,12 +1,13 @@
-
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, FileText, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, FileText, CheckCircle, Eye } from "lucide-react";
+import CreateGRNDialog from "./CreateGRNDialog";
+import { useToast } from "@/hooks/use-toast";
 
 type GRNRecord = {
   id: string;
@@ -24,6 +25,7 @@ type GRNRecord = {
 const GRNTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { toast } = useToast();
 
   const grnRecords: GRNRecord[] = [
     {
@@ -77,16 +79,34 @@ const GRNTab = () => {
     );
   };
 
+  const handleVerifyGRN = (grnNumber: string) => {
+    toast({
+      title: "GRN Verified",
+      description: `GRN ${grnNumber} has been verified and approved`,
+    });
+  };
+
+  const handleViewGRN = (grnNumber: string) => {
+    toast({
+      title: "View GRN",
+      description: `Opening details for ${grnNumber}`,
+    });
+  };
+
+  const handlePrintGRN = (grnNumber: string) => {
+    toast({
+      title: "Print GRN",
+      description: `Generating PDF for ${grnNumber}`,
+    });
+  };
+
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Goods Receipt Note (GRN) Records</CardTitle>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Create GRN
-            </Button>
+            <CreateGRNDialog />
           </div>
         </CardHeader>
         <CardContent>
@@ -157,11 +177,26 @@ const GRNTab = () => {
                     <TableCell>{getStatusBadge(record.status)}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewGRN(record.grnNumber)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handlePrintGRN(record.grnNumber)}
+                        >
                           <FileText className="h-4 w-4" />
                         </Button>
                         {record.status === "Pending" && (
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleVerifyGRN(record.grnNumber)}
+                          >
                             <CheckCircle className="h-4 w-4" />
                           </Button>
                         )}

@@ -1,12 +1,13 @@
-
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, FileText, Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, FileText, Eye, Download } from "lucide-react";
+import CreatePODialog from "./CreatePODialog";
+import { useToast } from "@/hooks/use-toast";
 
 type PurchaseOrder = {
   id: string;
@@ -22,6 +23,7 @@ type PurchaseOrder = {
 const PurchaseOrderTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { toast } = useToast();
 
   const purchaseOrders: PurchaseOrder[] = [
     {
@@ -81,16 +83,34 @@ const PurchaseOrderTab = () => {
     );
   };
 
+  const handleViewPO = (poNumber: string) => {
+    toast({
+      title: "View Purchase Order",
+      description: `Opening details for ${poNumber}`,
+    });
+  };
+
+  const handlePrintPO = (poNumber: string) => {
+    toast({
+      title: "Print Purchase Order",
+      description: `Generating PDF for ${poNumber}`,
+    });
+  };
+
+  const handleDownloadPO = (poNumber: string) => {
+    toast({
+      title: "Download Purchase Order",
+      description: `Downloading ${poNumber}.pdf`,
+    });
+  };
+
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Purchase Orders</CardTitle>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Create PO
-            </Button>
+            <CreatePODialog />
           </div>
         </CardHeader>
         <CardContent>
@@ -147,11 +167,26 @@ const PurchaseOrderTab = () => {
                     <TableCell>{getStatusBadge(order.status)}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewPO(order.poNumber)}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handlePrintPO(order.poNumber)}
+                        >
                           <FileText className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDownloadPO(order.poNumber)}
+                        >
+                          <Download className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>

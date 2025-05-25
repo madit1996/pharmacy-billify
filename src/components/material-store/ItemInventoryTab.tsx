@@ -1,12 +1,13 @@
-
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, AlertTriangle, Edit, BarChart3 } from "lucide-react";
+import AddItemDialog from "./AddItemDialog";
+import { useToast } from "@/hooks/use-toast";
 
 type Item = {
   id: string;
@@ -25,6 +26,7 @@ type Item = {
 const ItemInventoryTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const { toast } = useToast();
 
   const items: Item[] = [
     {
@@ -87,16 +89,26 @@ const ItemInventoryTab = () => {
     }
   };
 
+  const handleStockAdjustment = (itemName: string) => {
+    toast({
+      title: "Stock Adjustment",
+      description: `Stock adjustment form opened for ${itemName}`,
+    });
+  };
+
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Item Inventory</CardTitle>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Item
-            </Button>
+            <div className="flex space-x-2">
+              <Button variant="outline">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Stock Report
+              </Button>
+              <AddItemDialog />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -140,6 +152,7 @@ const ItemInventoryTab = () => {
                   <TableHead>Rate (₹)</TableHead>
                   <TableHead>Location</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -166,6 +179,15 @@ const ItemInventoryTab = () => {
                         <Badge className={stockStatus.color}>
                           {stockStatus.status}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleStockAdjustment(item.name)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );
