@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Eye, Shield, AlertCircle } from "lucide-react";
+import ConsentRequestDialog from "./ConsentRequestDialog";
+import ConsentFormViewer from "./ConsentFormViewer";
 
 type ConsentForm = {
   id: string;
@@ -118,10 +119,13 @@ const ConsentAuditTab = () => {
               <Shield className="mr-2 h-5 w-5 text-blue-500" />
               Consent Form Audit
             </CardTitle>
-            <Button>
-              <AlertCircle className="mr-2 h-4 w-4" />
-              Generate Audit Report
-            </Button>
+            <div className="flex space-x-2">
+              <ConsentRequestDialog />
+              <Button>
+                <AlertCircle className="mr-2 h-4 w-4" />
+                Generate Audit Report
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -196,9 +200,12 @@ const ConsentAuditTab = () => {
                     <TableCell>{getRiskBadge(form.riskLevel)}</TableCell>
                     <TableCell>{getStatusBadge(form.status)}</TableCell>
                     <TableCell>
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                      <ConsentFormViewer
+                        formId={form.formId}
+                        consentType={form.consentType}
+                        patientName={form.patientName}
+                        status={form.status}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

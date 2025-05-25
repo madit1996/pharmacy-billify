@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import CertificateRequestDialog from "./CertificateRequestDialog";
 import ViewDetailsDialog from "../shared/ViewDetailsDialog";
+import QuickCertificateGenerator from "./QuickCertificateGenerator";
 
 type CertificateRequest = {
   id: string;
@@ -209,6 +209,11 @@ const CertificateRequestsTab = () => {
                             "Status": request.status
                           }}
                           downloadable={request.status === "Ready"}
+                        />
+                        <QuickCertificateGenerator
+                          requestId={request.requestId}
+                          type={request.type}
+                          patientName={request.patientName}
                         />
                         {request.status === "Ready" && (
                           <Button variant="outline" size="sm" onClick={() => handleDownload(request.requestId)}>

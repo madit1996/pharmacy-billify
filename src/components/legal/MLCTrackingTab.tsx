@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import MLCRegistrationDialog from "./MLCRegistrationDialog";
 import ViewDetailsDialog from "../shared/ViewDetailsDialog";
+import EnhancedMLCDialog from "./EnhancedMLCDialog";
 
 type MLCCase = {
   id: string;
@@ -133,7 +133,7 @@ const MLCTrackingTab = () => {
               <AlertTriangle className="mr-2 h-5 w-5 text-red-500" />
               Medico-Legal Cases (MLC) Tracking
             </CardTitle>
-            <MLCRegistrationDialog />
+            <EnhancedMLCDialog />
           </div>
         </CardHeader>
         <CardContent>
