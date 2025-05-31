@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,12 +16,15 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell
+  Cell,
+  AreaChart,
+  Area
 } from "recharts";
 import { 
   Activity, 
   ShoppingBag, 
   TrendingUp, 
+  TrendingDown,
   Users, 
   Package, 
   AlertTriangle,
@@ -30,12 +34,17 @@ import {
   Star,
   Clock,
   Eye,
-  ShoppingCart
+  ShoppingCart,
+  Globe,
+  Store,
+  Percent
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import CreatePODialog from "@/components/material-store/CreatePODialog";
 import CreateGRNDialog from "@/components/material-store/CreateGRNDialog";
+import AuditInventoryDialog from "./AuditInventoryDialog";
+import OnlineOrdersDialog from "./OnlineOrdersDialog";
 
 const PharmacyAnalyticsTab = () => {
   const [dateRange, setDateRange] = useState<'week' | 'month' | 'year'>('week');
@@ -43,23 +52,53 @@ const PharmacyAnalyticsTab = () => {
   // Sample data for charts
   const salesData = {
     week: [
-      { name: "Mon", sales: 2400 },
-      { name: "Tue", sales: 1398 },
-      { name: "Wed", sales: 9800 },
-      { name: "Thu", sales: 3908 },
-      { name: "Fri", sales: 4800 },
-      { name: "Sat", sales: 3800 },
-      { name: "Sun", sales: 4300 }
+      { name: "Mon", online: 1400, offline: 1000, total: 2400 },
+      { name: "Tue", online: 800, offline: 598, total: 1398 },
+      { name: "Wed", online: 4500, offline: 5300, total: 9800 },
+      { name: "Thu", online: 1800, offline: 2108, total: 3908 },
+      { name: "Fri", online: 2200, offline: 2600, total: 4800 },
+      { name: "Sat", online: 1800, offline: 2000, total: 3800 },
+      { name: "Sun", online: 2000, offline: 2300, total: 4300 }
     ],
     month: Array.from({ length: 30 }, (_, i) => ({
       name: `${i + 1}`,
-      sales: Math.floor(Math.random() * 10000)
-    })),
+      online: Math.floor(Math.random() * 5000),
+      offline: Math.floor(Math.random() * 5000),
+      total: 0
+    })).map(item => ({ ...item, total: item.online + item.offline })),
     year: Array.from({ length: 12 }, (_, i) => ({
       name: new Date(0, i).toLocaleString('default', { month: 'short' }),
-      sales: Math.floor(Math.random() * 50000)
-    }))
+      online: Math.floor(Math.random() * 25000),
+      offline: Math.floor(Math.random() * 25000),
+      total: 0
+    })).map(item => ({ ...item, total: item.online + item.offline }))
   };
+  
+  // Repeat customer percentage data
+  const repeatCustomerData = [
+    { month: "Jan", percentage: 35, trend: "up" },
+    { month: "Feb", percentage: 38, trend: "up" },
+    { month: "Mar", percentage: 42, trend: "up" },
+    { month: "Apr", percentage: 39, trend: "down" },
+    { month: "May", percentage: 45, trend: "up" },
+    { month: "Jun", percentage: 48, trend: "up" }
+  ];
+
+  // Online vs Offline distribution
+  const orderChannelData = [
+    { name: "Online Orders", value: 35, color: "#8B5CF6" },
+    { name: "Walk-in Sales", value: 65, color: "#10B981" }
+  ];
+
+  // Customer acquisition data
+  const customerAcquisitionData = [
+    { month: "Jan", newCustomers: 45, returningCustomers: 120 },
+    { month: "Feb", newCustomers: 52, returningCustomers: 135 },
+    { month: "Mar", newCustomers: 48, returningCustomers: 142 },
+    { month: "Apr", newCustomers: 38, returningCustomers: 148 },
+    { month: "May", newCustomers: 42, returningCustomers: 156 },
+    { month: "Jun", newCustomers: 50, returningCustomers: 165 }
+  ];
   
   const inventoryData = {
     week: [
@@ -110,15 +149,6 @@ const PharmacyAnalyticsTab = () => {
     { name: "Vitamin C", demandIncrease: 25, region: "Region", trend: "health-conscious" }
   ];
 
-  // Repeat customers
-  const repeatCustomers = [
-    { name: "Rajesh Kumar", visits: 24, totalSpent: 15670, lastVisit: "Today", loyalty: "gold", preferredItems: "Diabetes medication" },
-    { name: "Priya Sharma", visits: 18, totalSpent: 8940, lastVisit: "Yesterday", loyalty: "silver", preferredItems: "Blood pressure medicine" },
-    { name: "Amit Patel", visits: 15, totalSpent: 6720, lastVisit: "2 days ago", loyalty: "silver", preferredItems: "Heart medication" },
-    { name: "Sunita Singh", visits: 12, totalSpent: 4560, lastVisit: "3 days ago", loyalty: "bronze", preferredItems: "Vitamins" },
-    { name: "Vikram Joshi", visits: 10, totalSpent: 3890, lastVisit: "1 week ago", loyalty: "bronze", preferredItems: "Pain relief" }
-  ];
-
   // Expiry alerts
   const expiryAlerts = [
     { name: "Aspirin 325mg", batch: "BT001", expiryDate: "2024-06-15", daysLeft: 15, quantity: 200 },
@@ -135,6 +165,17 @@ const PharmacyAnalyticsTab = () => {
     { hour: "8-9 PM", sales: 56, customers: 31 }
   ];
 
+  // Current metrics
+  const currentRepeatRate = 48; // percentage
+  const previousRepeatRate = 45; // percentage
+  const repeatRateChange = currentRepeatRate - previousRepeatRate;
+
+  const onlineOrderPercentage = 35;
+  const averageOrderValue = {
+    online: 520,
+    offline: 380
+  };
+
   // Pharmacy metrics
   const metrics = [
     {
@@ -145,25 +186,25 @@ const PharmacyAnalyticsTab = () => {
       icon: <Activity className="h-5 w-5 text-blue-500" />
     },
     {
-      title: "Total Customers",
-      value: "528",
+      title: "Repeat Customer Rate",
+      value: `${currentRepeatRate}%`,
+      percentage: `${repeatRateChange > 0 ? '+' : ''}${repeatRateChange.toFixed(1)}%`,
+      trend: repeatRateChange > 0 ? "up" : "down",
+      icon: <Percent className="h-5 w-5 text-green-500" />
+    },
+    {
+      title: "Online Orders",
+      value: `${onlineOrderPercentage}%`,
       percentage: "+12.3%",
       trend: "up",
-      icon: <Users className="h-5 w-5 text-green-500" />
+      icon: <Globe className="h-5 w-5 text-purple-500" />
     },
     {
-      title: "Inventory Items",
-      value: "1,423",
-      percentage: "-2.1%",
-      trend: "down",
-      icon: <Package className="h-5 w-5 text-yellow-500" />
-    },
-    {
-      title: "Average Order Value",
+      title: "Avg Order Value",
       value: "$42.50",
       percentage: "+8.5%",
       trend: "up",
-      icon: <ShoppingBag className="h-5 w-5 text-purple-500" />
+      icon: <ShoppingBag className="h-5 w-5 text-yellow-500" />
     }
   ];
   
@@ -186,15 +227,6 @@ const PharmacyAnalyticsTab = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
-
-  const getLoyaltyColor = (loyalty: string) => {
-    switch (loyalty) {
-      case 'gold': return 'bg-yellow-100 text-yellow-800';
-      case 'silver': return 'bg-gray-100 text-gray-800';
-      case 'bronze': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
   
   return (
     <div className="space-y-6">
@@ -213,7 +245,11 @@ const PharmacyAnalyticsTab = () => {
                 </div>
               </div>
               <div className="mt-4 flex items-center">
-                <TrendingUp className={`h-4 w-4 mr-1 ${metric.trend === 'up' ? 'text-green-500' : 'text-red-500'}`} />
+                {metric.trend === 'up' ? (
+                  <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
+                ) : (
+                  <TrendingDown className="h-4 w-4 mr-1 text-red-500" />
+                )}
                 <span className={`text-xs font-medium ${metric.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
                   {metric.percentage} from last period
                 </span>
@@ -222,6 +258,118 @@ const PharmacyAnalyticsTab = () => {
           </Card>
         ))}
       </div>
+
+      {/* Channel Performance */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5 text-purple-500" />
+              Sales Channel Distribution
+            </CardTitle>
+            <CardDescription>Online vs Offline order breakdown</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 flex">
+              <div className="w-1/2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={orderChannelData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      dataKey="value"
+                      label={({name, value}) => `${name}: ${value}%`}
+                    >
+                      {orderChannelData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-1/2 flex flex-col justify-center space-y-4">
+                <div className="space-y-2">
+                  <h4 className="font-medium">Average Order Value</h4>
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-purple-500" />
+                        Online
+                      </span>
+                      <span className="font-medium">₹{averageOrderValue.online}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="flex items-center gap-2">
+                        <Store className="h-4 w-4 text-green-500" />
+                        Walk-in
+                      </span>
+                      <span className="font-medium">₹{averageOrderValue.offline}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-blue-500" />
+              Repeat Customer Analytics
+            </CardTitle>
+            <CardDescription>Customer retention trends over time</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={repeatCustomerData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => [`${value}%`, 'Repeat Rate']} />
+                  <Area 
+                    type="monotone" 
+                    dataKey="percentage" 
+                    stroke="#8B5CF6" 
+                    fill="#8B5CF6" 
+                    fillOpacity={0.3}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Customer Acquisition */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-green-500" />
+            Customer Acquisition Analysis
+          </CardTitle>
+          <CardDescription>New vs returning customer trends</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={customerAcquisitionData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="newCustomers" fill="#8B5CF6" name="New Customers" />
+                <Bar dataKey="returningCustomers" fill="#10B981" name="Returning Customers" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
       
       {/* Critical Alerts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -297,51 +445,6 @@ const PharmacyAnalyticsTab = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* Customer Insights */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Star className="h-5 w-5 text-yellow-500" />
-            Repeat Customers
-          </CardTitle>
-          <CardDescription>Your most valued customers</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Customer</TableHead>
-                <TableHead>Visits</TableHead>
-                <TableHead>Total Spent</TableHead>
-                <TableHead>Last Visit</TableHead>
-                <TableHead>Loyalty</TableHead>
-                <TableHead>Preferred Items</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {repeatCustomers.map((customer, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{customer.name}</TableCell>
-                  <TableCell>{customer.visits}</TableCell>
-                  <TableCell>₹{customer.totalSpent.toLocaleString()}</TableCell>
-                  <TableCell>{customer.lastVisit}</TableCell>
-                  <TableCell>
-                    <Badge className={getLoyaltyColor(customer.loyalty)}>
-                      {customer.loyalty}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-500">{customer.preferredItems}</TableCell>
-                  <TableCell>
-                    <Button size="sm" variant="outline">View Profile</Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
 
       {/* Expiry Management */}
       <Card>
@@ -425,22 +528,10 @@ const PharmacyAnalyticsTab = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3">
-              <Button className="h-20 flex flex-col items-center justify-center">
-                <ShoppingCart className="h-5 w-5 mb-1" />
-                <span className="text-sm">Create Purchase Order</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
-                <Package className="h-5 w-5 mb-1" />
-                <span className="text-sm">Add Stock (GRN)</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
-                <FileText className="h-5 w-5 mb-1" />
-                <span className="text-sm">Stock Report</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
-                <AlertTriangle className="h-5 w-5 mb-1" />
-                <span className="text-sm">Audit Inventory</span>
-              </Button>
+              <CreatePODialog />
+              <CreateGRNDialog />
+              <OnlineOrdersDialog />
+              <AuditInventoryDialog />
             </div>
           </CardContent>
         </Card>
@@ -452,7 +543,7 @@ const PharmacyAnalyticsTab = () => {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Sales Overview</CardTitle>
-              <CardDescription>Monitor daily, monthly, and yearly sales performance</CardDescription>
+              <CardDescription>Monitor online vs offline sales performance</CardDescription>
             </div>
             <Tabs defaultValue="week" value={dateRange} onValueChange={(value) => setDateRange(value as 'week' | 'month' | 'year')}>
               <TabsList>
@@ -471,7 +562,9 @@ const PharmacyAnalyticsTab = () => {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="sales" fill="#8B5CF6" />
+                <Legend />
+                <Bar dataKey="offline" fill="#10B981" name="Walk-in Sales" />
+                <Bar dataKey="online" fill="#8B5CF6" name="Online Orders" />
               </BarChart>
             </ResponsiveContainer>
           </div>
