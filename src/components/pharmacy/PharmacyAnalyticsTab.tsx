@@ -1,7 +1,7 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { 
   BarChart, 
   Bar, 
@@ -17,7 +17,25 @@ import {
   Pie,
   Cell
 } from "recharts";
-import { Activity, ShoppingBag, TrendingUp, Users, Package } from "lucide-react";
+import { 
+  Activity, 
+  ShoppingBag, 
+  TrendingUp, 
+  Users, 
+  Package, 
+  AlertTriangle,
+  Plus,
+  FileText,
+  Calendar,
+  Star,
+  Clock,
+  Eye,
+  ShoppingCart
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import CreatePODialog from "@/components/material-store/CreatePODialog";
+import CreateGRNDialog from "@/components/material-store/CreateGRNDialog";
 
 const PharmacyAnalyticsTab = () => {
   const [dateRange, setDateRange] = useState<'week' | 'month' | 'year'>('week');
@@ -74,6 +92,49 @@ const PharmacyAnalyticsTab = () => {
     { name: "Diabetes", value: 5 }
   ];
   
+  // Low stock items
+  const lowStockItems = [
+    { name: "Paracetamol 500mg", currentStock: 12, minStock: 50, urgency: "critical", lastSold: "2 hours ago" },
+    { name: "Amoxicillin 250mg", currentStock: 25, minStock: 40, urgency: "warning", lastSold: "4 hours ago" },
+    { name: "Insulin Pen", currentStock: 8, minStock: 15, urgency: "critical", lastSold: "1 hour ago" },
+    { name: "Blood Pressure Monitor", currentStock: 3, minStock: 10, urgency: "critical", lastSold: "6 hours ago" },
+    { name: "Vitamin D3", currentStock: 18, minStock: 30, urgency: "warning", lastSold: "3 hours ago" }
+  ];
+
+  // High demand items in region
+  const regionalDemandItems = [
+    { name: "Cough Syrup", demandIncrease: 45, region: "Local Area", trend: "seasonal" },
+    { name: "Fever Reducer", demandIncrease: 38, region: "City", trend: "epidemic" },
+    { name: "Antihistamine", demandIncrease: 32, region: "State", trend: "allergy-season" },
+    { name: "Hand Sanitizer", demandIncrease: 28, region: "Local Area", trend: "consistent" },
+    { name: "Vitamin C", demandIncrease: 25, region: "Region", trend: "health-conscious" }
+  ];
+
+  // Repeat customers
+  const repeatCustomers = [
+    { name: "Rajesh Kumar", visits: 24, totalSpent: 15670, lastVisit: "Today", loyalty: "gold", preferredItems: "Diabetes medication" },
+    { name: "Priya Sharma", visits: 18, totalSpent: 8940, lastVisit: "Yesterday", loyalty: "silver", preferredItems: "Blood pressure medicine" },
+    { name: "Amit Patel", visits: 15, totalSpent: 6720, lastVisit: "2 days ago", loyalty: "silver", preferredItems: "Heart medication" },
+    { name: "Sunita Singh", visits: 12, totalSpent: 4560, lastVisit: "3 days ago", loyalty: "bronze", preferredItems: "Vitamins" },
+    { name: "Vikram Joshi", visits: 10, totalSpent: 3890, lastVisit: "1 week ago", loyalty: "bronze", preferredItems: "Pain relief" }
+  ];
+
+  // Expiry alerts
+  const expiryAlerts = [
+    { name: "Aspirin 325mg", batch: "BT001", expiryDate: "2024-06-15", daysLeft: 15, quantity: 200 },
+    { name: "Cough Drops", batch: "BT045", expiryDate: "2024-06-20", daysLeft: 20, quantity: 150 },
+    { name: "Eye Drops", batch: "BT089", expiryDate: "2024-07-01", daysLeft: 31, quantity: 75 },
+    { name: "Antacid Tablets", batch: "BT123", expiryDate: "2024-07-10", daysLeft: 40, quantity: 300 }
+  ];
+
+  // Sales patterns
+  const peakHours = [
+    { hour: "9-10 AM", sales: 45, customers: 28 },
+    { hour: "12-1 PM", sales: 62, customers: 35 },
+    { hour: "6-7 PM", sales: 78, customers: 42 },
+    { hour: "8-9 PM", sales: 56, customers: 31 }
+  ];
+
   // Pharmacy metrics
   const metrics = [
     {
@@ -118,6 +179,23 @@ const PharmacyAnalyticsTab = () => {
   // Colors for pie chart
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
   
+  const getUrgencyColor = (urgency: string) => {
+    switch (urgency) {
+      case 'critical': return 'bg-red-100 text-red-800';
+      case 'warning': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getLoyaltyColor = (loyalty: string) => {
+    switch (loyalty) {
+      case 'gold': return 'bg-yellow-100 text-yellow-800';
+      case 'silver': return 'bg-gray-100 text-gray-800';
+      case 'bronze': return 'bg-orange-100 text-orange-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+  
   return (
     <div className="space-y-6">
       {/* Metrics Cards */}
@@ -143,6 +221,229 @@ const PharmacyAnalyticsTab = () => {
             </CardContent>
           </Card>
         ))}
+      </div>
+      
+      {/* Critical Alerts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Low Stock Alert */}
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                <CardTitle className="text-lg">Low Stock Alert</CardTitle>
+              </div>
+              <div className="flex gap-2">
+                <CreatePODialog />
+                <CreateGRNDialog />
+              </div>
+            </div>
+            <CardDescription>Items requiring immediate attention</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {lowStockItems.map((item, index) => (
+                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-sm">{item.name}</h4>
+                      <Badge className={getUrgencyColor(item.urgency)}>
+                        {item.urgency}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Stock: {item.currentStock}/{item.minStock} • Last sold: {item.lastSold}
+                    </p>
+                  </div>
+                  <Button size="sm" variant="outline">
+                    <Plus className="h-3 w-3 mr-1" />
+                    Restock
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Regional Demand */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-500" />
+              High Regional Demand
+            </CardTitle>
+            <CardDescription>Items trending in your area</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {regionalDemandItems.map((item, index) => (
+                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-sm">{item.name}</h4>
+                      <Badge variant="secondary">+{item.demandIncrease}%</Badge>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {item.region} • {item.trend}
+                    </p>
+                  </div>
+                  <Button size="sm" variant="outline">
+                    <Eye className="h-3 w-3 mr-1" />
+                    Details
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Customer Insights */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Star className="h-5 w-5 text-yellow-500" />
+            Repeat Customers
+          </CardTitle>
+          <CardDescription>Your most valued customers</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Customer</TableHead>
+                <TableHead>Visits</TableHead>
+                <TableHead>Total Spent</TableHead>
+                <TableHead>Last Visit</TableHead>
+                <TableHead>Loyalty</TableHead>
+                <TableHead>Preferred Items</TableHead>
+                <TableHead>Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {repeatCustomers.map((customer, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{customer.name}</TableCell>
+                  <TableCell>{customer.visits}</TableCell>
+                  <TableCell>₹{customer.totalSpent.toLocaleString()}</TableCell>
+                  <TableCell>{customer.lastVisit}</TableCell>
+                  <TableCell>
+                    <Badge className={getLoyaltyColor(customer.loyalty)}>
+                      {customer.loyalty}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-500">{customer.preferredItems}</TableCell>
+                  <TableCell>
+                    <Button size="sm" variant="outline">View Profile</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Expiry Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-orange-500" />
+            Expiry Management
+          </CardTitle>
+          <CardDescription>Items approaching expiry dates</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Product</TableHead>
+                <TableHead>Batch No.</TableHead>
+                <TableHead>Expiry Date</TableHead>
+                <TableHead>Days Left</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {expiryAlerts.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell>{item.batch}</TableCell>
+                  <TableCell>{item.expiryDate}</TableCell>
+                  <TableCell>
+                    <Badge className={item.daysLeft <= 20 ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}>
+                      {item.daysLeft} days
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{item.quantity}</TableCell>
+                  <TableCell>
+                    <Button size="sm" variant="outline">
+                      {item.daysLeft <= 20 ? 'Return' : 'Monitor'}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Sales Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Peak Hours */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-blue-500" />
+              Peak Sales Hours
+            </CardTitle>
+            <CardDescription>Optimize staffing based on peak times</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {peakHours.map((hour, index) => (
+                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <h4 className="font-medium">{hour.hour}</h4>
+                    <p className="text-sm text-gray-500">{hour.customers} customers</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">₹{hour.sales}</p>
+                    <p className="text-xs text-gray-500">avg. sales</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Common pharmacy operations</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              <Button className="h-20 flex flex-col items-center justify-center">
+                <ShoppingCart className="h-5 w-5 mb-1" />
+                <span className="text-sm">Create Purchase Order</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+                <Package className="h-5 w-5 mb-1" />
+                <span className="text-sm">Add Stock (GRN)</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+                <FileText className="h-5 w-5 mb-1" />
+                <span className="text-sm">Stock Report</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+                <AlertTriangle className="h-5 w-5 mb-1" />
+                <span className="text-sm">Audit Inventory</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
       
       {/* Sales Charts */}
