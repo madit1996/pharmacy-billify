@@ -2,11 +2,13 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, Receipt, CreditCard, FileText } from "lucide-react";
+import { DollarSign, Receipt, CreditCard, FileText, Wallet, BookOpen } from "lucide-react";
 import PatientBillingTab from "@/components/accounts/PatientBillingTab";
 import AdvanceCollectionTab from "@/components/accounts/AdvanceCollectionTab";
 import VendorPaymentTab from "@/components/accounts/VendorPaymentTab";
 import TaxReportsTab from "@/components/accounts/TaxReportsTab";
+import PettyCashTab from "@/components/accounts/PettyCashTab";
+import LedgerTab from "@/components/accounts/LedgerTab";
 
 const AccountsFinancePage = () => {
   const [activeTab, setActiveTab] = useState("billing");
@@ -15,7 +17,9 @@ const AccountsFinancePage = () => {
     dailyRevenue: 485000,
     pendingPayments: 125000,
     advanceCollection: 85000,
-    taxLiability: 45000
+    taxLiability: 45000,
+    pettyCashExpenses: 12500,
+    totalLedgerBalance: 352850
   };
 
   return (
@@ -28,7 +32,7 @@ const AccountsFinancePage = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -76,14 +80,40 @@ const AccountsFinancePage = () => {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Petty Cash</p>
+                <p className="text-2xl font-bold text-red-600">₹{financeStats.pettyCashExpenses.toLocaleString()}</p>
+              </div>
+              <Wallet className="h-8 w-8 text-red-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Ledger Balance</p>
+                <p className="text-2xl font-bold text-teal-600">₹{financeStats.totalLedgerBalance.toLocaleString()}</p>
+              </div>
+              <BookOpen className="h-8 w-8 text-teal-500" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="billing">Patient Billing</TabsTrigger>
           <TabsTrigger value="advance">Advance Collection</TabsTrigger>
           <TabsTrigger value="vendor">Vendor Payments</TabsTrigger>
+          <TabsTrigger value="pettycash">Petty Cash</TabsTrigger>
+          <TabsTrigger value="ledger">Ledger</TabsTrigger>
           <TabsTrigger value="reports">Tax Reports</TabsTrigger>
         </TabsList>
 
@@ -97,6 +127,14 @@ const AccountsFinancePage = () => {
 
         <TabsContent value="vendor" className="space-y-4">
           <VendorPaymentTab />
+        </TabsContent>
+
+        <TabsContent value="pettycash" className="space-y-4">
+          <PettyCashTab />
+        </TabsContent>
+
+        <TabsContent value="ledger" className="space-y-4">
+          <LedgerTab />
         </TabsContent>
 
         <TabsContent value="reports" className="space-y-4">
