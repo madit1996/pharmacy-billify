@@ -15,6 +15,7 @@ import CollapsibleSidebar from "@/components/pharmacy/CollapsibleSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PatientForm from "@/components/pharmacy/PatientForm";
+import { useOnlineOrderBilling } from "@/hooks/useOnlineOrderBilling";
 
 export type BillItem = {
   id: string;
@@ -45,6 +46,7 @@ const PharmacyPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isPatientDialogOpen, setIsPatientDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { processOnlineOrderBilling } = useOnlineOrderBilling();
 
   const [customers, setCustomers] = useState<CustomerDetails[]>([
     { id: "C1", name: "Yuda Rahmat", mobile: "+62-812-3456-7890", address: "123 Jakarta Street, Indonesia" },
@@ -115,7 +117,6 @@ const PharmacyPage = () => {
       return;
     }
     
-    // Check if customer already exists
     const existingCustomer = customers.find(c => 
       c.name.toLowerCase() === searchTerm.toLowerCase()
     );
@@ -129,7 +130,6 @@ const PharmacyPage = () => {
       return;
     }
     
-    // Create a new customer with a unique ID
     const newCustomer = {
       id: `C${customers.length + 1}`,
       name: searchTerm,
@@ -137,14 +137,12 @@ const PharmacyPage = () => {
       address: ""
     };
     
-    // Set this customer as selected and open the form dialog
     setSelectedCustomer(newCustomer);
     setIsPatientDialogOpen(true);
   };
 
   const handleSearchCustomer = (term: string) => {
     setSearchTerm(term);
-    // Try to find a matching customer
     const matchedCustomer = customers.find(
       c => c.name.toLowerCase().includes(term.toLowerCase())
     );
@@ -166,7 +164,6 @@ const PharmacyPage = () => {
     const customerIndex = customers.findIndex(c => c.id === updatedPatient.id);
     
     if (customerIndex !== -1) {
-      // Update existing customer
       const updatedCustomers = [...customers];
       updatedCustomers[customerIndex] = updatedPatient;
       setCustomers(updatedCustomers);
@@ -175,7 +172,6 @@ const PharmacyPage = () => {
         description: "Patient details have been updated successfully",
       });
     } else {
-      // Add new customer
       setCustomers([...customers, updatedPatient]);
       toast({
         title: "Patient added",
@@ -185,6 +181,10 @@ const PharmacyPage = () => {
     
     setSelectedCustomer(updatedPatient);
     setIsPatientDialogOpen(false);
+  };
+
+  const handleOnlineOrderBilling = (order: any) => {
+    processOnlineOrderBilling(order, setBillItems, setSelectedCustomer, setActiveTab);
   };
 
   const platformFee = 0.10;
@@ -292,7 +292,7 @@ const PharmacyPage = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {activeTab === 'analytics' && (
           <div className="flex-1 overflow-auto p-4">
-            <PharmacyAnalyticsTab />
+            <PharmacyAnalyticsTab onOnlineOrderBilling={handleOnlineOrderBilling} />
           </div>
         )}
         

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -37,7 +36,10 @@ import {
   ShoppingCart,
   Globe,
   Store,
-  Percent
+  Percent,
+  CheckCircle,
+  Bell,
+  ArrowRight
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -45,11 +47,61 @@ import CreatePODialog from "@/components/material-store/CreatePODialog";
 import CreateGRNDialog from "@/components/material-store/CreateGRNDialog";
 import AuditInventoryDialog from "./AuditInventoryDialog";
 import OnlineOrdersDialog from "./OnlineOrdersDialog";
+import { useToast } from "@/hooks/use-toast";
 
-const PharmacyAnalyticsTab = () => {
+interface PharmacyAnalyticsTabProps {
+  onOnlineOrderBilling?: (order: any) => void;
+}
+
+const PharmacyAnalyticsTab = ({ onOnlineOrderBilling }: PharmacyAnalyticsTabProps) => {
   const [dateRange, setDateRange] = useState<'week' | 'month' | 'year'>('week');
+  const { toast } = useToast();
   
-  // Sample data for charts
+  // Sample pending online orders for notification
+  const pendingOnlineOrders = [
+    {
+      id: "ON001",
+      customerName: "Rajesh Kumar",
+      customerPhone: "+91-9876543210",
+      orderTime: "10:30 AM",
+      items: [
+        { name: "Paracetamol 500mg", quantity: 2, price: 25 },
+        { name: "Vitamin C", quantity: 1, price: 150 }
+      ],
+      total: 200,
+      platform: "Website"
+    },
+    {
+      id: "ON002",
+      customerName: "Priya Sharma",
+      customerPhone: "+91-9876543211",
+      orderTime: "11:15 AM",
+      items: [
+        { name: "Insulin Pen", quantity: 1, price: 1200 }
+      ],
+      total: 1200,
+      platform: "Mobile App"
+    }
+  ];
+
+  const handleQuickBill = (order: any) => {
+    if (onOnlineOrderBilling) {
+      onOnlineOrderBilling(order);
+    } else {
+      toast({
+        title: "Order ready for billing",
+        description: `Order ${order.id} has been loaded into the billing system`,
+      });
+    }
+  };
+
+  const handleConfirmOrder = (orderId: string) => {
+    toast({
+      title: "Order confirmed",
+      description: `Order ${orderId} has been confirmed and is ready for processing`,
+    });
+  };
+
   const salesData = {
     week: [
       { name: "Mon", online: 1400, offline: 1000, total: 2400 },
@@ -74,7 +126,6 @@ const PharmacyAnalyticsTab = () => {
     })).map(item => ({ ...item, total: item.online + item.offline }))
   };
   
-  // Repeat customer percentage data
   const repeatCustomerData = [
     { month: "Jan", percentage: 35, trend: "up" },
     { month: "Feb", percentage: 38, trend: "up" },
@@ -84,13 +135,11 @@ const PharmacyAnalyticsTab = () => {
     { month: "Jun", percentage: 48, trend: "up" }
   ];
 
-  // Online vs Offline distribution
   const orderChannelData = [
     { name: "Online Orders", value: 35, color: "#8B5CF6" },
     { name: "Walk-in Sales", value: 65, color: "#10B981" }
   ];
 
-  // Customer acquisition data
   const customerAcquisitionData = [
     { month: "Jan", newCustomers: 45, returningCustomers: 120 },
     { month: "Feb", newCustomers: 52, returningCustomers: 135 },
@@ -122,7 +171,6 @@ const PharmacyAnalyticsTab = () => {
     }))
   };
   
-  // Popular categories data
   const categoryData = [
     { name: "Antibiotics", value: 35 },
     { name: "Pain Relief", value: 25 },
@@ -131,7 +179,6 @@ const PharmacyAnalyticsTab = () => {
     { name: "Diabetes", value: 5 }
   ];
   
-  // Low stock items
   const lowStockItems = [
     { name: "Paracetamol 500mg", currentStock: 12, minStock: 50, urgency: "critical", lastSold: "2 hours ago" },
     { name: "Amoxicillin 250mg", currentStock: 25, minStock: 40, urgency: "warning", lastSold: "4 hours ago" },
@@ -140,7 +187,6 @@ const PharmacyAnalyticsTab = () => {
     { name: "Vitamin D3", currentStock: 18, minStock: 30, urgency: "warning", lastSold: "3 hours ago" }
   ];
 
-  // High demand items in region
   const regionalDemandItems = [
     { name: "Cough Syrup", demandIncrease: 45, region: "Local Area", trend: "seasonal" },
     { name: "Fever Reducer", demandIncrease: 38, region: "City", trend: "epidemic" },
@@ -149,7 +195,6 @@ const PharmacyAnalyticsTab = () => {
     { name: "Vitamin C", demandIncrease: 25, region: "Region", trend: "health-conscious" }
   ];
 
-  // Expiry alerts
   const expiryAlerts = [
     { name: "Aspirin 325mg", batch: "BT001", expiryDate: "2024-06-15", daysLeft: 15, quantity: 200 },
     { name: "Cough Drops", batch: "BT045", expiryDate: "2024-06-20", daysLeft: 20, quantity: 150 },
@@ -157,7 +202,6 @@ const PharmacyAnalyticsTab = () => {
     { name: "Antacid Tablets", batch: "BT123", expiryDate: "2024-07-10", daysLeft: 40, quantity: 300 }
   ];
 
-  // Sales patterns
   const peakHours = [
     { hour: "9-10 AM", sales: 45, customers: 28 },
     { hour: "12-1 PM", sales: 62, customers: 35 },
@@ -165,9 +209,8 @@ const PharmacyAnalyticsTab = () => {
     { hour: "8-9 PM", sales: 56, customers: 31 }
   ];
 
-  // Current metrics
-  const currentRepeatRate = 48; // percentage
-  const previousRepeatRate = 45; // percentage
+  const currentRepeatRate = 48;
+  const previousRepeatRate = 45;
   const repeatRateChange = currentRepeatRate - previousRepeatRate;
 
   const onlineOrderPercentage = 35;
@@ -176,7 +219,6 @@ const PharmacyAnalyticsTab = () => {
     offline: 380
   };
 
-  // Pharmacy metrics
   const metrics = [
     {
       title: "Daily Sales",
@@ -208,7 +250,6 @@ const PharmacyAnalyticsTab = () => {
     }
   ];
   
-  // Top selling products
   const topProducts = [
     { name: "Paracetamol 500mg", sales: 289, revenue: 1445 },
     { name: "Amoxicillin 250mg", sales: 235, revenue: 1175 },
@@ -217,7 +258,6 @@ const PharmacyAnalyticsTab = () => {
     { name: "Ibuprofen 400mg", sales: 147, revenue: 735 },
   ];
   
-  // Colors for pie chart
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
   
   const getUrgencyColor = (urgency: string) => {
@@ -230,6 +270,80 @@ const PharmacyAnalyticsTab = () => {
   
   return (
     <div className="space-y-6">
+      {/* Online Orders Notification - Prominent at the top */}
+      {pendingOnlineOrders.length > 0 && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-orange-600" />
+                <CardTitle className="text-orange-800">New Online Orders ({pendingOnlineOrders.length})</CardTitle>
+              </div>
+              <OnlineOrdersDialog />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {pendingOnlineOrders.slice(0, 2).map((order) => (
+                <div key={order.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-sm">#{order.id}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {order.platform}
+                      </Badge>
+                      <span className="text-xs text-gray-500">{order.orderTime}</span>
+                    </div>
+                    <p className="text-sm text-gray-700">{order.customerName} • ₹{order.total}</p>
+                    <p className="text-xs text-gray-500">
+                      {order.items.length} item(s) • {order.customerPhone}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleConfirmOrder(order.id)}
+                    >
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Confirm
+                    </Button>
+                    <Button 
+                      size="sm"
+                      onClick={() => handleQuickBill(order)}
+                    >
+                      <ArrowRight className="h-3 w-3 mr-1" />
+                      Quick Bill
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {pendingOnlineOrders.length > 2 && (
+                <div className="text-center pt-2">
+                  <OnlineOrdersDialog />
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Quick Actions - Now at the top */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>Common pharmacy operations</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <CreatePODialog />
+            <CreateGRNDialog />
+            <OnlineOrdersDialog />
+            <AuditInventoryDialog />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {metrics.map((metric, index) => (
@@ -446,7 +560,6 @@ const PharmacyAnalyticsTab = () => {
         </Card>
       </div>
 
-      {/* Expiry Management */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -491,9 +604,7 @@ const PharmacyAnalyticsTab = () => {
         </CardContent>
       </Card>
 
-      {/* Sales Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Peak Hours */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -519,25 +630,8 @@ const PharmacyAnalyticsTab = () => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common pharmacy operations</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              <CreatePODialog />
-              <CreateGRNDialog />
-              <OnlineOrdersDialog />
-              <AuditInventoryDialog />
-            </div>
-          </CardContent>
-        </Card>
       </div>
       
-      {/* Sales Charts */}
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -571,7 +665,6 @@ const PharmacyAnalyticsTab = () => {
         </CardContent>
       </Card>
       
-      {/* Inventory and Category Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -645,7 +738,6 @@ const PharmacyAnalyticsTab = () => {
         </Card>
       </div>
       
-      {/* Top Products */}
       <Card>
         <CardHeader>
           <CardTitle>Top Selling Products</CardTitle>
