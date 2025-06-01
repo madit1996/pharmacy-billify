@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -240,6 +239,13 @@ Best regards`;
           <Sparkles className="h-8 w-8 text-yellow-500" />
         </div>
         <p className="text-xl text-gray-600 font-medium">Build smarter OPDs. Grow together. 🚀</p>
+        
+        {/* New recurring reward highlight */}
+        <div className="bg-gradient-to-r from-blue-100 to-purple-100 border border-blue-200 rounded-lg px-6 py-3 mx-auto max-w-2xl">
+          <p className="text-lg font-semibold text-blue-700">
+            🎁 You earn 1 month of Equeue Elite for every successful referral!
+          </p>
+        </div>
       </div>
 
       {/* Progress Tracker */}
@@ -282,9 +288,9 @@ Best regards`;
             <div className="text-sm text-green-700 font-medium">Your Progress</div>
             <div className="space-y-1 mt-2">
               <div className="text-lg font-bold text-green-800">Total Referrals: {currentReferrals}</div>
-              <div className="text-sm text-green-700">Months Earned: {totalMonthsEarned}</div>
+              <div className="text-sm text-green-700">Total Months Earned: {totalMonthsEarned}</div>
               <div className="text-sm text-green-700">
-                🎁 Total Bonus Earned: {currentReferrals >= 7 ? '₹500' : '₹0'} / {currentReferrals >= 12 ? '2 Months Free' : '0 Months'}
+                Total Bonus Rewards: {currentReferrals >= 7 ? '₹500' : '₹0'}
               </div>
             </div>
           </CardContent>
@@ -316,12 +322,12 @@ Best regards`;
               <Trophy className={`h-8 w-8 ${currentReferrals >= 12 ? "text-purple-600" : "text-gray-400"}`} />
             </div>
             <div className="font-semibold text-lg">12 Referrals</div>
-            <div className="text-sm text-gray-600">+2 Bonus Months Elite</div>
+            <div className="text-sm text-gray-600">🎉 10 Months Earned + 2 Bonus = 1 Full Year Free!</div>
             {currentReferrals >= 12 ? (
               <Badge className="mt-2 bg-purple-100 text-purple-800 animate-pulse">🎉 Earned!</Badge>
             ) : (
               <div className="text-xs text-blue-600 mt-2 font-medium">
-                Earn 10 months through referrals + 2 bonus months
+                Complete your first year of Equeue Elite!
               </div>
             )}
           </CardContent>
@@ -442,9 +448,9 @@ Best regards`;
                           </div>
                           
                           <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-600">Free Month Earned:</span>
-                            <span className={referral.freeMonthEarned ? "text-green-600" : "text-gray-400"}>
-                              {referral.freeMonthEarned ? "✅" : "❌"}
+                            <span className="text-gray-600">Month Earned:</span>
+                            <span className={referral.freeMonthEarned ? "text-green-600 font-medium" : "text-gray-400"}>
+                              {referral.freeMonthEarned ? "+1 Month Earned ✅" : "Pending"}
                             </span>
                           </div>
                         </div>
