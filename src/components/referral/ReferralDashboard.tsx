@@ -15,7 +15,10 @@ import {
   Check,
   Clock,
   UserPlus,
-  Sparkles
+  Sparkles,
+  QrCode,
+  Target,
+  Zap
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -66,31 +69,59 @@ const ReferralDashboard = () => {
   ]);
 
   const referralLink = "https://equeue.app/ref/DOC12345";
+  const currentReferrals = 4; // 2 pre-filled + 2 actual
+  const totalSlots = 12;
+  const progressPercentage = (currentReferrals / totalSlots) * 100;
   const completedReferrals = referrals.filter(r => r.status === 'onboarded').length;
-  const totalTarget = 12;
-  const progressPercentage = (completedReferrals / totalTarget) * 100;
+  const totalMonthsEarned = completedReferrals;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(referralLink);
     toast({
-      title: "Link copied!",
+      title: "🎉 Link copied!",
       description: "Your referral link has been copied to clipboard",
     });
   };
 
   const shareWhatsApp = () => {
-    const message = `Hey! I'm using Equeue for my hospital's OPD management and it's amazing! Join me and get started: ${referralLink}`;
+    const message = `🌟 Hey! I'm using Equeue for my hospital's OPD management and it's revolutionizing patient care! 
+
+🚀 Smart queue management
+📱 Digital appointments 
+💡 Real-time analytics
+⚡ Zero wait times
+
+Join me and transform your OPD: ${referralLink}
+
+Let's build smarter healthcare together! 🏥✨`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const shareSMS = () => {
-    const message = `Check out Equeue for smart OPD management: ${referralLink}`;
+    const message = `Transform your OPD with Equeue! Smart queue management that eliminates wait times. Join me: ${referralLink}`;
     window.open(`sms:?body=${encodeURIComponent(message)}`, '_blank');
   };
 
   const shareEmail = () => {
-    const subject = "Join me on Equeue - Smart OPD Management";
-    const body = `Hi!\n\nI've been using Equeue for my hospital's OPD management and it has revolutionized how we handle patient queues and appointments.\n\nI think you'd find it valuable too. Check it out: ${referralLink}\n\nBest regards!`;
+    const subject = "🏥 Transform Your OPD with Equeue - Join Me!";
+    const body = `Hi there!
+
+I've been using Equeue for my hospital's OPD management and it has completely transformed how we handle patient queues and appointments.
+
+✨ Key benefits I'm seeing:
+• Zero patient wait times
+• Smart queue management
+• Real-time analytics dashboard
+• Digital appointment system
+• Better patient satisfaction
+
+I think you'd find tremendous value in this system for your practice too. 
+
+Check it out and join me: ${referralLink}
+
+Let's revolutionize healthcare together!
+
+Best regards`;
     window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
   };
 
@@ -110,97 +141,167 @@ const ReferralDashboard = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'onboarded':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 border-green-200';
       case 'joined':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'invited':
-        return 'bg-amber-100 text-amber-800';
+        return 'bg-amber-100 text-amber-800 border-amber-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
+  };
+
+  const renderProgressSlots = () => {
+    const slots = [];
+    for (let i = 0; i < totalSlots; i++) {
+      const isCompleted = i < currentReferrals;
+      const isMilestone = i === 6 || i === 11; // 7th and 12th slots (0-indexed)
+      const isNext = i === currentReferrals;
+      
+      slots.push(
+        <div
+          key={i}
+          className={`relative w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+            isCompleted 
+              ? 'bg-gradient-to-r from-green-400 to-green-600 border-green-500 text-white shadow-lg' 
+              : isNext
+              ? 'bg-blue-100 border-blue-400 text-blue-600 animate-pulse'
+              : 'bg-gray-100 border-gray-300 text-gray-400'
+          }`}
+        >
+          {isCompleted ? (
+            isMilestone ? <Gift className="h-4 w-4" /> : <Check className="h-3 w-3" />
+          ) : (
+            i + 1
+          )}
+          {isMilestone && (
+            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-black px-2 py-1 rounded text-xs font-bold whitespace-nowrap">
+              {i === 6 ? '🎁 ₹500' : '🎉 +2 Months'}
+            </div>
+          )}
+          {isNext && (
+            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold whitespace-nowrap">
+              You're here!
+            </div>
+          )}
+        </div>
+      );
+    }
+    return slots;
   };
 
   const getMotivationalMessage = () => {
-    const remaining = 5 - completedReferrals;
-    if (completedReferrals >= 10) {
-      return "🎉 You've mastered referrals! Keep spreading the Equeue love!";
-    } else if (completedReferrals >= 5) {
-      return `Just ${10 - completedReferrals} more to unlock 3 months bonus Equeue Elite!`;
-    } else if (remaining > 0) {
-      return `Just ${remaining} more to unlock your ₹500 Amazon voucher!`;
+    if (currentReferrals >= 12) {
+      return "🎊 Amazing! You've completed all referrals! You're a true Equeue champion!";
+    } else if (currentReferrals >= 7) {
+      return `🎉 Awesome! You've unlocked ₹500 Amazon voucher! Just ${12 - currentReferrals} more for bonus months!`;
+    } else {
+      return `🎯 You're just ${7 - currentReferrals} more away from unlocking ₹500 Amazon voucher!`;
     }
-    return "🎁 You've unlocked a ₹500 Amazon voucher!";
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      {/* Progress Header */}
+    <div className="max-w-7xl mx-auto p-6 space-y-8">
+      {/* Hero Header */}
       <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-2">
-          <Sparkles className="h-6 w-6 text-yellow-500" />
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <div className="flex items-center justify-center gap-3">
+          <Sparkles className="h-8 w-8 text-yellow-500" />
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             Referral Dashboard
           </h1>
-          <Sparkles className="h-6 w-6 text-yellow-500" />
+          <Sparkles className="h-8 w-8 text-yellow-500" />
         </div>
-        <p className="text-gray-600">Build smarter OPDs. Grow together.</p>
+        <p className="text-xl text-gray-600 font-medium">Build smarter OPDs. Grow together. 🚀</p>
       </div>
 
       {/* Progress Tracker */}
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
-        <CardContent className="p-6">
-          <div className="text-center space-y-4">
-            <div className="text-2xl font-bold text-blue-700">
-              🎉 {completedReferrals} of {totalTarget} referrals already completed!
+      <Card className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 border-2 border-blue-200 shadow-xl">
+        <CardContent className="p-8">
+          <div className="text-center space-y-6">
+            <div className="flex items-center justify-center gap-2">
+              <Target className="h-6 w-6 text-blue-600" />
+              <h2 className="text-2xl font-bold text-blue-700">Referral Progress Tracker</h2>
             </div>
-            <Progress value={progressPercentage} className="h-3" />
-            <div className="text-sm text-blue-600 font-medium">
+            
+            <div className="text-3xl font-bold text-purple-700">
+              🎉 {currentReferrals} of {totalSlots} referrals completed!
+            </div>
+            
+            {/* Progress Slots */}
+            <div className="flex flex-wrap justify-center gap-3 py-4">
+              {renderProgressSlots()}
+            </div>
+            
+            <div className="text-lg text-blue-600 font-semibold">
               {getMotivationalMessage()}
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Milestone Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className={completedReferrals >= 5 ? "border-green-300 bg-green-50" : "border-gray-200"}>
-          <CardContent className="p-4 text-center">
-            <Gift className={`h-8 w-8 mx-auto mb-2 ${completedReferrals >= 5 ? "text-green-600" : "text-gray-400"}`} />
-            <div className="font-semibold">5 Referrals</div>
+      {/* Reward Summary & Milestone Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Summary Card */}
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+          <CardContent className="p-6 text-center">
+            <Zap className="h-8 w-8 mx-auto mb-3 text-green-600" />
+            <div className="text-sm text-green-700 font-medium">Your Progress</div>
+            <div className="space-y-1 mt-2">
+              <div className="text-lg font-bold text-green-800">Total Referrals: {currentReferrals}</div>
+              <div className="text-sm text-green-700">Months Earned: {totalMonthsEarned}</div>
+              <div className="text-sm text-green-700">Bonus Rewards: {currentReferrals >= 7 ? '₹500' : '₹0'}</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Milestone Cards */}
+        <Card className={currentReferrals >= 7 ? "border-yellow-300 bg-yellow-50" : "border-gray-200"}>
+          <CardContent className="p-6 text-center">
+            <Gift className={`h-8 w-8 mx-auto mb-3 ${currentReferrals >= 7 ? "text-yellow-600" : "text-gray-400"}`} />
+            <div className="font-semibold text-lg">7 Referrals</div>
             <div className="text-sm text-gray-600">₹500 Amazon Voucher</div>
-            {completedReferrals >= 5 && (
-              <Badge className="mt-2 bg-green-100 text-green-800">🎁 Unlocked!</Badge>
+            {currentReferrals >= 7 ? (
+              <Badge className="mt-2 bg-yellow-100 text-yellow-800">🎁 Unlocked!</Badge>
+            ) : (
+              <div className="text-xs text-blue-600 mt-2 font-medium">
+                {7 - currentReferrals} more to unlock!
+              </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className={completedReferrals >= 10 ? "border-purple-300 bg-purple-50" : "border-gray-200"}>
-          <CardContent className="p-4 text-center">
-            <Trophy className={`h-8 w-8 mx-auto mb-2 ${completedReferrals >= 10 ? "text-purple-600" : "text-gray-400"}`} />
-            <div className="font-semibold">10 Referrals</div>
-            <div className="text-sm text-gray-600">3 Months Bonus Elite</div>
-            {completedReferrals >= 10 && (
+        <Card className={currentReferrals >= 12 ? "border-purple-300 bg-purple-50" : "border-gray-200"}>
+          <CardContent className="p-6 text-center">
+            <Trophy className={`h-8 w-8 mx-auto mb-3 ${currentReferrals >= 12 ? "text-purple-600" : "text-gray-400"}`} />
+            <div className="font-semibold text-lg">12 Referrals</div>
+            <div className="text-sm text-gray-600">+2 Bonus Months Elite</div>
+            {currentReferrals >= 12 ? (
               <Badge className="mt-2 bg-purple-100 text-purple-800">🎉 Earned!</Badge>
+            ) : (
+              <div className="text-xs text-blue-600 mt-2 font-medium">
+                {12 - currentReferrals} more to unlock!
+              </div>
             )}
           </CardContent>
         </Card>
       </div>
 
       {/* Referral Link Section */}
-      <Card>
+      <Card className="border-2 border-blue-200 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Share2 className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-3">
+            <Share2 className="h-6 w-6 text-blue-600" />
             Your Referral Link
+            <QrCode className="h-5 w-5 text-gray-500" />
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-2 p-3 bg-gray-100 rounded-lg">
+        <CardContent className="space-y-6">
+          <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border">
             <input 
               type="text" 
               value={referralLink} 
               readOnly 
-              className="flex-1 bg-transparent border-none outline-none text-sm"
+              className="flex-1 bg-transparent border-none outline-none text-sm font-mono"
             />
             <Button size="sm" onClick={copyToClipboard} className="gap-2">
               <Copy className="h-4 w-4" />
@@ -208,107 +309,119 @@ const ReferralDashboard = () => {
             </Button>
           </div>
           
-          <div className="flex gap-2 justify-center">
-            <Button variant="outline" size="sm" onClick={shareWhatsApp} className="gap-2">
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Button variant="outline" size="sm" onClick={shareWhatsApp} className="gap-2 bg-green-50 hover:bg-green-100 border-green-200">
               <MessageCircle className="h-4 w-4" />
               WhatsApp
             </Button>
-            <Button variant="outline" size="sm" onClick={shareSMS} className="gap-2">
+            <Button variant="outline" size="sm" onClick={shareSMS} className="gap-2 bg-blue-50 hover:bg-blue-100 border-blue-200">
               <MessageCircle className="h-4 w-4" />
               SMS
             </Button>
-            <Button variant="outline" size="sm" onClick={shareEmail} className="gap-2">
+            <Button variant="outline" size="sm" onClick={shareEmail} className="gap-2 bg-purple-50 hover:bg-purple-100 border-purple-200">
               <Mail className="h-4 w-4" />
               Email
             </Button>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Top Referrers */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-yellow-500" />
-            Top Referrers This Month 🏆
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {["Dr. A***", "Dr. S***", "Dr. R***"].map((name, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold ${
-                    index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-amber-600'
-                  }`}>
-                    {index + 1}
-                  </div>
-                  <span className="font-medium">{name}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 text-yellow-500" />
-                  <span className="font-semibold">{15 - index * 3}</span>
-                </div>
-              </div>
-            ))}
+          <div className="text-center">
+            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+              Invite More Doctors
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Referral Cards */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Your Referrals</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {referrals.map((referral) => (
-              <Card key={referral.id} className="border-l-4 border-l-blue-500">
-                <CardContent className="p-4">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-semibold">{referral.doctorName}</h4>
-                        <p className="text-sm text-gray-600">{referral.hospitalName}</p>
-                      </div>
-                      <Badge className={getStatusColor(referral.status)}>
-                        <div className="flex items-center gap-1">
-                          {getStatusIcon(referral.status)}
-                          {referral.status}
+      {/* Top Referrers & Your Referrals */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Referrers */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              Top Referrers This Month 🏆
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {["Dr. A***", "Dr. S***", "Dr. R***"].map((name, index) => (
+                <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-lg font-bold ${
+                      index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' : 
+                      index === 1 ? 'bg-gradient-to-r from-gray-400 to-gray-600' : 
+                      'bg-gradient-to-r from-amber-600 to-amber-800'
+                    }`}>
+                      {index + 1}
+                    </div>
+                    <span className="font-semibold text-gray-800">{name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="h-5 w-5 text-yellow-500" />
+                    <span className="font-bold text-lg">{15 - index * 3}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Your Referrals Grid */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Referrals</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {referrals.map((referral) => (
+                <Card key={referral.id} className="border-l-4 border-l-blue-500">
+                  <CardContent className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-semibold text-gray-900">{referral.doctorName}</h4>
+                          <p className="text-sm text-gray-600">{referral.hospitalName}</p>
                         </div>
-                      </Badge>
+                        <Badge className={getStatusColor(referral.status)}>
+                          <div className="flex items-center gap-1">
+                            {getStatusIcon(referral.status)}
+                            {referral.status}
+                          </div>
+                        </Badge>
+                      </div>
+                      
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-600">Free Month Earned:</span>
+                        <span className={referral.freeMonthEarned ? "text-green-600" : "text-gray-400"}>
+                          {referral.freeMonthEarned ? "✅" : "❌"}
+                        </span>
+                      </div>
+                      
+                      <div className="text-xs text-gray-500">
+                        Invited: {new Date(referral.inviteDate).toLocaleDateString()}
+                      </div>
                     </div>
-                    
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600">Free Month Earned:</span>
-                      <span className={referral.freeMonthEarned ? "text-green-600" : "text-gray-400"}>
-                        {referral.freeMonthEarned ? "✅" : "❌"}
-                      </span>
-                    </div>
-                    
-                    <div className="text-xs text-gray-500">
-                      Invited: {new Date(referral.inviteDate).toLocaleDateString()}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Fraud Prevention Notice */}
-      <Card className="border-amber-200 bg-amber-50">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold">
+      <Card className="border-amber-300 bg-amber-50">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
               !
             </div>
             <div>
-              <h4 className="font-semibold text-amber-800 mb-1">Fraud Prevention Notice</h4>
-              <p className="text-sm text-amber-700">
-                Referrals are only valid if the doctor belongs to a new, verified hospital you haven't referred before.
-                Each successful referral must result in hospital onboarding and payment to earn your free month.
+              <h4 className="font-bold text-amber-800 mb-2">⚠️ Fraud Prevention Notice</h4>
+              <p className="text-sm text-amber-700 leading-relaxed">
+                Referrals are valid only if the doctor joins a <strong>new, verified hospital you haven't referred before</strong>. 
+                Each referral must lead to hospital onboarding and payment for the reward to count. Multiple doctors from the same hospital 
+                will only count as one referral reward.
               </p>
             </div>
           </div>
