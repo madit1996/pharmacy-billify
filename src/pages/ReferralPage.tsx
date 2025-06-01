@@ -3,7 +3,7 @@ import ReferralDashboard from "@/components/referral/ReferralDashboard";
 
 const ReferralPage = () => {
   return (
-    <div className="min-h-screen bg-gray-50 -m-4">
+    <div className="fixed inset-0 bg-gray-50 overflow-y-auto">
       <ReferralDashboard />
     </div>
   );

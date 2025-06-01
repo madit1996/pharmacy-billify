@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
   Copy, 
   Share2, 
@@ -18,7 +19,10 @@ import {
   Sparkles,
   QrCode,
   Target,
-  Zap
+  Zap,
+  Lock,
+  ChevronDown,
+  Calendar
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,6 +33,7 @@ interface Referral {
   freeMonthEarned: boolean;
   hospitalName: string;
   inviteDate: string;
+  onboardedDate?: string;
 }
 
 const ReferralDashboard = () => {
@@ -40,7 +45,8 @@ const ReferralDashboard = () => {
       status: "onboarded",
       freeMonthEarned: true,
       hospitalName: "City Care Hospital",
-      inviteDate: "2024-05-15"
+      inviteDate: "2024-05-15",
+      onboardedDate: "2024-05-22"
     },
     {
       id: "2", 
@@ -48,7 +54,8 @@ const ReferralDashboard = () => {
       status: "onboarded",
       freeMonthEarned: true,
       hospitalName: "Metro Medical Center",
-      inviteDate: "2024-05-20"
+      inviteDate: "2024-05-20",
+      onboardedDate: "2024-05-28"
     },
     {
       id: "3",
@@ -68,8 +75,10 @@ const ReferralDashboard = () => {
     }
   ]);
 
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+
   const referralLink = "https://equeue.app/ref/DOC12345";
-  const currentReferrals = 4; // 2 pre-filled + 2 actual
+  const currentReferrals = 4;
   const totalSlots = 12;
   const progressPercentage = (currentReferrals / totalSlots) * 100;
   const completedReferrals = referrals.filter(r => r.status === 'onboarded').length;
@@ -151,6 +160,16 @@ Best regards`;
     }
   };
 
+  const toggleCardExpansion = (cardId: string) => {
+    const newExpanded = new Set(expandedCards);
+    if (newExpanded.has(cardId)) {
+      newExpanded.delete(cardId);
+    } else {
+      newExpanded.add(cardId);
+    }
+    setExpandedCards(newExpanded);
+  };
+
   const renderProgressSlots = () => {
     const slots = [];
     for (let i = 0; i < totalSlots; i++) {
@@ -200,6 +219,15 @@ Best regards`;
     }
   };
 
+  const getRemainingToNextReward = () => {
+    if (currentReferrals < 7) {
+      return 7 - currentReferrals;
+    } else if (currentReferrals < 12) {
+      return 12 - currentReferrals;
+    }
+    return 0;
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       {/* Hero Header */}
@@ -235,6 +263,12 @@ Best regards`;
             <div className="text-lg text-blue-600 font-semibold">
               {getMotivationalMessage()}
             </div>
+
+            {getRemainingToNextReward() > 0 && (
+              <div className="text-base text-purple-600 font-medium">
+                💡 You're just {getRemainingToNextReward()} referrals away from your next reward!
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -249,37 +283,45 @@ Best regards`;
             <div className="space-y-1 mt-2">
               <div className="text-lg font-bold text-green-800">Total Referrals: {currentReferrals}</div>
               <div className="text-sm text-green-700">Months Earned: {totalMonthsEarned}</div>
-              <div className="text-sm text-green-700">Bonus Rewards: {currentReferrals >= 7 ? '₹500' : '₹0'}</div>
+              <div className="text-sm text-green-700">
+                🎁 Total Bonus Earned: {currentReferrals >= 7 ? '₹500' : '₹0'} / {currentReferrals >= 12 ? '2 Months Free' : '0 Months'}
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Milestone Cards */}
-        <Card className={currentReferrals >= 7 ? "border-yellow-300 bg-yellow-50" : "border-gray-200"}>
+        <Card className={currentReferrals >= 7 ? "border-yellow-300 bg-yellow-50" : "border-gray-200 relative"}>
           <CardContent className="p-6 text-center">
-            <Gift className={`h-8 w-8 mx-auto mb-3 ${currentReferrals >= 7 ? "text-yellow-600" : "text-gray-400"}`} />
+            <div className="flex items-center justify-center gap-2 mb-3">
+              {currentReferrals < 7 && <Lock className="h-4 w-4 text-gray-400" />}
+              <Gift className={`h-8 w-8 ${currentReferrals >= 7 ? "text-yellow-600" : "text-gray-400"}`} />
+            </div>
             <div className="font-semibold text-lg">7 Referrals</div>
             <div className="text-sm text-gray-600">₹500 Amazon Voucher</div>
             {currentReferrals >= 7 ? (
-              <Badge className="mt-2 bg-yellow-100 text-yellow-800">🎁 Unlocked!</Badge>
+              <Badge className="mt-2 bg-yellow-100 text-yellow-800 animate-pulse">🎉 Unlocked!</Badge>
             ) : (
               <div className="text-xs text-blue-600 mt-2 font-medium">
-                {7 - currentReferrals} more to unlock!
+                You're just {7 - currentReferrals} more away from this reward!
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className={currentReferrals >= 12 ? "border-purple-300 bg-purple-50" : "border-gray-200"}>
+        <Card className={currentReferrals >= 12 ? "border-purple-300 bg-purple-50" : "border-gray-200 relative"}>
           <CardContent className="p-6 text-center">
-            <Trophy className={`h-8 w-8 mx-auto mb-3 ${currentReferrals >= 12 ? "text-purple-600" : "text-gray-400"}`} />
+            <div className="flex items-center justify-center gap-2 mb-3">
+              {currentReferrals < 12 && <Lock className="h-4 w-4 text-gray-400" />}
+              <Trophy className={`h-8 w-8 ${currentReferrals >= 12 ? "text-purple-600" : "text-gray-400"}`} />
+            </div>
             <div className="font-semibold text-lg">12 Referrals</div>
             <div className="text-sm text-gray-600">+2 Bonus Months Elite</div>
             {currentReferrals >= 12 ? (
-              <Badge className="mt-2 bg-purple-100 text-purple-800">🎉 Earned!</Badge>
+              <Badge className="mt-2 bg-purple-100 text-purple-800 animate-pulse">🎉 Earned!</Badge>
             ) : (
               <div className="text-xs text-blue-600 mt-2 font-medium">
-                {12 - currentReferrals} more to unlock!
+                Earn 10 months through referrals + 2 bonus months
               </div>
             )}
           </CardContent>
@@ -328,6 +370,7 @@ Best regards`;
             <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
               Invite More Doctors
             </Button>
+            <p className="text-sm text-gray-600 mt-2">🚀 Help a colleague. Earn rewards together!</p>
           </div>
         </CardContent>
       </Card>
@@ -374,35 +417,61 @@ Best regards`;
           <CardContent>
             <div className="space-y-4">
               {referrals.map((referral) => (
-                <Card key={referral.id} className="border-l-4 border-l-blue-500">
-                  <CardContent className="p-4">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{referral.doctorName}</h4>
-                          <p className="text-sm text-gray-600">{referral.hospitalName}</p>
-                        </div>
-                        <Badge className={getStatusColor(referral.status)}>
-                          <div className="flex items-center gap-1">
-                            {getStatusIcon(referral.status)}
-                            {referral.status}
+                <Collapsible key={referral.id}>
+                  <Card className="border-l-4 border-l-blue-500">
+                    <CollapsibleTrigger 
+                      className="w-full"
+                      onClick={() => toggleCardExpansion(referral.id)}
+                    >
+                      <CardContent className="p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-start">
+                            <div className="text-left">
+                              <h4 className="font-semibold text-gray-900">{referral.doctorName}</h4>
+                              <p className="text-sm text-gray-600">{referral.hospitalName}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge className={getStatusColor(referral.status)}>
+                                <div className="flex items-center gap-1">
+                                  {getStatusIcon(referral.status)}
+                                  {referral.status}
+                                </div>
+                              </Badge>
+                              <ChevronDown className={`h-4 w-4 transition-transform ${expandedCards.has(referral.id) ? 'rotate-180' : ''}`} />
+                            </div>
                           </div>
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600">Free Month Earned:</span>
-                        <span className={referral.freeMonthEarned ? "text-green-600" : "text-gray-400"}>
-                          {referral.freeMonthEarned ? "✅" : "❌"}
-                        </span>
-                      </div>
-                      
-                      <div className="text-xs text-gray-500">
-                        Invited: {new Date(referral.inviteDate).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                          
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600">Free Month Earned:</span>
+                            <span className={referral.freeMonthEarned ? "text-green-600" : "text-gray-400"}>
+                              {referral.freeMonthEarned ? "✅" : "❌"}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent>
+                      <CardContent className="px-4 pb-4 pt-0 border-t bg-gray-50">
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Calendar className="h-4 w-4" />
+                            <span>Invited: {new Date(referral.inviteDate).toLocaleDateString()}</span>
+                          </div>
+                          {referral.onboardedDate && (
+                            <div className="flex items-center gap-2 text-green-600">
+                              <Check className="h-4 w-4" />
+                              <span>Onboarded on {new Date(referral.onboardedDate).toLocaleDateString()}</span>
+                            </div>
+                          )}
+                          <div className="text-xs text-gray-500 italic">
+                            💡 Referral reward counted only after onboarding & payment
+                          </div>
+                        </div>
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
               ))}
             </div>
           </CardContent>
