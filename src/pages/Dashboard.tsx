@@ -34,7 +34,8 @@ import {
   DollarSign,
   Clock,
   AlertCircle,
-  Heart
+  Heart,
+  Gift
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -147,6 +148,14 @@ const Dashboard = () => {
           >
             <Users className="h-4 w-4 mr-2" />
             Patients
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/referrals')}
+            className="border-purple-500 text-purple-600 hover:bg-purple-50"
+          >
+            <Gift className="h-4 w-4 mr-2" />
+            Referrals
           </Button>
         </div>
       </div>
