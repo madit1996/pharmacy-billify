@@ -1,467 +1,505 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Calendar as CalendarIcon, 
-  Clock, 
-  User, 
-  Phone, 
-  Mail, 
-  Plus,
-  Edit,
-  X,
-  CheckCircle,
-  AlertCircle
-} from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Search, Filter, Download, Edit, Upload, Clock, CheckCircle, XCircle, CalendarIcon, Stethoscope, Users, FileText } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 interface Appointment {
-  id: string;
+  id: number;
   patientName: string;
-  patientPhone: string;
-  doctorName: string;
-  department: string;
-  date: Date;
-  time: string;
-  status: 'scheduled' | 'completed' | 'missed' | 'cancelled';
-  notes?: string;
-}
-
-interface Doctor {
-  id: string;
-  name: string;
-  department: string;
-  availability: string[];
+  age: number;
+  gender: string;
+  abhaNumber: string;
+  abhaAddress: string;
+  appointmentDate: string;
+  doctor: string;
+  phone: string;
+  fees: number;
+  serviceType: string;
+  status: "pending" | "done" | "missed" | "unpaid" | "consult";
 }
 
 const AppointmentsPage = () => {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState<string>("all");
-  const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
-  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [selectedService, setSelectedService] = useState<string>("all");
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [activeTab, setActiveTab] = useState("all");
   const { toast } = useToast();
 
-  const doctors: Doctor[] = [
-    { id: "D1", name: "Dr. Andi Wijaya", department: "Cardiology", availability: ["09:00", "10:00", "11:00", "14:00", "15:00"] },
-    { id: "D2", name: "Dr. Dewi Sutanto", department: "Pediatrics", availability: ["09:30", "10:30", "11:30", "14:30", "15:30"] },
-    { id: "D3", name: "Dr. Budi Santoso", department: "Orthopedics", availability: ["10:00", "11:00", "14:00", "15:00", "16:00"] },
-    { id: "D4", name: "Dr. Sarah Tanoto", department: "Neurology", availability: ["09:00", "10:00", "14:00", "15:00"] }
-  ];
-
-  const [appointments, setAppointments] = useState<Appointment[]>([
+  // Dummy appointment data matching the reference image
+  const [appointments] = useState<Appointment[]>([
     {
-      id: "A1",
-      patientName: "John Doe",
-      patientPhone: "+1-555-123-4567",
-      doctorName: "Dr. Andi Wijaya",
-      department: "Cardiology",
-      date: new Date(),
-      time: "09:00",
-      status: "scheduled",
-      notes: "Regular checkup"
+      id: 72,
+      patientName: "Priya Jain",
+      age: 31,
+      gender: "Female",
+      abhaNumber: "91-3047-8027-7345",
+      abhaAddress: "priya17_12.17@sbx",
+      appointmentDate: "25 Jul, 2025 05:00 PM",
+      doctor: "Dr.kartik",
+      phone: "8219339095",
+      fees: 100,
+      serviceType: "OPD",
+      status: "pending"
     },
     {
-      id: "A2",
-      patientName: "Jane Smith",
-      patientPhone: "+1-555-987-6543",
-      doctorName: "Dr. Dewi Sutanto",
-      department: "Pediatrics",
-      date: new Date(),
-      time: "10:30",
-      status: "completed"
+      id: 71,
+      patientName: "Priya Jain",
+      age: 31,
+      gender: "Female",
+      abhaNumber: "91-3047-8027-7345",
+      abhaAddress: "priya17_12.17@sbx",
+      appointmentDate: "25 Jul, 2025 04:30 PM",
+      doctor: "Dr.kartik",
+      phone: "8219339095",
+      fees: 100,
+      serviceType: "OPD",
+      status: "pending"
+    },
+    {
+      id: 70,
+      patientName: "Priya Jain",
+      age: 31,
+      gender: "Female",
+      abhaNumber: "91-3047-8027-7345",
+      abhaAddress: "priya17_12.17@sbx",
+      appointmentDate: "25 Jul, 2025 02:00 PM",
+      doctor: "Rajeev",
+      phone: "7666881821",
+      fees: 0,
+      serviceType: "OPD",
+      status: "unpaid"
+    },
+    {
+      id: 69,
+      patientName: "Priya Jain",
+      age: 31,
+      gender: "Female",
+      abhaNumber: "91-7726-7015-5781",
+      abhaAddress: "priya17_1712@sbx",
+      appointmentDate: "25 Jul, 2025 01:30 PM",
+      doctor: "Eqadmin",
+      phone: "9175005399",
+      fees: 1200,
+      serviceType: "OPD",
+      status: "consult"
+    },
+    {
+      id: 68,
+      patientName: "Aditya Mahajan",
+      age: 29,
+      gender: "Male",
+      abhaNumber: "91-5551-6260-4451",
+      abhaAddress: "madit1996@sbx",
+      appointmentDate: "25 Jul, 2025 01:00 PM",
+      doctor: "Eqadmin",
+      phone: "7889846115",
+      fees: 1200,
+      serviceType: "OPD",
+      status: "done"
+    },
+    {
+      id: 67,
+      patientName: "Nishant Sharma",
+      age: 25,
+      gender: "Male",
+      abhaNumber: "91-7676-2476-6220",
+      abhaAddress: "sharma12000.01@sbx",
+      appointmentDate: "24 Jul, 2025 07:00 PM",
+      doctor: "Eqadmin",
+      phone: "8219339095",
+      fees: 1200,
+      serviceType: "OPD",
+      status: "consult"
+    },
+    {
+      id: 66,
+      patientName: "Nishant Sharma",
+      age: 25,
+      gender: "Male",
+      abhaNumber: "91-7676-2476-6220",
+      abhaAddress: "sharma12000.01@sbx",
+      appointmentDate: "24 Jul, 2025 06:30 PM",
+      doctor: "Eqadmin",
+      phone: "8219339095",
+      fees: 1200,
+      serviceType: "OPD",
+      status: "consult"
+    },
+    {
+      id: 65,
+      patientName: "Priya Jain",
+      age: 31,
+      gender: "Female",
+      abhaNumber: "91-3047-8027-7345",
+      abhaAddress: "priya17_12.17@sbx",
+      appointmentDate: "24 Jul, 2025 06:15 PM",
+      doctor: "Dr.kartik",
+      phone: "9175005399",
+      fees: 600,
+      serviceType: "OPD",
+      status: "pending"
+    },
+    {
+      id: 64,
+      patientName: "Himanshu Goel",
+      age: 26,
+      gender: "Male",
+      abhaNumber: "91-7836-4615-3776",
+      abhaAddress: "himanshugoel1998@sbx",
+      appointmentDate: "22 Jul, 2025 04:45 PM",
+      doctor: "Dr.kartik",
+      phone: "7867654265",
+      fees: 600,
+      serviceType: "OPD",
+      status: "pending"
+    },
+    {
+      id: 63,
+      patientName: "Nishant Sharma",
+      age: 25,
+      gender: "Male",
+      abhaNumber: "91-7676-2476-6220",
+      abhaAddress: "sharma12000.01@sbx",
+      appointmentDate: "22 Jul, 2025 04:30 PM",
+      doctor: "Dr.kartik",
+      phone: "7867654265",
+      fees: 600,
+      serviceType: "OPD",
+      status: "done"
+    },
+    {
+      id: 62,
+      patientName: "Nishant Sharma",
+      age: 25,
+      gender: "Male",
+      abhaNumber: "91-7676-2476-6220",
+      abhaAddress: "sharma12000.10@sbx",
+      appointmentDate: "22 Jul, 2025 03:45 PM",
+      doctor: "Dr.kartik",
+      phone: "8219339095",
+      fees: 600,
+      serviceType: "OPD",
+      status: "pending"
+    },
+    {
+      id: 61,
+      patientName: "Nishant Sharma",
+      age: 25,
+      gender: "Male",
+      abhaNumber: "91-7676-2476-6220",
+      abhaAddress: "sharma1_0101@sbx",
+      appointmentDate: "22 Jul, 2025 01:45 PM",
+      doctor: "Dr.kartik",
+      phone: "8219339095",
+      fees: 600,
+      serviceType: "OPD",
+      status: "pending"
+    },
+    {
+      id: 60,
+      patientName: "Nishant Sharma",
+      age: 25,
+      gender: "Male",
+      abhaNumber: "91-7676-2476-6220",
+      abhaAddress: "sharma1_0101@sbx",
+      appointmentDate: "21 Jul, 2025 04:30 PM",
+      doctor: "Dr.kartik",
+      phone: "8219339095",
+      fees: 600,
+      serviceType: "OPD",
+      status: "pending"
+    },
+    {
+      id: 59,
+      patientName: "Priya Jain",
+      age: 31,
+      gender: "Female",
+      abhaNumber: "91-3047-8027-7345",
+      abhaAddress: "priya17_12.17@sbx",
+      appointmentDate: "19 Jul, 2025 04:15 PM",
+      doctor: "Rajeev",
+      phone: "7666881821",
+      fees: 1200,
+      serviceType: "OPD",
+      status: "done"
+    },
+    {
+      id: 58,
+      patientName: "Nishant Sharma",
+      age: 25,
+      gender: "Male",
+      abhaNumber: "91-7676-2476-6220",
+      abhaAddress: "nishantsharma.2000@sbx",
+      appointmentDate: "19 Jul, 2025 01:44 PM",
+      doctor: "--",
+      phone: "8219339095",
+      fees: 0,
+      serviceType: "OPD",
+      status: "unpaid"
     }
   ]);
 
-  const filteredAppointments = appointments.filter(apt => {
-    const dateMatch = apt.date.toDateString() === selectedDate.toDateString();
-    const doctorMatch = selectedDoctor === "all" || apt.doctorName === selectedDoctor;
-    return dateMatch && doctorMatch;
-  });
-
-  const handleBookAppointment = (appointmentData: Partial<Appointment>) => {
-    const newAppointment: Appointment = {
-      id: `A${appointments.length + 1}`,
-      patientName: appointmentData.patientName!,
-      patientPhone: appointmentData.patientPhone!,
-      doctorName: appointmentData.doctorName!,
-      department: appointmentData.department!,
-      date: selectedDate,
-      time: appointmentData.time!,
-      status: 'scheduled',
-      notes: appointmentData.notes
-    };
-
-    setAppointments([...appointments, newAppointment]);
-    setIsBookingDialogOpen(false);
-    
-    toast({
-      title: "Appointment Booked",
-      description: `Appointment scheduled for ${appointmentData.patientName} with ${appointmentData.doctorName}`,
-    });
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "pending":
+        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>;
+      case "done":
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Done</Badge>;
+      case "consult":
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Consult</Badge>;
+      case "unpaid":
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Unpaid</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
   };
 
-  const updateAppointmentStatus = (id: string, status: Appointment['status']) => {
-    setAppointments(appointments.map(apt => 
-      apt.id === id ? { ...apt, status } : apt
-    ));
-    
-    toast({
-      title: "Appointment Updated",
-      description: `Appointment status changed to ${status}`,
-    });
-  };
-
-  const getStatusBadge = (status: Appointment['status']) => {
-    const statusConfig = {
-      scheduled: { color: "bg-blue-100 text-blue-800", icon: Clock },
-      completed: { color: "bg-green-100 text-green-800", icon: CheckCircle },
-      missed: { color: "bg-red-100 text-red-800", icon: AlertCircle },
-      cancelled: { color: "bg-gray-100 text-gray-800", icon: X }
-    };
-
-    const config = statusConfig[status];
-    const Icon = config.icon;
-
+  const getActionButtons = (appointment: Appointment) => {
     return (
-      <Badge className={config.color}>
-        <Icon className="h-3 w-3 mr-1" />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
+      <div className="flex gap-1">
+        <Button size="sm" variant="outline" className="h-8 px-2">
+          <Edit className="h-3 w-3" />
+        </Button>
+        {appointment.status === "pending" && (
+          <>
+            <Button size="sm" className="h-8 px-2 bg-blue-600 hover:bg-blue-700 text-white">
+              Consult
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 px-2">
+              <Upload className="h-3 w-3" />
+            </Button>
+          </>
+        )}
+        {appointment.status === "done" && (
+          <Button size="sm" className="h-8 px-2 bg-green-600 hover:bg-green-700 text-white">
+            <CheckCircle className="h-3 w-3" />
+          </Button>
+        )}
+        {appointment.status === "unpaid" && (
+          <Button size="sm" className="h-8 px-2 bg-red-600 hover:bg-red-700 text-white">
+            Unpaid
+          </Button>
+        )}
+      </div>
     );
   };
 
-  return (
-    <div className="container mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Appointments Management</h1>
-        <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Book Appointment
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Book New Appointment</DialogTitle>
-            </DialogHeader>
-            <AppointmentForm 
-              onSubmit={handleBookAppointment}
-              doctors={doctors}
-              selectedDate={selectedDate}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+  // Filter appointments based on search and filters
+  const filteredAppointments = appointments.filter(appointment => {
+    const matchesSearch = searchTerm === "" || 
+      appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.doctor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.phone.includes(searchTerm) ||
+      appointment.abhaNumber.includes(searchTerm);
+    
+    const matchesDoctor = selectedDoctor === "all" || appointment.doctor === selectedDoctor;
+    const matchesStatus = selectedStatus === "all" || appointment.status === selectedStatus;
+    const matchesService = selectedService === "all" || appointment.serviceType === selectedService;
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Calendar and Filters */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarIcon className="h-5 w-5" />
-              Calendar
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && setSelectedDate(date)}
-              className="rounded-md border"
-            />
-            
-            <div className="mt-4 space-y-3">
-              <div>
-                <Label>Filter by Doctor</Label>
-                <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Doctors" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Doctors</SelectItem>
-                    {doctors.map(doctor => (
-                      <SelectItem key={doctor.id} value={doctor.name}>
-                        {doctor.name} - {doctor.department}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Appointments List */}
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>
-              Appointments for {selectedDate.toLocaleDateString()}
-            </CardTitle>
-            <CardDescription>
-              {filteredAppointments.length} appointments scheduled
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="all" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-                <TabsTrigger value="completed">Completed</TabsTrigger>
-                <TabsTrigger value="missed">Missed</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="all">
-                <AppointmentsList 
-                  appointments={filteredAppointments}
-                  onUpdateStatus={updateAppointmentStatus}
-                />
-              </TabsContent>
-              
-              <TabsContent value="scheduled">
-                <AppointmentsList 
-                  appointments={filteredAppointments.filter(a => a.status === 'scheduled')}
-                  onUpdateStatus={updateAppointmentStatus}
-                />
-              </TabsContent>
-              
-              <TabsContent value="completed">
-                <AppointmentsList 
-                  appointments={filteredAppointments.filter(a => a.status === 'completed')}
-                  onUpdateStatus={updateAppointmentStatus}
-                />
-              </TabsContent>
-              
-              <TabsContent value="missed">
-                <AppointmentsList 
-                  appointments={filteredAppointments.filter(a => a.status === 'missed')}
-                  onUpdateStatus={updateAppointmentStatus}
-                />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-interface AppointmentFormProps {
-  onSubmit: (data: Partial<Appointment>) => void;
-  doctors: Doctor[];
-  selectedDate: Date;
-}
-
-const AppointmentForm = ({ onSubmit, doctors, selectedDate }: AppointmentFormProps) => {
-  const [formData, setFormData] = useState({
-    patientName: '',
-    patientPhone: '',
-    doctorName: '',
-    department: '',
-    time: '',
-    notes: ''
+    return matchesSearch && matchesDoctor && matchesStatus && matchesService;
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
+  const uniqueDoctors = Array.from(new Set(appointments.map(a => a.doctor).filter(d => d !== "--"))).sort();
+  const uniqueServices = Array.from(new Set(appointments.map(a => a.serviceType))).sort();
+
+  const getAppointmentStats = () => {
+    const total = appointments.length;
+    const today = appointments.filter(a => a.appointmentDate.includes("25 Jul")).length;
+    const pending = appointments.filter(a => a.status === "pending").length;
+    const completed = appointments.filter(a => a.status === "done").length;
+    
+    return { total, today, pending, completed };
   };
 
-  const selectedDoctor = doctors.find(d => d.name === formData.doctorName);
+  const stats = getAppointmentStats();
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>Patient Name</Label>
-          <Input
-            value={formData.patientName}
-            onChange={(e) => setFormData({...formData, patientName: e.target.value})}
-            required
-          />
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="bg-card border-b border-border p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">Manage Appointments</h1>
+            <p className="text-muted-foreground">Showing 1-{filteredAppointments.length} of {appointments.length}</p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search appointments..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 w-full sm:w-80"
+              />
+            </div>
+            
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <CalendarIcon className="h-4 w-4 mr-2" />
+              New Appointment
+            </Button>
+          </div>
         </div>
-        <div>
-          <Label>Patient Phone</Label>
-          <Input
-            value={formData.patientPhone}
-            onChange={(e) => setFormData({...formData, patientPhone: e.target.value})}
-            required
-          />
-        </div>
-      </div>
 
-      <div>
-        <Label>Doctor</Label>
-        <Select 
-          value={formData.doctorName} 
-          onValueChange={(value) => {
-            const doctor = doctors.find(d => d.name === value);
-            setFormData({
-              ...formData, 
-              doctorName: value,
-              department: doctor?.department || ''
-            });
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Doctor" />
-          </SelectTrigger>
-          <SelectContent>
-            {doctors.map(doctor => (
-              <SelectItem key={doctor.id} value={doctor.name}>
-                {doctor.name} - {doctor.department}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {selectedDoctor && (
-        <div>
-          <Label>Available Time Slots</Label>
-          <Select 
-            value={formData.time} 
-            onValueChange={(value) => setFormData({...formData, time: value})}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select Time" />
+        {/* Filters */}
+        <div className="mt-6 flex flex-wrap gap-4">
+          <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Doctor" />
             </SelectTrigger>
             <SelectContent>
-              {selectedDoctor.availability.map(time => (
-                <SelectItem key={time} value={time}>
-                  {time}
-                </SelectItem>
+              <SelectItem value="all">All Doctors</SelectItem>
+              {uniqueDoctors.map(doctor => (
+                <SelectItem key={doctor} value={doctor}>{doctor}</SelectItem>
               ))}
             </SelectContent>
           </Select>
+
+          <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="done">Done</SelectItem>
+              <SelectItem value="consult">Consult</SelectItem>
+              <SelectItem value="unpaid">Unpaid</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedService} onValueChange={setSelectedService}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Service" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Services</SelectItem>
+              {uniqueServices.map(service => (
+                <SelectItem key={service} value={service}>{service}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-40">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {selectedDate ? format(selectedDate, "PPP") : "Select date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
         </div>
-      )}
-
-      <div>
-        <Label>Notes (Optional)</Label>
-        <Textarea
-          value={formData.notes}
-          onChange={(e) => setFormData({...formData, notes: e.target.value})}
-          placeholder="Any additional notes..."
-        />
       </div>
 
-      <Button type="submit" className="w-full">
-        Book Appointment
-      </Button>
-    </form>
-  );
-};
+      {/* Tabs */}
+      <div className="p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full max-w-lg grid-cols-4">
+            <TabsTrigger value="all" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              All ({stats.total})
+            </TabsTrigger>
+            <TabsTrigger value="today">Today ({stats.today})</TabsTrigger>
+            <TabsTrigger value="pending">Pending ({stats.pending})</TabsTrigger>
+            <TabsTrigger value="completed">Completed ({stats.completed})</TabsTrigger>
+          </TabsList>
 
-interface AppointmentsListProps {
-  appointments: Appointment[];
-  onUpdateStatus: (id: string, status: Appointment['status']) => void;
-}
+          <TabsContent value={activeTab} className="mt-6">
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead>Appt</TableHead>
+                        <TableHead>Patient Name</TableHead>
+                        <TableHead>Age</TableHead>
+                        <TableHead>Gender</TableHead>
+                        <TableHead>ABHA Number</TableHead>
+                        <TableHead>ABHA Address</TableHead>
+                        <TableHead>Appt Date</TableHead>
+                        <TableHead>Doctor</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Fees</TableHead>
+                        <TableHead>Serv</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredAppointments.map((appointment) => (
+                        <TableRow key={appointment.id} className="hover:bg-muted/30">
+                          <TableCell className="font-medium">{appointment.id}</TableCell>
+                          <TableCell className="text-primary font-medium">{appointment.patientName}</TableCell>
+                          <TableCell>{appointment.age}</TableCell>
+                          <TableCell>
+                            <Badge variant={appointment.gender === "Male" ? "default" : "secondary"}>
+                              {appointment.gender}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono text-sm">{appointment.abhaNumber}</TableCell>
+                          <TableCell className="font-mono text-sm">{appointment.abhaAddress}</TableCell>
+                          <TableCell>{appointment.appointmentDate}</TableCell>
+                          <TableCell className="font-medium">{appointment.doctor}</TableCell>
+                          <TableCell>{appointment.phone}</TableCell>
+                          <TableCell className="font-semibold">₹{appointment.fees}</TableCell>
+                          <TableCell>{appointment.serviceType}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              {getActionButtons(appointment)}
+                              {getStatusBadge(appointment.status)}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
 
-const AppointmentsList = ({ appointments, onUpdateStatus }: AppointmentsListProps) => {
-  const getStatusBadge = (status: Appointment['status']) => {
-    const statusConfig = {
-      scheduled: { color: "bg-blue-100 text-blue-800", icon: Clock },
-      completed: { color: "bg-green-100 text-green-800", icon: CheckCircle },
-      missed: { color: "bg-red-100 text-red-800", icon: AlertCircle },
-      cancelled: { color: "bg-gray-100 text-gray-800", icon: X }
-    };
+                {filteredAppointments.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No appointments found matching your criteria</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-    const config = statusConfig[status];
-    const Icon = config.icon;
-
-    return (
-      <Badge className={config.color}>
-        <Icon className="h-3 w-3 mr-1" />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
-  };
-
-  if (appointments.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900">No appointments</h3>
-        <p className="text-gray-500">No appointments scheduled for this date</p>
+            {/* Pagination */}
+            {filteredAppointments.length > 0 && (
+              <div className="mt-6 flex justify-center">
+                <Button variant="outline" className="mr-2">Previous</Button>
+                <Button variant="outline">Next</Button>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {appointments.map(appointment => (
-        <Card key={appointment.id}>
-          <CardContent className="p-4">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h4 className="font-medium">{appointment.patientName}</h4>
-                  {getStatusBadge(appointment.status)}
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    {appointment.doctorName}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    {appointment.time}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
-                    {appointment.patientPhone}
-                  </div>
-                  <div>
-                    <span className="font-medium">{appointment.department}</span>
-                  </div>
-                </div>
-                
-                {appointment.notes && (
-                  <p className="mt-2 text-sm text-gray-600">{appointment.notes}</p>
-                )}
-              </div>
-              
-              <div className="flex gap-2">
-                {appointment.status === 'scheduled' && (
-                  <>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => onUpdateStatus(appointment.id, 'completed')}
-                    >
-                      Complete
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => onUpdateStatus(appointment.id, 'missed')}
-                    >
-                      Mark Missed
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => onUpdateStatus(appointment.id, 'cancelled')}
-                    >
-                      Cancel
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
     </div>
   );
 };
