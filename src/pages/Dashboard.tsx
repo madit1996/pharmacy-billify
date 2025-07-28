@@ -129,10 +129,73 @@ const Dashboard = () => {
   // Colors for charts
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
   
+  // Year-over-year revenue comparison data
+  const revenueComparisonData = [
+    { name: "Jan", thisYear: 42000, lastYear: 38000 },
+    { name: "Feb", thisYear: 48000, lastYear: 42000 },
+    { name: "Mar", thisYear: 55000, lastYear: 48000 },
+    { name: "Apr", thisYear: 61000, lastYear: 52000 },
+    { name: "May", thisYear: 58000, lastYear: 55000 },
+    { name: "Jun", thisYear: 65000, lastYear: 58000 },
+    { name: "Jul", thisYear: 70000, lastYear: 62000 },
+    { name: "Aug", thisYear: 75000, lastYear: 68000 },
+    { name: "Sep", thisYear: 80000, lastYear: 72000 },
+    { name: "Oct", thisYear: 88000, lastYear: 78000 },
+    { name: "Nov", thisYear: 92000, lastYear: 82000 },
+    { name: "Dec", thisYear: 98000, lastYear: 88000 }
+  ];
+
+  // Today's appointments
+  const todaysAppointments = [
+    { time: "09:00", patient: "Ahmad Wijaya", doctor: "Dr. Sarah", type: "Consultation", status: "completed" },
+    { time: "09:30", patient: "Siti Rahayu", doctor: "Dr. Budi", type: "Follow-up", status: "completed" },
+    { time: "10:00", patient: "Dewi Sari", doctor: "Dr. Andi", type: "Check-up", status: "in-progress" },
+    { time: "10:30", patient: "Budi Santoso", doctor: "Dr. Sarah", type: "Consultation", status: "upcoming" },
+    { time: "11:00", patient: "Maya Indah", doctor: "Dr. Dewi", type: "Follow-up", status: "upcoming" }
+  ];
+
+  // Payment methods data
+  const paymentMethodsData = [
+    { name: "Cash", value: 45, amount: 125000 },
+    { name: "UPI", value: 30, amount: 89000 },
+    { name: "Online", value: 20, amount: 67000 },
+    { name: "Insurance", value: 5, amount: 32000 }
+  ];
+
+  // Patient overview data
+  const patientOverviewData = [
+    { name: "New Patients", value: 156, percentage: 65 },
+    { name: "Returning Patients", value: 84, percentage: 35 }
+  ];
+
+  // Doctor wise collection
+  const doctorCollectionData = [
+    { name: "Dr. Sarah Tanoto", amount: 45000, patients: 32, department: "Cardiology" },
+    { name: "Dr. Budi Santoso", amount: 38000, patients: 28, department: "Orthopedics" },
+    { name: "Dr. Andi Wijaya", amount: 42000, patients: 35, department: "Neurology" },
+    { name: "Dr. Dewi Sutanto", amount: 35000, patients: 25, department: "Pediatrics" }
+  ];
+
+  // Today's follow-ups
+  const todaysFollowUps = [
+    { patient: "Ahmad Wijaya", doctor: "Dr. Sarah", time: "14:00", condition: "Post-surgery", status: "scheduled" },
+    { patient: "Siti Rahayu", doctor: "Dr. Budi", time: "15:30", condition: "Diabetes check", status: "completed" },
+    { patient: "Maya Indah", doctor: "Dr. Dewi", time: "16:00", condition: "Vaccination", status: "upcoming" }
+  ];
+
+  // Top serving areas
+  const topServingAreas = [
+    { area: "Jakarta Selatan", patients: 245, percentage: 32 },
+    { area: "Jakarta Pusat", patients: 189, percentage: 25 },
+    { area: "Jakarta Barat", patients: 156, percentage: 21 },
+    { area: "Jakarta Utara", patients: 98, percentage: 13 },
+    { area: "Jakarta Timur", patients: 67, percentage: 9 }
+  ];
+
   return (
-    <div className="container mx-auto pb-8">
+    <div className="w-full p-6 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Hospital Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Hospital Dashboard</h1>
         <div className="flex gap-3">
           <Button 
             className="bg-pharmacy-primary hover:bg-pharmacy-primary/90"
@@ -300,26 +363,250 @@ const Dashboard = () => {
         </Card>
       </div>
       
-      {/* Revenue Trend */}
+      {/* Revenue Comparison Chart - Current vs Last Year */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Revenue Trend</CardTitle>
-          <CardDescription>Monthly revenue across all departments</CardDescription>
+          <CardTitle>Revenue Comparison</CardTitle>
+          <CardDescription>Current year vs last year monthly comparison</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthlyRevenueData}>
+              <LineChart data={revenueComparisonData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip />
-                <Area type="monotone" dataKey="revenue" stroke="#8884d8" fill="#8884d8" />
-              </AreaChart>
+                <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                <Legend />
+                <Line type="monotone" dataKey="thisYear" stroke="#8884d8" strokeWidth={3} name="2024" />
+                <Line type="monotone" dataKey="lastYear" stroke="#82ca9d" strokeWidth={3} name="2023" />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
+
+      {/* Today's Activity Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Today's Appointments */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-blue-600" />
+              Today's Appointments
+            </CardTitle>
+            <CardDescription>Current day schedule overview</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {todaysAppointments.map((appointment, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="text-sm font-medium text-blue-600">{appointment.time}</div>
+                    <div>
+                      <p className="text-sm font-medium">{appointment.patient}</p>
+                      <p className="text-xs text-gray-500">{appointment.doctor} • {appointment.type}</p>
+                    </div>
+                  </div>
+                  <div className={`px-2 py-1 rounded text-xs font-medium ${
+                    appointment.status === 'completed' ? 'bg-green-100 text-green-700' :
+                    appointment.status === 'in-progress' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-blue-100 text-blue-700'
+                  }`}>
+                    {appointment.status}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Today's Follow-ups */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-purple-600" />
+              Today's Follow-ups
+            </CardTitle>
+            <CardDescription>Scheduled follow-up appointments</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {todaysFollowUps.map((followUp, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="text-sm font-medium text-purple-600">{followUp.time}</div>
+                    <div>
+                      <p className="text-sm font-medium">{followUp.patient}</p>
+                      <p className="text-xs text-gray-500">{followUp.doctor} • {followUp.condition}</p>
+                    </div>
+                  </div>
+                  <div className={`px-2 py-1 rounded text-xs font-medium ${
+                    followUp.status === 'completed' ? 'bg-green-100 text-green-700' :
+                    'bg-blue-100 text-blue-700'
+                  }`}>
+                    {followUp.status}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Payment Methods and Patient Overview */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Payment Methods Analytics */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-green-600" />
+              Payment Methods Analytics
+            </CardTitle>
+            <CardDescription>Revenue distribution by payment method</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 mb-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={paymentMethodsData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({name, value}) => `${name}: ${value}%`}
+                  >
+                    {paymentMethodsData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value, name, entry) => [`${value}%`, `$${entry.payload.amount.toLocaleString()}`]} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="space-y-2">
+              {paymentMethodsData.map((method, index) => (
+                <div key={index} className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{backgroundColor: COLORS[index % COLORS.length]}}></div>
+                    <span className="text-sm">{method.name}</span>
+                  </div>
+                  <span className="font-medium">${method.amount.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Patient Overview */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-blue-600" />
+              Patient Overview
+            </CardTitle>
+            <CardDescription>New vs returning patients</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 mb-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={patientOverviewData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({name, percentage}) => `${name}: ${percentage}%`}
+                  >
+                    {patientOverviewData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={index === 0 ? '#10B981' : '#3B82F6'} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="space-y-3">
+              {patientOverviewData.map((patient, index) => (
+                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{backgroundColor: index === 0 ? '#10B981' : '#3B82F6'}}></div>
+                    <span className="text-sm">{patient.name}</span>
+                  </div>
+                  <span className="font-medium">{patient.value} ({patient.percentage}%)</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Doctor-wise Collection and Top Serving Areas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Doctor-wise Collection */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Stethoscope className="h-5 w-5 text-green-600" />
+              Doctor-wise Collection
+            </CardTitle>
+            <CardDescription>Revenue generated by each doctor today</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {doctorCollectionData.map((doctor, index) => (
+                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <Stethoscope className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{doctor.name}</p>
+                      <p className="text-xs text-gray-500">{doctor.department} • {doctor.patients} patients</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-green-600">${doctor.amount.toLocaleString()}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Top Serving Areas */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-purple-600" />
+              Top Serving Areas
+            </CardTitle>
+            <CardDescription>Patient distribution by location</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {topServingAreas.map((area, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">{area.area}</span>
+                    <span className="text-sm text-gray-600">{area.patients} patients ({area.percentage}%)</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-purple-600 h-2 rounded-full" 
+                      style={{width: `${area.percentage}%`}}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
       
       {/* Top Doctors and Diseases */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
