@@ -18,7 +18,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <div className="App">
+        <div className="App w-full h-full">
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
