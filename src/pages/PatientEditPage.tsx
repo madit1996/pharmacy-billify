@@ -29,7 +29,13 @@ import {
   Trash2,
   Lock,
   CheckCircle,
-  DollarSign
+  DollarSign,
+  TrendingUp,
+  Calendar as CalendarDays,
+  Building,
+  Heart,
+  UserPlus,
+  Receipt
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -42,7 +48,7 @@ const PatientEditPage = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("billing");
 
-  // Sample patient data
+  // Enhanced patient data with new features
   const patientData = {
     id: patientId || "PAT-17",
     code: "PAT-17",
@@ -66,8 +72,8 @@ const PatientEditPage = () => {
     isInactive: false,
     // Contact details
     mobile1: "+91-7889846115",
+    alternateMobile: "+91-9876543210", // NEW: Alternate mobile
     otpVerified: true,
-    mobile2: "",
     phone1: "",
     phone2: "",
     allowSMS: true,
@@ -75,6 +81,21 @@ const PatientEditPage = () => {
     alternateEmail: "",
     website: "",
     allowEmail: true,
+    // Primary Emergency Contact (moved to basic section)
+    primaryEmergencyContact: {
+      name: "Sunita Devi",
+      relationship: "Mother",
+      phone: "+91-9876543211"
+    },
+    // Financial Summary Data
+    financialSummary: {
+      lifetimeValue: 125000,
+      totalBillAmount: 75000,
+      totalPaidAmount: 73500,
+      pendingAmount: 1500,
+      visitCount: 12,
+      lastVisitDate: new Date("2025-07-15")
+    },
     // Address
     addressType: "Common",
     address1: "H.No S8/835 Prabha Niwas, Lane No 5 East",
@@ -84,6 +105,91 @@ const PatientEditPage = () => {
     country: "India",
     pincode: "145001",
     printAddress: true,
+    // Additional Addresses (multiple)
+    additionalAddresses: [
+      {
+        id: 1,
+        type: "Work",
+        address1: "TechPark Tower, IT City",
+        address2: "Sector 62",
+        city: "Noida",
+        state: "Uttar Pradesh",
+        pincode: "201301",
+        phone: "+91-1234567890",
+        email: "work@aditya.com",
+        gstin: "09ABCDE1234F1Z5",
+        isDefault: false
+      }
+    ],
+    // Insurance Policies (multiple)
+    insurancePolicies: [
+      {
+        id: 1,
+        company: "Star Health Insurance",
+        policyNumber: "POL123456789",
+        type: "Private",
+        policyHolder: "Aditya Mahajan",
+        coverageAmount: 500000,
+        status: "Active",
+        expiryDate: new Date("2025-12-31"),
+        preAuthRequired: true,
+        isPrimary: true
+      },
+      {
+        id: 2,
+        company: "ICICI Lombard",
+        policyNumber: "POL987654321",
+        type: "Corporate",
+        policyHolder: "Aditya Mahajan",
+        coverageAmount: 200000,
+        status: "Active",
+        expiryDate: new Date("2025-10-15"),
+        preAuthRequired: false,
+        isPrimary: false
+      }
+    ],
+    // Emergency Contacts (multiple)
+    emergencyContacts: [
+      {
+        id: 1,
+        name: "Sunita Devi",
+        relationship: "Mother",
+        phone: "+91-9876543211",
+        address: "Same as patient",
+        notes: "Primary contact",
+        isPrimary: true
+      },
+      {
+        id: 2,
+        name: "Raj Kumar Mahajan",
+        relationship: "Father",
+        phone: "+91-9876543212",
+        address: "Same as patient",
+        notes: "Secondary contact",
+        isPrimary: false
+      }
+    ],
+    // Relationships & Groups
+    familyMembers: [
+      {
+        id: 1,
+        name: "Sunita Devi",
+        relationship: "Mother",
+        patientId: "PAT-18",
+        phone: "+91-9876543211"
+      }
+    ],
+    patientGroups: ["VIP", "Corporate - TechCorp"],
+    // GSTIN & Business Details
+    gstinDetails: [
+      {
+        id: 1,
+        gstin: "03ABCDE1234F1Z5",
+        businessName: "Mahajan Enterprises",
+        address: "H.No S8/835 Prabha Niwas, Lane No 5 East, Pathankot",
+        isDefault: true
+      }
+    ],
     // ABHA
     abhaStatus: "Verified",
     abhaNumber: "91-5551-6260-4451",
@@ -132,6 +238,62 @@ const PatientEditPage = () => {
 
       {/* Main Content */}
       <div className="p-6 w-full max-w-full">
+        {/* Financial Summary Dashboard */}
+        <Card className="mb-6 border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <TrendingUp className="h-6 w-6 text-blue-600" />
+              Patient Financial Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <div className="bg-white p-4 rounded-lg border shadow-sm">
+                <div className="flex items-center gap-2 mb-1">
+                  <DollarSign className="h-4 w-4 text-purple-600" />
+                  <Label className="text-sm font-medium text-muted-foreground">Lifetime Value</Label>
+                </div>
+                <p className="text-2xl font-bold text-purple-600">₹{patientData.financialSummary.lifetimeValue.toLocaleString()}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border shadow-sm">
+                <div className="flex items-center gap-2 mb-1">
+                  <Receipt className="h-4 w-4 text-blue-600" />
+                  <Label className="text-sm font-medium text-muted-foreground">Total Bill</Label>
+                </div>
+                <p className="text-2xl font-bold text-blue-600">₹{patientData.financialSummary.totalBillAmount.toLocaleString()}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border shadow-sm">
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <Label className="text-sm font-medium text-muted-foreground">Amount Paid</Label>
+                </div>
+                <p className="text-2xl font-bold text-green-600">₹{patientData.financialSummary.totalPaidAmount.toLocaleString()}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border shadow-sm">
+                <div className="flex items-center gap-2 mb-1">
+                  <DollarSign className="h-4 w-4 text-orange-600" />
+                  <Label className="text-sm font-medium text-muted-foreground">Pending</Label>
+                </div>
+                <p className="text-2xl font-bold text-orange-600">₹{patientData.financialSummary.pendingAmount.toLocaleString()}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border shadow-sm">
+                <div className="flex items-center gap-2 mb-1">
+                  <CalendarDays className="h-4 w-4 text-indigo-600" />
+                  <Label className="text-sm font-medium text-muted-foreground">Total Visits</Label>
+                </div>
+                <p className="text-2xl font-bold text-indigo-600">{patientData.financialSummary.visitCount}</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border shadow-sm">
+                <div className="flex items-center gap-2 mb-1">
+                  <Heart className="h-4 w-4 text-pink-600" />
+                  <Label className="text-sm font-medium text-muted-foreground">Last Visit</Label>
+                </div>
+                <p className="text-lg font-semibold text-pink-600">{format(patientData.financialSummary.lastVisitDate, "MMM dd")}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* ABHA Details Section - Always Visible at Top */}
         <Card className="mb-6 border-2 border-green-200 bg-green-50/30">
           <CardHeader className="pb-4">
@@ -270,8 +432,36 @@ const PatientEditPage = () => {
                 </div>
               </div>
               <div className="space-y-2">
+                <Label htmlFor="alternateMobile">Alternate Mobile Number</Label>
+                <Input id="alternateMobile" defaultValue={patientData.alternateMobile} />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="email">Email <span className="text-red-500">*</span></Label>
                 <Input id="email" type="email" defaultValue={patientData.email} className="border-red-200 focus:border-red-400" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="emergencyContactName">Primary Emergency Contact <span className="text-red-500">*</span></Label>
+                <Input id="emergencyContactName" defaultValue={patientData.primaryEmergencyContact.name} className="border-red-200 focus:border-red-400" />
+              </div>
+              <div className="space-y-2">
+                <Label>Relationship <span className="text-red-500">*</span></Label>
+                <Select defaultValue={patientData.primaryEmergencyContact.relationship}>
+                  <SelectTrigger className="border-red-200 focus:border-red-400">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Mother">Mother</SelectItem>
+                    <SelectItem value="Father">Father</SelectItem>
+                    <SelectItem value="Spouse">Spouse</SelectItem>
+                    <SelectItem value="Sibling">Sibling</SelectItem>
+                    <SelectItem value="Child">Child</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="emergencyContactPhone">Emergency Contact Phone <span className="text-red-500">*</span></Label>
+                <Input id="emergencyContactPhone" defaultValue={patientData.primaryEmergencyContact.phone} className="border-red-200 focus:border-red-400" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="address1">Address <span className="text-red-500">*</span></Label>
@@ -360,6 +550,74 @@ const PatientEditPage = () => {
           </CardContent>
         </Card>
 
+        {/* Insurance Information - Always Visible Dedicated Section */}
+        <Card className="mb-6 border-2 border-blue-200 bg-blue-50/30">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <CreditCard className="h-6 w-6 text-blue-600" />
+                Insurance Information
+              </CardTitle>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Policy
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {patientData.insurancePolicies.map((policy, index) => (
+                <Card key={policy.id} className={`border-2 ${policy.isPrimary ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-white'}`}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-lg">{policy.company}</h4>
+                        {policy.isPrimary && (
+                          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Primary</Badge>
+                        )}
+                        <Badge className={policy.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                          {policy.status}
+                        </Badge>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Policy Number</Label>
+                        <p className="font-semibold">{policy.policyNumber}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Type</Label>
+                        <p className="font-semibold">{policy.type}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Coverage</Label>
+                        <p className="font-semibold">₹{policy.coverageAmount.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Expiry Date</Label>
+                        <p className="font-semibold">{format(policy.expiryDate, "MMM dd, yyyy")}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Policy Holder</Label>
+                        <p className="font-semibold">{policy.policyHolder}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Pre-Auth Required</Label>
+                        <p className="font-semibold">{policy.preAuthRequired ? 'Yes' : 'No'}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Additional Details - Tabbed Section */}
         <Card>
           <CardHeader>
@@ -370,27 +628,27 @@ const PatientEditPage = () => {
               <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
                 <TabsTrigger value="billing" className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4" />
-                  Billing
+                  Billing & Financial
                 </TabsTrigger>
-                <TabsTrigger value="address" className="flex items-center gap-2">
+                <TabsTrigger value="addresses" className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
-                  Additional Address
-                </TabsTrigger>
-                <TabsTrigger value="insurance" className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" />
-                  Insurance
-                </TabsTrigger>
-                <TabsTrigger value="emergency" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Emergency Contacts
+                  Additional Addresses
                 </TabsTrigger>
                 <TabsTrigger value="documents" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
-                  Documents
+                  Documents & IDs
+                </TabsTrigger>
+                <TabsTrigger value="gstin" className="flex items-center gap-2">
+                  <Building className="h-4 w-4" />
+                  GSTIN & Tax
+                </TabsTrigger>
+                <TabsTrigger value="relationships" className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Relationships & Groups
                 </TabsTrigger>
                 <TabsTrigger value="other" className="flex items-center gap-2">
                   <Plus className="h-4 w-4" />
-                  Other
+                  Other Details
                 </TabsTrigger>
               </TabsList>
 
@@ -444,157 +702,312 @@ const PatientEditPage = () => {
                 </div>
               </TabsContent>
 
-              {/* Additional Address Tab */}
-              <TabsContent value="address" className="mt-6">
-                <div className="space-y-4">
+              {/* Additional Addresses Tab */}
+              <TabsContent value="addresses" className="mt-6">
+                <div className="space-y-6">
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold">Additional Addresses</h3>
-                    <Button size="sm">
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
                       <Plus className="h-4 w-4 mr-2" />
-                      Add Address
+                      Add New Address
                     </Button>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <Label>Address Type</Label>
-                      <Select defaultValue="Work">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Work">Work</SelectItem>
-                          <SelectItem value="Temporary">Temporary</SelectItem>
-                          <SelectItem value="Permanent">Permanent</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="address2Line1">Address Line 1</Label>
-                      <Input id="address2Line1" placeholder="Enter address" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="address2Line2">Address Line 2</Label>
-                      <Input id="address2Line2" placeholder="Enter address" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="address2City">City</Label>
-                      <Input id="address2City" placeholder="Enter city" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="address2State">State</Label>
-                      <Input id="address2State" placeholder="Enter state" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="address2Pincode">Pincode</Label>
-                      <Input id="address2Pincode" placeholder="Enter pincode" />
-                    </div>
-                  </div>
+                  
+                  {patientData.additionalAddresses.map((address, index) => (
+                    <Card key={address.id} className={`border-2 ${address.isDefault ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-lg">{address.type} Address</h4>
+                            {address.isDefault && (
+                              <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Default</Badge>
+                            )}
+                          </div>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label>Address Type</Label>
+                            <Select defaultValue={address.type}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Work">Work</SelectItem>
+                                <SelectItem value="Temporary">Temporary</SelectItem>
+                                <SelectItem value="Permanent">Permanent</SelectItem>
+                                <SelectItem value="Billing">Billing</SelectItem>
+                                <SelectItem value="Shipping">Shipping</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`address${address.id}Line1`}>Address Line 1</Label>
+                            <Input id={`address${address.id}Line1`} defaultValue={address.address1} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`address${address.id}Line2`}>Address Line 2</Label>
+                            <Input id={`address${address.id}Line2`} defaultValue={address.address2} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`address${address.id}City`}>City</Label>
+                            <Input id={`address${address.id}City`} defaultValue={address.city} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`address${address.id}State`}>State</Label>
+                            <Input id={`address${address.id}State`} defaultValue={address.state} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`address${address.id}Pincode`}>Pincode</Label>
+                            <Input id={`address${address.id}Pincode`} defaultValue={address.pincode} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`address${address.id}Phone`}>Phone</Label>
+                            <Input id={`address${address.id}Phone`} defaultValue={address.phone} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`address${address.id}Email`}>Email</Label>
+                            <Input id={`address${address.id}Email`} type="email" defaultValue={address.email} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`address${address.id}Gstin`}>GSTIN</Label>
+                            <Input id={`address${address.id}Gstin`} defaultValue={address.gstin} />
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id={`address${address.id}Default`} checked={address.isDefault} />
+                            <Label htmlFor={`address${address.id}Default`}>Set as Default</Label>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               </TabsContent>
 
-              {/* Insurance Tab */}
-              <TabsContent value="insurance" className="mt-6">
-                <div className="space-y-4">
+              {/* GSTIN & Tax Details Tab */}
+              <TabsContent value="gstin" className="mt-6">
+                <div className="space-y-6">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">Insurance Policies</h3>
-                    <Button size="sm">
+                    <h3 className="text-lg font-semibold">GSTIN & Business Details</h3>
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
                       <Plus className="h-4 w-4 mr-2" />
-                      Add Insurance
+                      Add New GSTIN
                     </Button>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="insuranceCompany">Insurance Company <span className="text-red-500">*</span></Label>
-                      <Input id="insuranceCompany" defaultValue="Star Health Insurance" />
+                  
+                  {patientData.gstinDetails.map((gstin, index) => (
+                    <Card key={gstin.id} className={`border-2 ${gstin.isDefault ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-lg">{gstin.businessName}</h4>
+                            {gstin.isDefault && (
+                              <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Default</Badge>
+                            )}
+                          </div>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor={`gstin${gstin.id}`}>GSTIN Number</Label>
+                            <Input id={`gstin${gstin.id}`} defaultValue={gstin.gstin} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`businessName${gstin.id}`}>Business Name</Label>
+                            <Input id={`businessName${gstin.id}`} defaultValue={gstin.businessName} />
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor={`businessAddress${gstin.id}`}>Business Address</Label>
+                            <Textarea id={`businessAddress${gstin.id}`} defaultValue={gstin.address} rows={3} />
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id={`gstinDefault${gstin.id}`} checked={gstin.isDefault} />
+                            <Label htmlFor={`gstinDefault${gstin.id}`}>Set as Default</Label>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  
+                  <Card className="border-2 border-dashed border-gray-300">
+                    <CardContent className="pt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label>Tax Exemption Category</Label>
+                          <Select defaultValue="None">
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="None">None</SelectItem>
+                              <SelectItem value="Senior Citizen">Senior Citizen</SelectItem>
+                              <SelectItem value="Government Employee">Government Employee</SelectItem>
+                              <SelectItem value="Medical Insurance">Medical Insurance</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="taxExemptionNumber">Tax Exemption Number</Label>
+                          <Input id="taxExemptionNumber" placeholder="Enter exemption number if applicable" />
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="isTaxExempt" />
+                          <Label htmlFor="isTaxExempt">Tax Exempt Patient</Label>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              {/* Relationships & Groups Tab */}
+              <TabsContent value="relationships" className="mt-6">
+                <div className="space-y-6">
+                  {/* Family Members Section */}
+                  <div>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold">Family Members</h3>
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Link Family Member
+                      </Button>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="policyNumber">Policy Number <span className="text-red-500">*</span></Label>
-                      <Input id="policyNumber" defaultValue="POL123456789" />
+                    
+                    {patientData.familyMembers.map((member, index) => (
+                      <Card key={member.id} className="border-2 border-blue-200 bg-blue-50">
+                        <CardContent className="pt-4">
+                          <div className="flex items-center justify-between">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1">
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Name</Label>
+                                <p className="font-semibold">{member.name}</p>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Relationship</Label>
+                                <p className="font-semibold">{member.relationship}</p>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Patient ID</Label>
+                                <p className="font-semibold">{member.patientId}</p>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Phone</Label>
+                                <p className="font-semibold">{member.phone}</p>
+                              </div>
+                            </div>
+                            <Button variant="outline" size="sm">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {/* Patient Groups Section */}
+                  <div>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold">Patient Groups</h3>
+                      <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add to Group
+                      </Button>
                     </div>
-                    <div className="space-y-2">
-                      <Label>Insurance Type <span className="text-red-500">*</span></Label>
-                      <Select defaultValue="Private">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Private">Private</SelectItem>
-                          <SelectItem value="Government">Government Scheme</SelectItem>
-                          <SelectItem value="Corporate">Corporate</SelectItem>
-                          <SelectItem value="TPA">TPA</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {patientData.patientGroups.map((group, index) => (
+                        <Badge key={index} className="bg-green-100 text-green-800 hover:bg-green-100 px-3 py-1">
+                          {group}
+                          <button className="ml-2 hover:text-red-600">
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="policyHolder">Policy Holder Name</Label>
-                      <Input id="policyHolder" defaultValue="Aditya Mahajan" />
+                    
+                    <Card className="border-2 border-dashed border-gray-300">
+                      <CardContent className="pt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Add to Group</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select group" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="VIP">VIP</SelectItem>
+                                <SelectItem value="Corporate">Corporate</SelectItem>
+                                <SelectItem value="Insurance">Insurance</SelectItem>
+                                <SelectItem value="Senior Citizen">Senior Citizen</SelectItem>
+                                <SelectItem value="Staff">Staff</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="customGroup">Or Create New Group</Label>
+                            <Input id="customGroup" placeholder="Enter custom group name" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Additional Emergency Contacts */}
+                  <div>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold">Additional Emergency Contacts</h3>
+                      <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Emergency Contact
+                      </Button>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="coverageAmount">Coverage Amount</Label>
-                      <Input id="coverageAmount" defaultValue="₹ 5,00,000" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Claim Status</Label>
-                      <Badge className="bg-green-100 text-green-800">Active</Badge>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="preAuthRequired" />
-                      <Label htmlFor="preAuthRequired">Pre-authorization Required</Label>
-                    </div>
+                    
+                    {patientData.emergencyContacts.filter(contact => !contact.isPrimary).map((contact, index) => (
+                      <Card key={contact.id} className="border-2 border-orange-200 bg-orange-50">
+                        <CardContent className="pt-4">
+                          <div className="flex items-center justify-between">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1">
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Name</Label>
+                                <p className="font-semibold">{contact.name}</p>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Relationship</Label>
+                                <p className="font-semibold">{contact.relationship}</p>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Phone</Label>
+                                <p className="font-semibold">{contact.phone}</p>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Notes</Label>
+                                <p className="font-semibold">{contact.notes}</p>
+                              </div>
+                            </div>
+                            <Button variant="outline" size="sm">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 </div>
               </TabsContent>
 
-              {/* Emergency Contacts Tab */}
-              <TabsContent value="emergency" className="mt-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">Emergency Contacts</h3>
-                    <Button size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Contact
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="emergencyName">Contact Name</Label>
-                      <Input id="emergencyName" defaultValue="Sunita Devi" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Relationship</Label>
-                      <Select defaultValue="Mother">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Mother">Mother</SelectItem>
-                          <SelectItem value="Father">Father</SelectItem>
-                          <SelectItem value="Spouse">Spouse</SelectItem>
-                          <SelectItem value="Sibling">Sibling</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="emergencyPhone">Contact Number</Label>
-                      <Input id="emergencyPhone" defaultValue="+91-9876543211" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="emergencyAddress">Address</Label>
-                      <Textarea id="emergencyAddress" placeholder="Emergency contact address" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="emergencyNotes">Notes</Label>
-                      <Textarea id="emergencyNotes" placeholder="Special instructions (e.g., Call only after 6 PM)" />
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              {/* Documents Tab */}
+              {/* Documents & IDs Tab */}
               <TabsContent value="documents" className="mt-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Identification Documents</h3>
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold">Identification Documents & Uploads</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="aadhaar">Aadhaar Number</Label>
@@ -620,17 +1033,35 @@ const PatientEditPage = () => {
                       <Label>Document Upload</Label>
                       <Button variant="outline" className="w-full">
                         <Upload className="h-4 w-4 mr-2" />
-                        Upload Documents
+                        Upload ID Documents
                       </Button>
                     </div>
                   </div>
+                  
+                  <Card className="border-2 border-dashed border-gray-300">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Medical Records & Reports</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Button variant="outline" className="h-20 flex flex-col">
+                          <Upload className="h-6 w-6 mb-2" />
+                          Upload Medical Reports
+                        </Button>
+                        <Button variant="outline" className="h-20 flex flex-col">
+                          <FileText className="h-6 w-6 mb-2" />
+                          Upload Prescriptions
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </TabsContent>
 
-              {/* Other Tab */}
+              {/* Other Details Tab */}
               <TabsContent value="other" className="mt-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Other Details</h3>
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold">Additional Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="education">Education Level</Label>
@@ -641,17 +1072,30 @@ const PatientEditPage = () => {
                       <Input id="motherTongue" defaultValue={patientData.motherTongue} />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="remarks">Remarks/Notes</Label>
-                      <Textarea id="remarks" placeholder="General notes about the patient" rows={4} />
+                      <Label htmlFor="specialNeeds">Special Needs/Disabilities</Label>
+                      <Textarea id="specialNeeds" placeholder="Any special accommodations needed" rows={3} />
                     </div>
                     <div className="space-y-2">
-                      <Label>Attachments</Label>
-                      <Button variant="outline" className="w-full">
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload Files
-                      </Button>
+                      <Label htmlFor="allergies">Known Allergies</Label>
+                      <Textarea id="allergies" placeholder="List any known allergies" rows={3} />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="remarks">General Remarks/Notes</Label>
+                      <Textarea id="remarks" placeholder="Additional notes about the patient" rows={4} />
                     </div>
                   </div>
+                  
+                  <Card className="border-2 border-dashed border-gray-300">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Miscellaneous Attachments</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Button variant="outline" className="w-full h-16">
+                        <Upload className="h-6 w-6 mr-2" />
+                        Upload Additional Files
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
               </TabsContent>
             </Tabs>
