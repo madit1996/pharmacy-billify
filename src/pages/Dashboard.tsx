@@ -193,7 +193,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="w-full p-6 bg-gray-50 min-h-screen">
+    <div className="w-full px-4 py-6 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Hospital Dashboard</h1>
         <div className="flex gap-3">
