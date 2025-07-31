@@ -49,7 +49,7 @@ const PatientEditPage = () => {
   const [activeTab, setActiveTab] = useState("billing");
 
   // Enhanced patient data with new features
-  const patientData = {
+  const [patientData, setPatientData] = useState({
     id: patientId || "PAT-17",
     code: "PAT-17",
     firstName: "Aditya",
@@ -211,6 +211,92 @@ const PatientEditPage = () => {
     passport: "",
     drivingLicense: "",
     voterID: ""
+  });
+
+  // Functions to handle adding new items
+  const addNewEmergencyContact = () => {
+    const newContact = {
+      id: patientData.emergencyContacts.length + 1,
+      name: "",
+      relationship: "",
+      phone: "",
+      address: "",
+      notes: "",
+      isPrimary: false
+    };
+    setPatientData(prev => ({
+      ...prev,
+      emergencyContacts: [...prev.emergencyContacts, newContact]
+    }));
+    toast({
+      title: "New Contact Added",
+      description: "A new emergency contact has been added. Please fill in the details.",
+    });
+  };
+
+  const addNewInsurancePolicy = () => {
+    const newPolicy = {
+      id: patientData.insurancePolicies.length + 1,
+      company: "",
+      policyNumber: "",
+      type: "Private",
+      policyHolder: "",
+      coverageAmount: 0,
+      status: "Active",
+      expiryDate: new Date(),
+      preAuthRequired: false,
+      isPrimary: false
+    };
+    setPatientData(prev => ({
+      ...prev,
+      insurancePolicies: [...prev.insurancePolicies, newPolicy]
+    }));
+    toast({
+      title: "New Policy Added",
+      description: "A new insurance policy has been added. Please fill in the details.",
+    });
+  };
+
+  const addNewAddress = () => {
+    const newAddress = {
+      id: patientData.additionalAddresses.length + 1,
+      type: "Other",
+      address1: "",
+      address2: "",
+      city: "",
+      state: "",
+      pincode: "",
+      phone: "",
+      email: "",
+      gstin: "",
+      isDefault: false
+    };
+    setPatientData(prev => ({
+      ...prev,
+      additionalAddresses: [...prev.additionalAddresses, newAddress]
+    }));
+    toast({
+      title: "New Address Added",
+      description: "A new address has been added. Please fill in the details.",
+    });
+  };
+
+  const addNewGSTIN = () => {
+    const newGSTIN = {
+      id: patientData.gstinDetails.length + 1,
+      gstin: "",
+      businessName: "",
+      address: "",
+      isDefault: false
+    };
+    setPatientData(prev => ({
+      ...prev,
+      gstinDetails: [...prev.gstinDetails, newGSTIN]
+    }));
+    toast({
+      title: "New GSTIN Added",
+      description: "A new GSTIN entry has been added. Please fill in the details.",
+    });
   };
 
   const handleSave = () => {
@@ -581,7 +667,7 @@ const PatientEditPage = () => {
                 <Phone className="h-6 w-6 text-orange-600" />
                 Emergency Contact Information
               </CardTitle>
-              <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
+              <Button size="sm" className="bg-orange-600 hover:bg-orange-700" onClick={addNewEmergencyContact}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add New Contact
               </Button>
@@ -646,7 +732,7 @@ const PatientEditPage = () => {
                 <CreditCard className="h-6 w-6 text-blue-600" />
                 Insurance Information
               </CardTitle>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={addNewInsurancePolicy}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add New Policy
               </Button>
@@ -795,7 +881,7 @@ const PatientEditPage = () => {
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold">Additional Addresses</h3>
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={addNewAddress}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add New Address
                     </Button>
@@ -881,7 +967,7 @@ const PatientEditPage = () => {
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold">GSTIN & Business Details</h3>
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={addNewGSTIN}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add New GSTIN
                     </Button>
