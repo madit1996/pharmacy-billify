@@ -66,6 +66,14 @@ const PatientEditPage = () => {
     motherTongue: "Punjabi",
     education: "Graduate",
     occupation: "Software Engineer",
+    // Enhanced HMIS Details
+    mrnNumber: "MRN-2025-001234",
+    patientCategory: "General",
+    firstServiceUsed: "Laboratory",
+    firstVisitDate: new Date("2025-07-17"),
+    referringDoctor: "",
+    currentTreatmentStatus: "Ongoing",
+    medicalRecordStatus: "Active",
     registrationDate: new Date("2025-07-17"),
     source: "Walk-in",
     status: "Active",
@@ -435,34 +443,10 @@ const PatientEditPage = () => {
                 <Label htmlFor="alternateMobile">Alternate Mobile Number</Label>
                 <Input id="alternateMobile" defaultValue={patientData.alternateMobile} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email <span className="text-red-500">*</span></Label>
-                <Input id="email" type="email" defaultValue={patientData.email} className="border-red-200 focus:border-red-400" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="emergencyContactName">Primary Emergency Contact <span className="text-red-500">*</span></Label>
-                <Input id="emergencyContactName" defaultValue={patientData.primaryEmergencyContact.name} className="border-red-200 focus:border-red-400" />
-              </div>
-              <div className="space-y-2">
-                <Label>Relationship <span className="text-red-500">*</span></Label>
-                <Select defaultValue={patientData.primaryEmergencyContact.relationship}>
-                  <SelectTrigger className="border-red-200 focus:border-red-400">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Mother">Mother</SelectItem>
-                    <SelectItem value="Father">Father</SelectItem>
-                    <SelectItem value="Spouse">Spouse</SelectItem>
-                    <SelectItem value="Sibling">Sibling</SelectItem>
-                    <SelectItem value="Child">Child</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="emergencyContactPhone">Emergency Contact Phone <span className="text-red-500">*</span></Label>
-                <Input id="emergencyContactPhone" defaultValue={patientData.primaryEmergencyContact.phone} className="border-red-200 focus:border-red-400" />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email <span className="text-red-500">*</span></Label>
+                  <Input id="email" type="email" defaultValue={patientData.email} className="border-red-200 focus:border-red-400" />
+                </div>
               <div className="space-y-2">
                 <Label htmlFor="address1">Address <span className="text-red-500">*</span></Label>
                 <Input id="address1" defaultValue={patientData.address1} className="border-red-200 focus:border-red-400" />
@@ -490,30 +474,69 @@ const PatientEditPage = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="occupation">Occupation</Label>
-                <Input id="occupation" defaultValue={patientData.occupation} />
+                <Label htmlFor="mrnNumber">MRN Number</Label>
+                <Input id="mrnNumber" value="MRN-2025-001234" readOnly className="bg-muted" />
               </div>
               <div className="space-y-2">
-                <Label>Marital Status</Label>
-                <Select defaultValue={patientData.maritalStatus}>
+                <Label>Patient Category</Label>
+                <Select defaultValue="General">
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Single">Single</SelectItem>
-                    <SelectItem value="Married">Married</SelectItem>
-                    <SelectItem value="Divorced">Divorced</SelectItem>
-                    <SelectItem value="Widowed">Widowed</SelectItem>
+                    <SelectItem value="General">General</SelectItem>
+                    <SelectItem value="VIP">VIP</SelectItem>
+                    <SelectItem value="Corporate">Corporate</SelectItem>
+                    <SelectItem value="Staff">Staff</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="nationality">Nationality</Label>
-                <Input id="nationality" defaultValue={patientData.nationality} />
+                <Label>First Service Used</Label>
+                <Select defaultValue="Laboratory">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Pharmacy">Pharmacy</SelectItem>
+                    <SelectItem value="Laboratory">Laboratory</SelectItem>
+                    <SelectItem value="OPD">OPD Consultation</SelectItem>
+                    <SelectItem value="Emergency">Emergency</SelectItem>
+                    <SelectItem value="IPD">IPD</SelectItem>
+                    <SelectItem value="Specialized">Specialized Services</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="religion">Religion</Label>
-                <Input id="religion" defaultValue={patientData.religion} />
+                <Label htmlFor="referringDoctor">Referring Doctor/Hospital</Label>
+                <Input id="referringDoctor" defaultValue="" placeholder="Optional" />
+              </div>
+              <div className="space-y-2">
+                <Label>Current Treatment Status</Label>
+                <Select defaultValue="Ongoing">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Ongoing">Ongoing</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
+                    <SelectItem value="Discharged">Discharged</SelectItem>
+                    <SelectItem value="Follow-up">Follow-up Required</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Medical Record Status</Label>
+                <Select defaultValue="Active">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Active">Active</SelectItem>
+                    <SelectItem value="Archived">Archived</SelectItem>
+                    <SelectItem value="Transferred">Transferred</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>Registration Source</Label>
@@ -546,6 +569,71 @@ const PatientEditPage = () => {
                 <Label>Registration Date</Label>
                 <Input value={format(patientData.registrationDate, "PPP")} readOnly className="bg-muted" />
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Emergency Contact Information - Dedicated Section */}
+        <Card className="mb-6 border-2 border-orange-200 bg-orange-50/30">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <Phone className="h-6 w-6 text-orange-600" />
+                Emergency Contact Information
+              </CardTitle>
+              <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Contact
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {patientData.emergencyContacts.map((contact, index) => (
+                <Card key={contact.id} className={`border-2 ${contact.isPrimary ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-white'}`}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-lg">{contact.name}</h4>
+                        {contact.isPrimary && (
+                          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Primary</Badge>
+                        )}
+                        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                          {contact.relationship}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="text-green-600 border-green-300 hover:bg-green-50">
+                          <Phone className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Phone Number</Label>
+                        <p className="font-semibold">{contact.phone}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Relationship</Label>
+                        <p className="font-semibold">{contact.relationship}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Address</Label>
+                        <p className="font-semibold">{contact.address}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Notes</Label>
+                        <p className="font-semibold">{contact.notes}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -1061,8 +1149,34 @@ const PatientEditPage = () => {
               {/* Other Details Tab */}
               <TabsContent value="other" className="mt-6">
                 <div className="space-y-6">
-                  <h3 className="text-lg font-semibold">Additional Information</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <h3 className="text-lg font-semibold">Personal Demographics</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="occupation">Occupation</Label>
+                      <Input id="occupation" defaultValue={patientData.occupation} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Marital Status</Label>
+                      <Select defaultValue={patientData.maritalStatus}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Single">Single</SelectItem>
+                          <SelectItem value="Married">Married</SelectItem>
+                          <SelectItem value="Divorced">Divorced</SelectItem>
+                          <SelectItem value="Widowed">Widowed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="nationality">Nationality</Label>
+                      <Input id="nationality" defaultValue={patientData.nationality} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="religion">Religion</Label>
+                      <Input id="religion" defaultValue={patientData.religion} />
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="education">Education Level</Label>
                       <Input id="education" defaultValue={patientData.education} />
@@ -1071,6 +1185,10 @@ const PatientEditPage = () => {
                       <Label htmlFor="motherTongue">Mother Tongue</Label>
                       <Input id="motherTongue" defaultValue={patientData.motherTongue} />
                     </div>
+                  </div>
+                  
+                  <h3 className="text-lg font-semibold mt-8">Additional Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="specialNeeds">Special Needs/Disabilities</Label>
                       <Textarea id="specialNeeds" placeholder="Any special accommodations needed" rows={3} />
