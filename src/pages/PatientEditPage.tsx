@@ -11,6 +11,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { EmergencyContactForm } from "@/components/patient-edit/EmergencyContactForm";
+import { InsurancePolicyForm } from "@/components/patient-edit/InsurancePolicyForm";
+import { AddressForm } from "@/components/patient-edit/AddressForm";
 import { 
   ArrowLeft, 
   CalendarIcon, 
@@ -47,6 +50,11 @@ const PatientEditPage = () => {
   const { patientId } = useParams();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("billing");
+  
+  // Editing states for different sections
+  const [editingContactId, setEditingContactId] = useState<number | null>(null);
+  const [editingPolicyId, setEditingPolicyId] = useState<number | null>(null);
+  const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
 
   // Enhanced patient data with new features
   const [patientData, setPatientData] = useState({
@@ -228,6 +236,8 @@ const PatientEditPage = () => {
       ...prev,
       emergencyContacts: [...prev.emergencyContacts, newContact]
     }));
+    // Auto-enter edit mode for new contact
+    setTimeout(() => setEditingContactId(newContact.id), 100);
     toast({
       title: "New Contact Added",
       description: "A new emergency contact has been added. Please fill in the details.",
@@ -251,6 +261,8 @@ const PatientEditPage = () => {
       ...prev,
       insurancePolicies: [...prev.insurancePolicies, newPolicy]
     }));
+    // Auto-enter edit mode for new policy
+    setTimeout(() => setEditingPolicyId(newPolicy.id), 100);
     toast({
       title: "New Policy Added",
       description: "A new insurance policy has been added. Please fill in the details.",
@@ -275,6 +287,8 @@ const PatientEditPage = () => {
       ...prev,
       additionalAddresses: [...prev.additionalAddresses, newAddress]
     }));
+    // Auto-enter edit mode for new address
+    setTimeout(() => setEditingAddressId(newAddress.id), 100);
     toast({
       title: "New Address Added",
       description: "A new address has been added. Please fill in the details.",
@@ -296,6 +310,108 @@ const PatientEditPage = () => {
     toast({
       title: "New GSTIN Added",
       description: "A new GSTIN entry has been added. Please fill in the details.",
+    });
+  };
+
+  // Emergency Contact editing functions
+  const handleEditContact = (contactId: number) => {
+    setEditingContactId(contactId);
+  };
+
+  const handleSaveContact = (updatedContact: any) => {
+    setPatientData(prev => ({
+      ...prev,
+      emergencyContacts: prev.emergencyContacts.map(contact => 
+        contact.id === updatedContact.id ? updatedContact : contact
+      )
+    }));
+    setEditingContactId(null);
+    toast({
+      title: "Contact Updated",
+      description: "Emergency contact has been updated successfully.",
+    });
+  };
+
+  const handleCancelContactEdit = () => {
+    setEditingContactId(null);
+  };
+
+  const handleDeleteContact = (contactId: number) => {
+    setPatientData(prev => ({
+      ...prev,
+      emergencyContacts: prev.emergencyContacts.filter(contact => contact.id !== contactId)
+    }));
+    toast({
+      title: "Contact Deleted",
+      description: "Emergency contact has been removed.",
+    });
+  };
+
+  // Insurance Policy editing functions
+  const handleEditPolicy = (policyId: number) => {
+    setEditingPolicyId(policyId);
+  };
+
+  const handleSavePolicy = (updatedPolicy: any) => {
+    setPatientData(prev => ({
+      ...prev,
+      insurancePolicies: prev.insurancePolicies.map(policy => 
+        policy.id === updatedPolicy.id ? updatedPolicy : policy
+      )
+    }));
+    setEditingPolicyId(null);
+    toast({
+      title: "Policy Updated",
+      description: "Insurance policy has been updated successfully.",
+    });
+  };
+
+  const handleCancelPolicyEdit = () => {
+    setEditingPolicyId(null);
+  };
+
+  const handleDeletePolicy = (policyId: number) => {
+    setPatientData(prev => ({
+      ...prev,
+      insurancePolicies: prev.insurancePolicies.filter(policy => policy.id !== policyId)
+    }));
+    toast({
+      title: "Policy Deleted",
+      description: "Insurance policy has been removed.",
+    });
+  };
+
+  // Address editing functions
+  const handleEditAddress = (addressId: number) => {
+    setEditingAddressId(addressId);
+  };
+
+  const handleSaveAddress = (updatedAddress: any) => {
+    setPatientData(prev => ({
+      ...prev,
+      additionalAddresses: prev.additionalAddresses.map(address => 
+        address.id === updatedAddress.id ? updatedAddress : address
+      )
+    }));
+    setEditingAddressId(null);
+    toast({
+      title: "Address Updated",
+      description: "Address has been updated successfully.",
+    });
+  };
+
+  const handleCancelAddressEdit = () => {
+    setEditingAddressId(null);
+  };
+
+  const handleDeleteAddress = (addressId: number) => {
+    setPatientData(prev => ({
+      ...prev,
+      additionalAddresses: prev.additionalAddresses.filter(address => address.id !== addressId)
+    }));
+    toast({
+      title: "Address Deleted",
+      description: "Address has been removed.",
     });
   };
 
@@ -675,50 +791,16 @@ const PatientEditPage = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {patientData.emergencyContacts.map((contact, index) => (
-                <Card key={contact.id} className={`border-2 ${contact.isPrimary ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-white'}`}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-lg">{contact.name}</h4>
-                        {contact.isPrimary && (
-                          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Primary</Badge>
-                        )}
-                        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-                          {contact.relationship}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" className="text-green-600 border-green-300 hover:bg-green-50">
-                          <Phone className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Phone Number</Label>
-                        <p className="font-semibold">{contact.phone}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Relationship</Label>
-                        <p className="font-semibold">{contact.relationship}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Address</Label>
-                        <p className="font-semibold">{contact.address}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Notes</Label>
-                        <p className="font-semibold">{contact.notes}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              {patientData.emergencyContacts.map((contact) => (
+                <EmergencyContactForm
+                  key={contact.id}
+                  contact={contact}
+                  isEditing={editingContactId === contact.id}
+                  onSave={handleSaveContact}
+                  onCancel={handleCancelContactEdit}
+                  onDelete={handleDeleteContact}
+                  onEdit={() => handleEditContact(contact.id)}
+                />
               ))}
             </div>
           </CardContent>
@@ -740,53 +822,16 @@ const PatientEditPage = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {patientData.insurancePolicies.map((policy, index) => (
-                <Card key={policy.id} className={`border-2 ${policy.isPrimary ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-white'}`}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-lg">{policy.company}</h4>
-                        {policy.isPrimary && (
-                          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Primary</Badge>
-                        )}
-                        <Badge className={policy.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                          {policy.status}
-                        </Badge>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Policy Number</Label>
-                        <p className="font-semibold">{policy.policyNumber}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Type</Label>
-                        <p className="font-semibold">{policy.type}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Coverage</Label>
-                        <p className="font-semibold">₹{policy.coverageAmount.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Expiry Date</Label>
-                        <p className="font-semibold">{format(policy.expiryDate, "MMM dd, yyyy")}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Policy Holder</Label>
-                        <p className="font-semibold">{policy.policyHolder}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Pre-Auth Required</Label>
-                        <p className="font-semibold">{policy.preAuthRequired ? 'Yes' : 'No'}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              {patientData.insurancePolicies.map((policy) => (
+                <InsurancePolicyForm
+                  key={policy.id}
+                  policy={policy}
+                  isEditing={editingPolicyId === policy.id}
+                  onSave={handleSavePolicy}
+                  onCancel={handleCancelPolicyEdit}
+                  onDelete={handleDeletePolicy}
+                  onEdit={() => handleEditPolicy(policy.id)}
+                />
               ))}
             </div>
           </CardContent>
@@ -887,7 +932,17 @@ const PatientEditPage = () => {
                     </Button>
                   </div>
                   
-                  {patientData.additionalAddresses.map((address, index) => (
+                  {patientData.additionalAddresses.map((address) => (
+                    <AddressForm
+                      key={address.id}
+                      address={address}
+                      isEditing={editingAddressId === address.id}
+                      onSave={handleSaveAddress}
+                      onCancel={handleCancelAddressEdit}
+                      onDelete={handleDeleteAddress}
+                      onEdit={() => handleEditAddress(address.id)}
+                    />
+                  ))}
                     <Card key={address.id} className={`border-2 ${address.isDefault ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">

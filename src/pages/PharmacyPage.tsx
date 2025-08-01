@@ -278,14 +278,8 @@ const PharmacyPage = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white">
-      <div className="bg-white border-b p-2 flex items-center justify-between">
-        <Link to="/">
-          <Button variant="ghost" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Dashboard</span>
-          </Button>
-        </Link>
+    <div className="h-full flex flex-col overflow-hidden bg-white">
+      <div className="bg-white border-b p-4 flex items-center justify-center">
         <PharmacyNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
       

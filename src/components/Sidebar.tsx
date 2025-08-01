@@ -36,7 +36,7 @@ const Sidebar = () => {
     { icon: Activity, label: "OT", path: "/ot" },
     { icon: BedDouble, label: "Bed Management", path: "/bed-management" },
     { icon: Package, label: "Material Store", path: "/material-store" },
-    { icon: UserCog, label: "Human Resource", path: "/human-resource" },
+    { icon: UserCog, label: "Human Resource", path: "/human-resources" },
     { icon: DollarSign, label: "Accounts & Finance", path: "/accounts-finance" },
     { icon: FileText, label: "Legal/Certificates", path: "/legal-certificates" },
     { icon: Truck, label: "Ambulance Dispatch", path: "/ambulance-dispatch" },

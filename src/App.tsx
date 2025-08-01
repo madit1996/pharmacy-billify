@@ -40,6 +40,7 @@ function App() {
               <Route path="patients/:patientId/edit" element={<PatientEditPage />} />
               <Route path="appointments" element={<AppointmentsPage />} />
               <Route path="referrals" element={<ReferralPage />} />
+              <Route path="pharmacy" element={<PharmacyPage />} />
               <Route path="lab-tests" element={<LabTestsPage />} />
               <Route path="blood-bank" element={<BloodBankPage />} />
               <Route path="bed-management" element={<BedManagementPage />} />
@@ -55,7 +56,6 @@ function App() {
               <Route path="ipd" element={<IPDPage />} />
               <Route path="ot" element={<OTPage />} />
             </Route>
-            <Route path="/pharmacy" element={<PharmacyPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />
