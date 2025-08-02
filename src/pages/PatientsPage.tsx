@@ -8,7 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Search, Filter, Download, Edit, Eye, Plus, CalendarIcon, Users, FileText } from "lucide-react";
+import { Search, Filter, Download, Edit, Eye, Plus, CalendarIcon, Users, FileText, ClipboardList, TrendingUp } from "lucide-react";
+import PatientDocumentsTab from "@/components/documents/PatientDocumentsTab";
+import DoctorOrdersTab from "@/components/orders/DoctorOrdersTab";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -302,7 +304,7 @@ const PatientsPage = () => {
       {/* Tabs */}
       <div className="p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-4">
+          <TabsList className="grid w-full max-w-4xl grid-cols-6">
             <TabsTrigger value="all" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               All ({stats.total})
@@ -310,9 +312,17 @@ const PatientsPage = () => {
             <TabsTrigger value="pharmacy">Pharmacy ({stats.pharmacy})</TabsTrigger>
             <TabsTrigger value="lab">Lab ({stats.lab})</TabsTrigger>
             <TabsTrigger value="recent">Recent ({stats.recent})</TabsTrigger>
+            <TabsTrigger value="reports" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Reports
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Orders
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="mt-6">
+          <TabsContent value="all" className="mt-6">
             <Card>
               <CardContent className="p-0">
                 <div className="overflow-auto">
@@ -383,6 +393,47 @@ const PatientsPage = () => {
                 <Button variant="outline">Next</Button>
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="pharmacy" className="mt-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Pharmacy patient data will be displayed here</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="lab" className="mt-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Lab patient data will be displayed here</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="recent" className="mt-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Recent patient data will be displayed here</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="reports" className="mt-6">
+            <PatientDocumentsTab patientId="PAT-18" />
+          </TabsContent>
+
+          <TabsContent value="orders" className="mt-6">
+            <DoctorOrdersTab patientId="PAT-18" />
           </TabsContent>
         </Tabs>
       </div>

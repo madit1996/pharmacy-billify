@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Search, Filter, Download, Edit, Upload, Clock, CheckCircle, XCircle, CalendarIcon, Stethoscope, Users, FileText } from "lucide-react";
+import DocumentSummaryDialog from "@/components/documents/DocumentSummaryDialog";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -35,6 +36,8 @@ const AppointmentsPage = () => {
   const [selectedService, setSelectedService] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [activeTab, setActiveTab] = useState("all");
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+  const [isDocumentDialogOpen, setIsDocumentDialogOpen] = useState(false);
   const { toast } = useToast();
 
   // Dummy appointment data matching the reference image
@@ -266,6 +269,11 @@ const AppointmentsPage = () => {
     }
   };
 
+  const handleViewDocuments = (appointmentId: number) => {
+    setSelectedAppointmentId(appointmentId.toString());
+    setIsDocumentDialogOpen(true);
+  };
+
   const getActionButtons = (appointment: Appointment) => {
     return (
       <div className="flex gap-1">
@@ -282,6 +290,14 @@ const AppointmentsPage = () => {
             </Button>
           </>
         )}
+        <Button 
+          size="sm" 
+          variant="outline" 
+          className="h-8 px-2"
+          onClick={() => handleViewDocuments(appointment.id)}
+        >
+          <FileText className="h-3 w-3" />
+        </Button>
         {appointment.status === "done" && (
           <Button size="sm" className="h-8 px-2 bg-green-600 hover:bg-green-700 text-white">
             <CheckCircle className="h-3 w-3" />
@@ -500,6 +516,15 @@ const AppointmentsPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Document Summary Dialog */}
+      {selectedAppointmentId && (
+        <DocumentSummaryDialog
+          appointmentId={selectedAppointmentId}
+          isOpen={isDocumentDialogOpen}
+          onClose={() => setIsDocumentDialogOpen(false)}
+        />
+      )}
     </div>
   );
 };
