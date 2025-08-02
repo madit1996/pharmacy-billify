@@ -48,6 +48,8 @@ import { useNavigate, useParams } from "react-router-dom";
 const PatientEditPage = () => {
   const navigate = useNavigate();
   const { patientId } = useParams();
+  
+  console.log("PatientEditPage loaded successfully");
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("billing");
   
