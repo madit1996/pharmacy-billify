@@ -3,8 +3,8 @@ import { CreditCard, BarChart2, Activity, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LabNavigationProps {
-  activeTab: 'analytics' | 'tests' | 'billing' | 'tracking' | 'orders';
-  setActiveTab: (tab: 'analytics' | 'tests' | 'billing' | 'tracking' | 'orders') => void;
+  activeTab: 'analytics' | 'tests' | 'billing' | 'tracking';
+  setActiveTab: (tab: 'analytics' | 'tests' | 'billing' | 'tracking') => void;
 }
 
 const LabNavigation = ({ activeTab, setActiveTab }: LabNavigationProps) => {
@@ -54,16 +54,6 @@ const LabNavigation = ({ activeTab, setActiveTab }: LabNavigationProps) => {
         </Button>
       )}
 
-      {activeTab !== 'orders' && (
-        <Button 
-          variant="outline"
-          onClick={() => setActiveTab('orders')}
-          className="flex items-center gap-1 border-red-500 text-red-600 hover:bg-red-50"
-        >
-          <TrendingUp className="h-4 w-4 mr-1" />
-          Orders
-        </Button>
-      )}
       
       {activeTab === 'analytics' && (
         <Button 
@@ -102,16 +92,6 @@ const LabNavigation = ({ activeTab, setActiveTab }: LabNavigationProps) => {
         >
           <Activity className="h-4 w-4 mr-1" />
           Tracking
-        </Button>
-      )}
-
-      {activeTab === 'orders' && (
-        <Button 
-          className="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white"
-          disabled
-        >
-          <TrendingUp className="h-4 w-4 mr-1" />
-          Orders
         </Button>
       )}
     </div>
