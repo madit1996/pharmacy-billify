@@ -22,7 +22,7 @@ import { Order, OrderType, OrderStatus } from "@/types/order-types";
 import { format } from "date-fns";
 
 interface DoctorOrdersTabProps {
-  patientId: string;
+  patientId: string; // Can be "ALL" to show all orders
 }
 
 // Mock orders data
@@ -170,6 +170,8 @@ const DoctorOrdersTab = ({ patientId }: DoctorOrdersTabProps) => {
 
   // Filter orders
   const filteredOrders = mockOrders.filter(order => {
+    // If patientId is "ALL", show all orders, otherwise filter by patient
+    const matchesPatient = patientId === "ALL" || order.patientId === patientId;
     const matchesSearch = searchTerm === "" || 
       order.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.targetDepartment.toLowerCase().includes(searchTerm.toLowerCase());
@@ -183,7 +185,7 @@ const DoctorOrdersTab = ({ patientId }: DoctorOrdersTabProps) => {
       (activeTab === "in-progress" && (order.status === "acknowledged" || order.status === "in-progress")) ||
       (activeTab === "completed" && order.status === "completed");
 
-    return matchesSearch && matchesType && matchesStatus && matchesTab;
+    return matchesPatient && matchesSearch && matchesType && matchesStatus && matchesTab;
   });
 
   const getOrderStats = () => {

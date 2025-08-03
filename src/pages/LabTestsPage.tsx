@@ -9,13 +9,14 @@ import LabAnalyticsTab from "@/components/lab/LabAnalyticsTab";
 import LabTestsTab from "@/components/lab/LabTestsTab";
 import LabBillingTab from "@/components/lab/LabBillingTab";
 import LabTestTrackingTab from "@/components/lab/LabTestTrackingTab";
+import DoctorOrdersTab from "@/components/orders/DoctorOrdersTab";
 import { LabProvider } from "@/contexts/LabContext";
 
 const LabTestsPage = () => {
-  const [activeTab, setActiveTab] = useState<'analytics' | 'tests' | 'billing' | 'tracking'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'tests' | 'billing' | 'tracking' | 'orders'>('analytics');
 
   // This function ensures we handle all possible tab values
-  const handleTabChange = (tab: 'analytics' | 'tests' | 'billing' | 'tracking') => {
+  const handleTabChange = (tab: 'analytics' | 'tests' | 'billing' | 'tracking' | 'orders') => {
     setActiveTab(tab);
   };
 
@@ -41,6 +42,7 @@ const LabTestsPage = () => {
             {activeTab === 'tests' && <LabTestsTab />}
             {activeTab === 'billing' && <LabBillingTab />}
             {activeTab === 'tracking' && <LabTestTrackingTab />}
+            {activeTab === 'orders' && <DoctorOrdersTab patientId="ALL" />}
           </div>
         </div>
       </div>

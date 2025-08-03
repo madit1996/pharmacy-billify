@@ -15,6 +15,7 @@ import CollapsibleSidebar from "@/components/pharmacy/CollapsibleSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PatientForm from "@/components/pharmacy/PatientForm";
+import DoctorOrdersPharmacyTab from "@/components/pharmacy/DoctorOrdersPharmacyTab";
 import { useOnlineOrderBilling } from "@/hooks/useOnlineOrderBilling";
 
 export type BillItem = {
@@ -36,7 +37,7 @@ export type CustomerDetails = {
 };
 
 const PharmacyPage = () => {
-  const [activeTab, setActiveTab] = useState<'analytics' | 'billing'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'billing' | 'orders'>('analytics');
   
   const [date, setDate] = useState<Date>(new Date());
   const [billItems, setBillItems] = useState<BillItem[]>([]);
@@ -291,6 +292,12 @@ const PharmacyPage = () => {
         )}
         
         {activeTab === 'billing' && renderBillingContent()}
+        
+        {activeTab === 'orders' && (
+          <div className="flex-1 overflow-auto p-4">
+            <DoctorOrdersPharmacyTab />
+          </div>
+        )}
       </div>
 
       <Dialog open={isPatientDialogOpen} onOpenChange={setIsPatientDialogOpen}>
