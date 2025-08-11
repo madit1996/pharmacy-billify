@@ -17,7 +17,8 @@ import {
   DollarSign,
   FileText,
   Truck,
-  Gift
+  Gift,
+  Coins
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -42,6 +43,7 @@ const Sidebar = () => {
     { icon: Truck, label: "Ambulance Dispatch", path: "/ambulance-dispatch" },
     { icon: Gift, label: "Referrals", path: "/referrals" },
     { icon: Clock, label: "Availability", path: "/availability" },
+    { icon: Coins, label: "AI Credits", path: "/ai-credits" },
   ];
 
   return (
