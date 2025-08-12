@@ -49,6 +49,20 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* AI Credits Theme Colors */
+    --credits-free: 142 76% 36%;
+    --credits-free-foreground: 355 7% 97%;
+    --credits-individual: 221 83% 53%;
+    --credits-individual-foreground: 210 40% 98%;
+    --credits-organization: 271 81% 56%;
+    --credits-organization-foreground: 210 40% 98%;
+    --credits-warning: 43 96% 56%;
+    --credits-warning-foreground: 222.2 84% 4.9%;
+    --credits-danger: 0 84% 60%;
+    --credits-danger-foreground: 210 40% 98%;
+    --credits-success: 142 76% 36%;
+    --credits-success-foreground: 355 7% 97%;
   }
 
   .dark {
@@ -87,6 +101,20 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* AI Credits Theme Colors - Dark Mode */
+    --credits-free: 142 69% 58%;
+    --credits-free-foreground: 142 76% 6%;
+    --credits-individual: 221 83% 63%;
+    --credits-individual-foreground: 221 83% 13%;
+    --credits-organization: 271 81% 66%;
+    --credits-organization-foreground: 271 81% 16%;
+    --credits-warning: 43 96% 56%;
+    --credits-warning-foreground: 43 96% 6%;
+    --credits-danger: 0 84% 60%;
+    --credits-danger-foreground: 0 84% 10%;
+    --credits-success: 142 69% 58%;
+    --credits-success-foreground: 142 76% 6%;
   }
 }
 

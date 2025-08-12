@@ -6,12 +6,11 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { useAiCredits } from '@/contexts/AiCreditsContext';
 import { useUser } from '@/contexts/UserContext';
 import { INDIVIDUAL_PRICING_TIERS, ORG_PRICING, GST_RATE, PricingCalculation } from '@/types/ai-credits';
 import { useToast } from '@/hooks/use-toast';
-import { Coins, Percent, Gift, CreditCard } from 'lucide-react';
+import { Coins, Percent, Gift, CreditCard, Building2, Target, Shield } from 'lucide-react';
 
 interface CreditPurchaseDialogProps {
   open: boolean;
@@ -29,13 +28,22 @@ export function CreditPurchaseDialog({ open, onOpenChange }: CreditPurchaseDialo
   const [isLoading, setIsLoading] = useState(false);
   const [calculation, setCalculation] = useState<PricingCalculation | null>(null);
 
-  // Quick pack options
-  const quickPacks = [
-    { credits: 500, label: 'Starter' },
-    { credits: 1500, label: 'Popular' },
-    { credits: 3500, label: 'Professional' },
-    { credits: 10000, label: 'Enterprise' }
+  // Quick pack options - different for individual vs organization
+  const individualQuickPacks = [
+    { credits: 500, label: 'Starter', popular: false },
+    { credits: 1500, label: 'Popular', popular: true },
+    { credits: 3500, label: 'Professional', popular: false },
+    { credits: 5000, label: 'Premium', popular: false }
   ];
+
+  const organizationQuickPacks = [
+    { credits: 8000, label: 'Enterprise Starter', popular: false },
+    { credits: 15000, label: 'Enterprise Pro', popular: true },
+    { credits: 25000, label: 'Enterprise Premium', popular: false },
+    { credits: 50000, label: 'Enterprise Max', popular: false }
+  ];
+
+  const quickPacks = purchaseType === 'organization' ? organizationQuickPacks : individualQuickPacks;
 
   // Calculate pricing in real-time
   useEffect(() => {
@@ -125,10 +133,12 @@ export function CreditPurchaseDialog({ open, onOpenChange }: CreditPurchaseDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Coins className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-credits-individual to-credits-organization flex items-center justify-center">
+              <Coins className="h-4 w-4 text-white" />
+            </div>
             Purchase AI Credits
           </DialogTitle>
           <DialogDescription>
@@ -139,118 +149,168 @@ export function CreditPurchaseDialog({ open, onOpenChange }: CreditPurchaseDialo
         <div className="grid gap-6">
           {/* Purchase Type Selection */}
           {organization && (
-            <div className="space-y-3">
-              <Label>Purchase Type</Label>
-              <RadioGroup value={purchaseType} onValueChange={(value: 'individual' | 'organization') => setPurchaseType(value)}>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="individual" id="individual" />
-                  <Label htmlFor="individual">Individual Credits (Personal use)</Label>
-                </div>
-                {(isOrgAdmin || organization) && (
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="organization" id="organization" />
-                    <Label htmlFor="organization">
-                      Organization Credits (Shared pool)
-                      {!isOrgAdmin && <Badge variant="secondary" className="ml-2">Admin Only</Badge>}
-                    </Label>
+            <Card className="border-l-4 border-l-primary">
+              <CardHeader className="pb-3">
+                <Label className="text-base font-semibold">Purchase Type</Label>
+              </CardHeader>
+              <CardContent>
+                <RadioGroup value={purchaseType} onValueChange={(value: 'individual' | 'organization') => setPurchaseType(value)}>
+                  <div className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-muted/50">
+                    <RadioGroupItem value="individual" id="individual" />
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4 text-credits-individual" />
+                      <Label htmlFor="individual" className="cursor-pointer">Individual Credits (Personal use)</Label>
+                    </div>
                   </div>
-                )}
-              </RadioGroup>
-            </div>
+                  {(isOrgAdmin || organization) && (
+                    <div className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-muted/50">
+                      <RadioGroupItem value="organization" id="organization" />
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-credits-organization" />
+                        <Label htmlFor="organization" className="cursor-pointer">
+                          Organization Credits (Shared pool)
+                          {!isOrgAdmin && <Badge variant="secondary" className="ml-2">Admin Only</Badge>}
+                        </Label>
+                      </div>
+                    </div>
+                  )}
+                </RadioGroup>
+              </CardContent>
+            </Card>
           )}
 
           {/* Quick Pack Selection */}
-          <div className="space-y-3">
-            <Label>Quick Packs</Label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {quickPacks.map((pack) => (
-                <Button
-                  key={pack.credits}
-                  variant={credits === pack.credits ? "default" : "outline"}
-                  onClick={() => setCredits(pack.credits)}
-                  className="flex flex-col h-auto p-3"
-                >
-                  <span className="font-semibold">{pack.credits.toLocaleString()}</span>
-                  <span className="text-xs">{pack.label}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">{purchaseType === 'organization' ? 'Enterprise Packages' : 'Quick Packs'}</CardTitle>
+              <CardDescription>
+                {purchaseType === 'organization' 
+                  ? 'Bulk credit packages designed for organizations'
+                  : 'Popular credit packages for individual doctors'
+                }
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {quickPacks.map((pack) => (
+                  <Button
+                    key={pack.credits}
+                    variant={credits === pack.credits ? "default" : "outline"}
+                    onClick={() => setCredits(pack.credits)}
+                    className={`relative flex flex-col h-auto p-4 ${
+                      credits === pack.credits 
+                        ? 'bg-gradient-to-br from-credits-individual to-credits-organization text-white' 
+                        : 'hover:border-primary'
+                    }`}
+                  >
+                    {pack.popular && (
+                      <Badge className="absolute -top-2 -right-2 text-xs bg-credits-warning text-credits-warning-foreground">
+                        Popular
+                      </Badge>
+                    )}
+                    <span className="font-bold text-lg">{pack.credits.toLocaleString()}</span>
+                    <span className="text-xs opacity-80">{pack.label}</span>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Custom Amount */}
-          <div className="space-y-2">
-            <Label htmlFor="credits">Custom Amount</Label>
-            <Input
-              id="credits"
-              type="number"
-              value={credits}
-              onChange={(e) => setCredits(parseInt(e.target.value) || 0)}
-              min="1"
-              placeholder="Enter number of credits"
-            />
-            {purchaseType === 'organization' && minimumBuyIn > 0 && credits < minimumBuyIn && (
-              <p className="text-sm text-destructive">
-                Minimum organization purchase: {minimumBuyIn.toLocaleString()} credits
-              </p>
-            )}
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Custom Amount</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="credits">Number of Credits</Label>
+                <Input
+                  id="credits"
+                  type="number"
+                  value={credits}
+                  onChange={(e) => setCredits(parseInt(e.target.value) || 0)}
+                  min="1"
+                  placeholder="Enter number of credits"
+                  className="text-lg"
+                />
+                {purchaseType === 'organization' && minimumBuyIn > 0 && credits < minimumBuyIn && (
+                  <div className="flex items-center gap-2 text-sm text-credits-danger">
+                    <Shield className="w-4 h-4" />
+                    <span>Minimum organization purchase: {minimumBuyIn.toLocaleString()} credits</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Coupon Code */}
-          <div className="space-y-2">
-            <Label htmlFor="coupon">Coupon Code (Optional)</Label>
-            <div className="flex gap-2">
-              <Input
-                id="coupon"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-                placeholder="Enter coupon code"
-              />
-              <Button variant="outline" size="icon">
-                <Gift className="h-4 w-4" />
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Try "SAVE10" for 10% off or "FLAT500" for ₹500 discount
-            </p>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Gift className="w-5 h-5 text-credits-warning" />
+                Coupon Code
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex gap-2">
+                <Input
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  placeholder="Enter coupon code"
+                />
+                <Button variant="outline" size="icon">
+                  <Gift className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary" className="text-xs">Try "SAVE10" for 10% off</Badge>
+                <Badge variant="secondary" className="text-xs">Try "FLAT500" for ₹500 discount</Badge>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Pricing Breakdown */}
           {calculation && (
-            <Card>
+            <Card className="border-l-4 border-l-credits-success">
               <CardHeader>
-                <CardTitle className="text-lg">Pricing Breakdown</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-credits-success" />
+                  Pricing Breakdown
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex justify-between">
-                  <span>{calculation.credits.toLocaleString()} credits × ₹{calculation.pricePerCredit}</span>
-                  <span>₹{calculation.subtotal.toLocaleString()}</span>
-                </div>
-                {calculation.savings > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span className="flex items-center gap-1">
-                      <Percent className="h-3 w-3" />
-                      Tier Savings
-                    </span>
-                    <span>-₹{calculation.savings.toLocaleString()}</span>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span>{calculation.credits.toLocaleString()} credits × ₹{calculation.pricePerCredit}</span>
+                    <span className="font-medium">₹{calculation.subtotal.toLocaleString()}</span>
                   </div>
-                )}
-                {calculation.discount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span className="flex items-center gap-1">
-                      <Gift className="h-3 w-3" />
-                      Coupon Discount
-                    </span>
-                    <span>-₹{calculation.discount.toLocaleString()}</span>
+                  {calculation.savings > 0 && (
+                    <div className="flex justify-between items-center text-credits-success">
+                      <span className="flex items-center gap-1">
+                        <Percent className="h-3 w-3" />
+                        Tier Savings
+                      </span>
+                      <span>-₹{calculation.savings.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {calculation.discount > 0 && (
+                    <div className="flex justify-between items-center text-credits-success">
+                      <span className="flex items-center gap-1">
+                        <Gift className="h-3 w-3" />
+                        Coupon Discount
+                      </span>
+                      <span>-₹{calculation.discount.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <span>GST (18%)</span>
+                    <span>₹{calculation.gstAmount.toLocaleString()}</span>
                   </div>
-                )}
-                <div className="flex justify-between text-muted-foreground">
-                  <span>GST (18%)</span>
-                  <span>₹{calculation.gstAmount.toLocaleString()}</span>
                 </div>
-                <div className="border-t pt-2">
-                  <div className="flex justify-between font-semibold text-lg">
+                <div className="border-t pt-3">
+                  <div className="flex justify-between items-center font-bold text-xl">
                     <span>Total</span>
-                    <span>₹{calculation.total.toLocaleString()}</span>
+                    <span className="text-primary">₹{calculation.total.toLocaleString()}</span>
                   </div>
                 </div>
               </CardContent>
@@ -262,9 +322,9 @@ export function CreditPurchaseDialog({ open, onOpenChange }: CreditPurchaseDialo
             onClick={handlePurchase} 
             disabled={isLoading || !calculation || (purchaseType === 'organization' && !isOrgAdmin)}
             size="lg"
-            className="w-full"
+            className="w-full bg-gradient-to-r from-credits-individual to-credits-organization hover:opacity-90 text-white text-lg py-6"
           >
-            <CreditCard className="mr-2 h-4 w-4" />
+            <CreditCard className="mr-3 h-5 w-5" />
             {isLoading ? 'Processing...' : `Purchase for ₹${calculation?.total.toLocaleString() || '0'}`}
           </Button>
         </div>

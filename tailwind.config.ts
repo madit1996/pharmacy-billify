@@ -63,6 +63,20 @@ export default {
 					light: '#F5F7FA',
 					gray: '#EAECEF',
 					text: '#333333'
+				},
+				credits: {
+					free: 'hsl(var(--credits-free))',
+					'free-foreground': 'hsl(var(--credits-free-foreground))',
+					individual: 'hsl(var(--credits-individual))',
+					'individual-foreground': 'hsl(var(--credits-individual-foreground))',
+					organization: 'hsl(var(--credits-organization))',
+					'organization-foreground': 'hsl(var(--credits-organization-foreground))',
+					warning: 'hsl(var(--credits-warning))',
+					'warning-foreground': 'hsl(var(--credits-warning-foreground))',
+					danger: 'hsl(var(--credits-danger))',
+					'danger-foreground': 'hsl(var(--credits-danger-foreground))',
+					success: 'hsl(var(--credits-success))',
+					'success-foreground': 'hsl(var(--credits-success-foreground))'
 				}
 			},
 			borderRadius: {
