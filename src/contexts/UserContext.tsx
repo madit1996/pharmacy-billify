@@ -31,7 +31,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: "user-1",
       name: "Dr. Sarah Johnson",
       email: "sarah.johnson@hospital.com",
-      role: "doctor",
+      role: "org_admin",
       organizationId: "org-1",
       isElitePlan: true
     };
