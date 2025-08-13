@@ -26,6 +26,7 @@ import ICUPage from "./pages/ICUPage";
 import IPDPage from "./pages/IPDPage";
 import OTPage from "./pages/OTPage";
 import AiCreditsPage from "./pages/AiCreditsPage";
+import OrganizationCreditsPage from "./pages/OrganizationCreditsPage";
 import NotFound from "./pages/NotFound";
 import "./App.css";
 
@@ -61,6 +62,7 @@ function App() {
                   <Route path="ipd" element={<IPDPage />} />
                   <Route path="ot" element={<OTPage />} />
                   <Route path="ai-credits" element={<AiCreditsPage />} />
+                  <Route path="ai-credits/organization" element={<OrganizationCreditsPage />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +11,7 @@ import { useUser } from '@/contexts/UserContext';
 import { CreditPurchaseDialog } from '@/components/ai-credits/CreditPurchaseDialog';
 import { UsageAnalytics } from '@/components/ai-credits/UsageAnalytics';
 import { ActivityTable } from '@/components/ai-credits/ActivityTable';
+import { RecentActivityTable } from '@/components/ai-credits/RecentActivityTable';
 import { AutoRefillSettings } from '@/components/ai-credits/AutoRefillSettings';
 import { OrgAdminDashboard } from '@/components/ai-credits/OrgAdminDashboard';
 import { CreditCard, TrendingUp, Calendar, Settings, Building2, Activity, Zap, Shield, Target, Download } from 'lucide-react';
@@ -107,14 +109,24 @@ export default function AiCreditsPage() {
             Manage your AI consultation credits and track usage insights
           </p>
         </div>
-        <Button 
-          onClick={() => setPurchaseDialogOpen(true)}
-          className="bg-gradient-to-r from-credits-individual to-credits-organization hover:opacity-90 text-white shadow-lg"
-          size="lg"
-        >
-          <CreditCard className="w-4 h-4 mr-2" />
-          Buy Credits
-        </Button>
+            <div className="flex gap-2">
+              {user?.role === "org_admin" && (
+                <Button variant="outline" asChild>
+                  <Link to="/ai-credits/organization" className="gap-2">
+                    <Building2 className="h-4 w-4" />
+                    Organization Dashboard
+                  </Link>
+                </Button>
+              )}
+              <Button 
+                onClick={() => setPurchaseDialogOpen(true)}
+                className="bg-gradient-to-r from-credits-individual to-credits-organization hover:opacity-90 text-white shadow-lg"
+                size="lg"
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                Buy Credits
+              </Button>
+            </div>
       </div>
 
       {/* Enhanced Balance Summary Cards */}
